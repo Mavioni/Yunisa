@@ -1,0 +1,332 @@
+import { showScreen } from "../app.js";
+
+let currentConversationId = null;
+let abortController = null;
+let serverPort = 8080;
+
+const messagesEl = () => document.getElementById("messages");
+const inputEl = () => document.getElementById("user-input");
+const sendBtn = () => document.getElementById("send-btn");
+const stopBtn = () => document.getElementById("stop-btn");
+const chatTitle = () => document.getElementById("chat-title");
+const modelBadge = () => document.getElementById("model-badge");
+const contextWarning = () => document.getElementById("context-warning");
+const convList = () => document.getElementById("conversation-list");
+
+export function initChat() {
+  sendBtn().addEventListener("click", sendMessage);
+  stopBtn().addEventListener("click", stopGeneration);
+
+  inputEl().addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  const newChatBtn = document.getElementById("new-chat-btn");
+  if (newChatBtn) {
+    newChatBtn.addEventListener("click", startNewChat);
+  }
+
+  // Fetch the server port once
+  window.yunisa.server.port().then((port) => {
+    if (port) serverPort = port;
+  });
+
+  // Load active model badge
+  window.yunisa.models.getActive().then((model) => {
+    if (model && modelBadge()) {
+      modelBadge().textContent = model.name || model.id || "Local Model";
+    }
+  });
+
+  loadConversationList();
+}
+
+async function loadConversationList() {
+  const conversations = await window.yunisa.conversations.list();
+  const list = convList();
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  conversations.forEach((conv) => {
+    const item = document.createElement("div");
+    item.className = "conversation-item";
+    item.textContent = conv.title;
+    item.dataset.id = conv.id;
+
+    if (conv.id === currentConversationId) {
+      item.classList.add("active");
+    }
+
+    item.addEventListener("click", () => loadConversation(conv.id));
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "conv-delete-btn";
+    deleteBtn.textContent = "\u00d7";
+    deleteBtn.title = "Delete conversation";
+    deleteBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await window.yunisa.conversations.delete(conv.id);
+      if (currentConversationId === conv.id) {
+        currentConversationId = null;
+        messagesEl().innerHTML = "";
+        if (chatTitle()) chatTitle().textContent = "New Chat";
+      }
+      loadConversationList();
+    });
+
+    item.appendChild(deleteBtn);
+    list.appendChild(item);
+  });
+}
+
+async function loadConversation(id) {
+  currentConversationId = id;
+  const conv = await window.yunisa.conversations.get(id);
+  const messages = await window.yunisa.conversations.getMessages(id);
+
+  if (chatTitle() && conv) {
+    chatTitle().textContent = conv.title;
+  }
+
+  messagesEl().innerHTML = "";
+  if (contextWarning()) contextWarning().style.display = "none";
+
+  messages.forEach((msg) => {
+    appendMessage(msg.role, msg.content);
+  });
+
+  scrollToBottom();
+  loadConversationList();
+}
+
+async function startNewChat() {
+  const model = await window.yunisa.models.getActive();
+  const modelName = model ? model.id || "local" : "local";
+  const conv = await window.yunisa.conversations.create(modelName);
+
+  currentConversationId = conv.id;
+  messagesEl().innerHTML = "";
+  if (chatTitle()) chatTitle().textContent = "New Chat";
+  if (contextWarning()) contextWarning().style.display = "none";
+  inputEl().value = "";
+  inputEl().focus();
+
+  loadConversationList();
+}
+
+async function sendMessage() {
+  const input = inputEl();
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Ensure we have a conversation
+  if (!currentConversationId) {
+    await startNewChat();
+  }
+
+  input.value = "";
+  input.style.height = "auto";
+
+  // Save user message to DB and display it
+  await window.yunisa.conversations.addMessage(currentConversationId, "user", text);
+  appendMessage("user", text);
+
+  // Get all messages for context
+  const allMessages = await window.yunisa.conversations.getMessages(currentConversationId);
+  const apiMessages = buildApiMessages(allMessages);
+
+  // Show stop button, hide send button
+  sendBtn().style.display = "none";
+  stopBtn().style.display = "inline-flex";
+
+  // Create assistant message placeholder
+  const assistantEl = appendMessage("assistant", "");
+  let fullResponse = "";
+
+  // Refresh port in case server restarted
+  const port = await window.yunisa.server.port();
+  if (port) serverPort = port;
+
+  abortController = new AbortController();
+
+  try {
+    const response = await fetch(`http://127.0.0.1:${serverPort}/v1/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: apiMessages,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 1024,
+      }),
+      signal: abortController.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      renderMarkdown(assistantEl, `**Error ${response.status}**: ${errText}`);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data: ")) continue;
+
+        const data = trimmed.slice(6);
+        if (data === "[DONE]") break;
+
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullResponse += delta;
+            renderMarkdown(assistantEl, fullResponse);
+            scrollToBottom();
+          }
+        } catch {
+          // Skip malformed JSON chunks
+        }
+      }
+    }
+  } catch (err) {
+    if (err.name === "AbortError") {
+      fullResponse += "\n\n*[Generation stopped]*";
+      renderMarkdown(assistantEl, fullResponse);
+    } else {
+      renderMarkdown(assistantEl, `**Connection error**: ${err.message}`);
+    }
+  } finally {
+    abortController = null;
+    sendBtn().style.display = "inline-flex";
+    stopBtn().style.display = "none";
+  }
+
+  // Save assistant response to DB
+  if (fullResponse) {
+    await window.yunisa.conversations.addMessage(currentConversationId, "assistant", fullResponse);
+  }
+
+  // Refresh conversation list (title may have changed on first message)
+  loadConversationList();
+}
+
+function stopGeneration() {
+  if (abortController) {
+    abortController.abort();
+  }
+}
+
+function buildApiMessages(messages) {
+  const maxChars = 6000;
+  let totalChars = 0;
+  const result = [];
+  let truncated = false;
+
+  // Always include system prompt
+  result.push({
+    role: "system",
+    content: "You are YUNISA, a helpful AI assistant running locally. Be concise and helpful.",
+  });
+
+  // Walk messages from newest to oldest, collect until we hit the limit
+  const reversed = [...messages].reverse();
+  const collected = [];
+
+  for (const msg of reversed) {
+    const msgChars = msg.content.length;
+    if (totalChars + msgChars > maxChars && collected.length > 0) {
+      truncated = true;
+      break;
+    }
+    totalChars += msgChars;
+    collected.push({ role: msg.role, content: msg.content });
+  }
+
+  // Reverse back to chronological order
+  collected.reverse();
+  result.push(...collected);
+
+  // Show context warning if messages were truncated
+  const warn = contextWarning();
+  if (warn) {
+    warn.style.display = truncated ? "block" : "none";
+    if (truncated) {
+      warn.textContent = `Context truncated: showing ${collected.length} of ${messages.length} messages (~${totalChars} chars)`;
+    }
+  }
+
+  return result;
+}
+
+function appendMessage(role, content) {
+  const container = messagesEl();
+  const div = document.createElement("div");
+  div.className = `message message-${role}`;
+
+  const label = document.createElement("span");
+  label.className = "message-role";
+  label.textContent = role === "user" ? "You" : "YUNISA";
+  div.appendChild(label);
+
+  const body = document.createElement("div");
+  body.className = "message-body";
+  div.appendChild(body);
+
+  if (content) {
+    renderMarkdown(body, content);
+  }
+
+  container.appendChild(div);
+  scrollToBottom();
+  return body;
+}
+
+function renderMarkdown(el, text) {
+  let safe = escapeHtml(text);
+
+  // Code blocks: ```lang\n...\n```
+  safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
+
+  // Inline code: `code`
+  safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+  // Bold: **text**
+  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  // Italic: *text*
+  safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+
+  // Line breaks
+  safe = safe.replace(/\n/g, "<br>");
+
+  el.innerHTML = safe;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function scrollToBottom() {
+  const container = messagesEl();
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+}

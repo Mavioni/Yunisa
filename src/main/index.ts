@@ -46,7 +46,7 @@ function createWindow(): void {
   });
 
   mainWindow.on('close', (event) => {
-    if (!app.isQuitting) {
+    if (!(app as any).isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
     }
@@ -102,7 +102,7 @@ function registerIpcHandlers(): void {
   // App
   ipcMain.handle('app:get-data-dir', () => getDataDir());
   ipcMain.handle('app:quit', () => {
-    app.isQuitting = true;
+    (app as any).isQuitting = true;
     app.quit();
   });
 
@@ -124,7 +124,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
-  app.isQuitting = true;
+  (app as any).isQuitting = true;
   serverManager?.stop();
 });
 
@@ -132,10 +132,4 @@ app.on('activate', () => {
   mainWindow?.show();
 });
 
-declare module 'electron' {
-  interface App {
-    isQuitting: boolean;
-  }
-}
-
-app.isQuitting = false;
+(app as any).isQuitting = false;
