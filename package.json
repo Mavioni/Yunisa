@@ -25,10 +25,10 @@
       "icon": "resources/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
     },
     "extraResources": [
       {
@@ -51,8 +51,6 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",
-    "electron": "^41.0.2",
-    "electron-builder": "^26.8.1",
     "electron-updater": "^6.8.3",
     "highlight.js": "^11.11.1",
     "marked": "^17.0.4"
@@ -60,6 +58,8 @@
   "devDependencies": {
     "@electron/rebuild": "^4.0.3",
     "@types/better-sqlite3": "^7.6.13",
+    "electron": "^41.0.2",
+    "electron-builder": "^26.8.1",
     "typescript": "^5.9.3"
   }
 }
