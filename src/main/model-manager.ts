@@ -134,6 +134,8 @@ export class ModelManager {
       let downloadedBytes = 0;
       let redirectCount = 0;
 
+      let lastProgressTime = 0;
+
       const doRequest = (url: string) => {
         if (++redirectCount > 10) {
           reject(new Error('Too many redirects'));
@@ -164,7 +166,13 @@ export class ModelManager {
 
           res.on('data', (chunk: Buffer) => {
             downloadedBytes += chunk.length;
-            const elapsed = (Date.now() - startTime) / 1000;
+
+            // Throttle progress updates to max 4 per second
+            const now = Date.now();
+            if (now - lastProgressTime < 250) return;
+            lastProgressTime = now;
+
+            const elapsed = (now - startTime) / 1000;
             const speed = elapsed > 0 ? downloadedBytes / elapsed : 0;
             const speedStr = speed > 1048576
               ? `${(speed / 1048576).toFixed(1)} MB/s`
@@ -217,8 +225,8 @@ export class ModelManager {
           });
         });
 
-        req.on('error', (err) => {
-          reject(new Error(`Network error: ${err.message}`));
+        req.on('error', (err: any) => {
+          reject(new Error(`Network error: ${err.code || ''} ${err.message || 'Connection failed'}`));
         });
 
         req.on('timeout', () => {
