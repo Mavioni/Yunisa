@@ -174,16 +174,44 @@ html, body {
   line-height: 1.5;
   word-wrap: break-word;
 }
-.message.user {
+.message.user, .message-user {
   background: var(--msg-user);
   align-self: flex-end;
   border-bottom-right-radius: 2px;
 }
-.message.assistant {
+.message.assistant, .message-assistant {
   background: var(--msg-assistant);
   align-self: flex-start;
   border-bottom-left-radius: 2px;
 }
+.message-role {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+  opacity: 0.7;
+}
+.message-body {
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+.message-body p { margin: 0.25rem 0; }
+.conv-delete-btn {
+  float: right;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.conversation-item:hover .conv-delete-btn { opacity: 0.7; }
+.conv-delete-btn:hover { opacity: 1; color: var(--danger); }
 .message pre {
   background: #0d0d1a;
   padding: 0.75rem;

@@ -58,26 +58,31 @@ async function boot() {
   });
 
   // Check if any model is installed
-  const hasModel = await window.yunisa.models.hasAny();
+  try {
+    const hasModel = await window.yunisa.models.hasAny();
 
-  if (!hasModel) {
-    showScreen('welcome');
-    return;
-  }
+    if (!hasModel) {
+      showScreen('welcome');
+      return;
+    }
 
-  // Start server with active model
-  setLoadingStatus('Starting AI engine...');
-  const active = await window.yunisa.models.getActive();
-  if (!active) {
-    showScreen('welcome');
-    return;
-  }
+    // Start server with active model
+    setLoadingStatus('Starting AI engine...');
+    const active = await window.yunisa.models.getActive();
+    if (!active) {
+      showScreen('welcome');
+      return;
+    }
 
-  const result = await window.yunisa.server.start(active.path);
-  if (result.status === 'ready') {
-    showScreen('chat');
-  } else {
-    setLoadingStatus('Failed to start server. Check model file.');
+    const result = await window.yunisa.server.start(active.path);
+    if (result.status === 'ready') {
+      showScreen('chat');
+    } else {
+      setLoadingStatus('Failed to start server. Check model file.');
+    }
+  } catch (err) {
+    console.error('Boot error:', err);
+    setLoadingStatus('Error: ' + (err.message || 'Failed to initialize. Please restart YUNISA.'));
   }
 }
 

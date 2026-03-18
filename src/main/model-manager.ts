@@ -29,6 +29,7 @@ export interface DownloadProgress {
   totalBytes: number;
   percent: number;
   speed: string;
+  etaSeconds: number;
 }
 
 const MODEL_REGISTRY: ModelRegistryEntry[] = [
@@ -179,7 +180,6 @@ export class ModelManager {
               : `${(speed / 1024).toFixed(0)} KB/s`;
 
             const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
-            const etaStr = eta > 60 ? `${Math.floor(eta / 60)}m ${eta % 60}s` : `${eta}s`;
 
             onProgress({
               modelId,
@@ -187,8 +187,8 @@ export class ModelManager {
               totalBytes,
               percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
               speed: speedStr,
-              eta: etaStr,
-            } as DownloadProgress & { eta: string });
+              etaSeconds: eta,
+            });
           });
 
           res.pipe(file);
@@ -205,6 +205,7 @@ export class ModelManager {
                   totalBytes,
                   percent: 100,
                   speed: '0 KB/s',
+                  etaSeconds: 0,
                 });
                 resolve(destPath);
               } catch (err) {

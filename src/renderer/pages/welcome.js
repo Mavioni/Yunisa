@@ -307,14 +307,21 @@ export function initWelcome() {
       setCheckState('disk', 'pass');
     }
 
-    // Check 3: Internet connection
+    // Check 3: Internet connection (test actual connectivity by fetching registry list)
     await new Promise(r => setTimeout(r, 350));
     let internetOk = false;
     try {
       registryData = await window.yunisa.models.listRegistry();
-      internetOk = true;
-      setCheckState('internet', 'pass');
+      // listRegistry returns hardcoded data, so also test actual network
+      const testResponse = await fetch('https://huggingface.co/api/models/microsoft/BitNet-b1.58-2B-4T-gguf', {
+        method: 'HEAD',
+        signal: AbortSignal.timeout(5000),
+      });
+      internetOk = testResponse.ok;
+      setCheckState('internet', internetOk ? 'pass' : 'warn');
     } catch {
+      // Fetch failed — no internet or HuggingFace down
+      registryData = await window.yunisa.models.listRegistry();
       setCheckState('internet', 'warn');
     }
 
@@ -360,8 +367,8 @@ export function initWelcome() {
 
     if (progress.speed) {
       const speedStr = progress.speed;
-      if (progress.eta != null) {
-        statRight.textContent = speedStr + ' \u2014 ' + formatTime(Math.round(progress.eta));
+      if (progress.etaSeconds != null && progress.etaSeconds > 0) {
+        statRight.textContent = speedStr + ' \u2014 ' + formatTime(progress.etaSeconds);
       } else {
         statRight.textContent = speedStr;
       }

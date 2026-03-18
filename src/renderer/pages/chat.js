@@ -14,20 +14,44 @@ const contextWarning = () => document.getElementById("context-warning");
 const convList = () => document.getElementById("conversation-list");
 
 export function initChat() {
-  sendBtn().addEventListener("click", sendMessage);
-  stopBtn().addEventListener("click", stopGeneration);
+  const input = inputEl();
+  const send = sendBtn();
+  const stop = stopBtn();
 
-  inputEl().addEventListener("keydown", (e) => {
+  send.addEventListener("click", sendMessage);
+  stop.addEventListener("click", stopGeneration);
+
+  // Auto-resize textarea as user types
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 150) + "px";
+    send.disabled = !input.value.trim();
+  });
+
+  input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      if (input.value.trim()) sendMessage();
     }
   });
 
   const newChatBtn = document.getElementById("new-chat-btn");
-  if (newChatBtn) {
-    newChatBtn.addEventListener("click", startNewChat);
+  if (newChatBtn) newChatBtn.addEventListener("click", startNewChat);
+
+  // Sidebar toggle
+  const toggleBtn = document.getElementById("toggle-sidebar");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+    });
   }
+
+  // Navigation buttons
+  const modelsBtn = document.getElementById("models-btn");
+  if (modelsBtn) modelsBtn.addEventListener("click", () => showScreen("models"));
+
+  const settingsBtn = document.getElementById("settings-btn");
+  if (settingsBtn) settingsBtn.addEventListener("click", () => showScreen("settings"));
 
   // Fetch the server port once
   window.yunisa.server.port().then((port) => {
