@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import https from 'https';
-import http from 'http';
+import { net } from 'electron';
 
 export interface ModelRegistryEntry {
   id: string;
@@ -111,15 +110,6 @@ export class ModelManager {
     this.saveConfig();
   }
 
-  private resolveRedirectUrl(requestUrl: string, location: string): string {
-    if (location.startsWith('http://') || location.startsWith('https://')) {
-      return location;
-    }
-    // Relative redirect — resolve against the original URL's origin
-    const parsed = new URL(requestUrl);
-    return `${parsed.protocol}//${parsed.host}${location}`;
-  }
-
   async download(modelId: string, onProgress: (progress: DownloadProgress) => void): Promise<string> {
     const entry = MODEL_REGISTRY.find(m => m.id === modelId);
     if (!entry) throw new Error(`Model ${modelId} not found in registry`);
@@ -130,114 +120,86 @@ export class ModelManager {
     // Clean up any previous partial download
     try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
 
-    return new Promise((resolve, reject) => {
-      const startTime = Date.now();
-      let downloadedBytes = 0;
-      let redirectCount = 0;
-
-      let lastProgressTime = 0;
-
-      const doRequest = (url: string) => {
-        if (++redirectCount > 10) {
-          reject(new Error('Too many redirects'));
-          return;
-        }
-
-        const client = url.startsWith('https') ? https : http;
-        const req = client.get(url, {
-          headers: { 'User-Agent': 'YUNISA/1.0' },
-          timeout: 30000,
-        }, (res) => {
-          // Handle redirects (301, 302, 303, 307, 308)
-          if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-            res.resume(); // Drain the response
-            const nextUrl = this.resolveRedirectUrl(url, res.headers.location);
-            doRequest(nextUrl);
-            return;
-          }
-
-          if (res.statusCode !== 200) {
-            res.resume();
-            reject(new Error(`Download failed: HTTP ${res.statusCode}`));
-            return;
-          }
-
-          const totalBytes = parseInt(res.headers['content-length'] || '0', 10) || entry.sizeBytes;
-          const file = fs.createWriteStream(tempPath);
-
-          res.on('data', (chunk: Buffer) => {
-            downloadedBytes += chunk.length;
-
-            // Throttle progress updates to max 4 per second
-            const now = Date.now();
-            if (now - lastProgressTime < 250) return;
-            lastProgressTime = now;
-
-            const elapsed = (now - startTime) / 1000;
-            const speed = elapsed > 0 ? downloadedBytes / elapsed : 0;
-            const speedStr = speed > 1048576
-              ? `${(speed / 1048576).toFixed(1)} MB/s`
-              : `${(speed / 1024).toFixed(0)} KB/s`;
-
-            const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
-
-            onProgress({
-              modelId,
-              downloadedBytes,
-              totalBytes,
-              percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
-              speed: speedStr,
-              etaSeconds: eta,
-            });
-          });
-
-          res.pipe(file);
-
-          file.on('finish', () => {
-            file.close(() => {
-              try {
-                fs.renameSync(tempPath, destPath);
-                this.config.selectedModel = modelId;
-                this.saveConfig();
-                onProgress({
-                  modelId,
-                  downloadedBytes: totalBytes,
-                  totalBytes,
-                  percent: 100,
-                  speed: '0 KB/s',
-                  etaSeconds: 0,
-                });
-                resolve(destPath);
-              } catch (err) {
-                reject(err);
-              }
-            });
-          });
-
-          res.on('error', (err) => {
-            file.destroy();
-            try { fs.unlinkSync(tempPath); } catch {}
-            reject(err);
-          });
-
-          file.on('error', (err) => {
-            try { fs.unlinkSync(tempPath); } catch {}
-            reject(err);
-          });
-        });
-
-        req.on('error', (err: any) => {
-          reject(new Error(`Network error: ${err.code || ''} ${err.message || 'Connection failed'}`));
-        });
-
-        req.on('timeout', () => {
-          req.destroy();
-          reject(new Error('Connection timed out'));
-        });
-      };
-
-      doRequest(entry.url);
+    // Use Electron's net.fetch (Chromium network stack) — handles redirects,
+    // proxies, and certificates properly unlike Node's https module
+    const response = await net.fetch(entry.url, {
+      headers: { 'User-Agent': 'YUNISA/1.0' },
     });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: HTTP ${response.status} ${response.statusText}`);
+    }
+
+    const totalBytes = parseInt(response.headers.get('content-length') || '0', 10) || entry.sizeBytes;
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('No response body');
+
+    const file = fs.createWriteStream(tempPath);
+    const startTime = Date.now();
+    let downloadedBytes = 0;
+    let lastProgressTime = 0;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        file.write(Buffer.from(value));
+        downloadedBytes += value.byteLength;
+
+        // Throttle progress updates to max 4 per second
+        const now = Date.now();
+        if (now - lastProgressTime < 250) continue;
+        lastProgressTime = now;
+
+        const elapsed = (now - startTime) / 1000;
+        const speed = elapsed > 0 ? downloadedBytes / elapsed : 0;
+        const speedStr = speed > 1048576
+          ? `${(speed / 1048576).toFixed(1)} MB/s`
+          : `${(speed / 1024).toFixed(0)} KB/s`;
+        const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
+
+        onProgress({
+          modelId,
+          downloadedBytes,
+          totalBytes,
+          percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
+          speed: speedStr,
+          etaSeconds: eta,
+        });
+      }
+
+      // Wait for file to finish writing
+      await new Promise<void>((res, rej) => {
+        file.end(() => {
+          try {
+            fs.renameSync(tempPath, destPath);
+            res();
+          } catch (err) {
+            rej(err);
+          }
+        });
+        file.on('error', rej);
+      });
+
+      this.config.selectedModel = modelId;
+      this.saveConfig();
+
+      onProgress({
+        modelId,
+        downloadedBytes: totalBytes,
+        totalBytes,
+        percent: 100,
+        speed: '0 KB/s',
+        etaSeconds: 0,
+      });
+
+      return destPath;
+    } catch (err) {
+      file.destroy();
+      try { fs.unlinkSync(tempPath); } catch {}
+      throw err;
+    }
   }
 
   delete(modelId: string): void {
