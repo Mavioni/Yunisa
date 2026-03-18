@@ -110,6 +110,15 @@ export class ModelManager {
     this.saveConfig();
   }
 
+  private resolveRedirectUrl(requestUrl: string, location: string): string {
+    if (location.startsWith('http://') || location.startsWith('https://')) {
+      return location;
+    }
+    // Relative redirect — resolve against the original URL's origin
+    const parsed = new URL(requestUrl);
+    return `${parsed.protocol}//${parsed.host}${location}`;
+  }
+
   async download(modelId: string, onProgress: (progress: DownloadProgress) => void): Promise<string> {
     const entry = MODEL_REGISTRY.find(m => m.id === modelId);
     if (!entry) throw new Error(`Model ${modelId} not found in registry`);
@@ -117,19 +126,35 @@ export class ModelManager {
     const destPath = path.join(this.modelsDir, entry.localFilename);
     const tempPath = destPath + '.download';
 
+    // Clean up any previous partial download
+    try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
+
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let downloadedBytes = 0;
+      let redirectCount = 0;
 
       const doRequest = (url: string) => {
+        if (++redirectCount > 10) {
+          reject(new Error('Too many redirects'));
+          return;
+        }
+
         const client = url.startsWith('https') ? https : http;
-        client.get(url, { headers: { 'User-Agent': 'YUNISA/1.0' } }, (res) => {
+        const req = client.get(url, {
+          headers: { 'User-Agent': 'YUNISA/1.0' },
+          timeout: 30000,
+        }, (res) => {
+          // Handle redirects (301, 302, 303, 307, 308)
           if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-            doRequest(res.headers.location);
+            res.resume(); // Drain the response
+            const nextUrl = this.resolveRedirectUrl(url, res.headers.location);
+            doRequest(nextUrl);
             return;
           }
 
           if (res.statusCode !== 200) {
+            res.resume();
             reject(new Error(`Download failed: HTTP ${res.statusCode}`));
             return;
           }
@@ -145,31 +170,61 @@ export class ModelManager {
               ? `${(speed / 1048576).toFixed(1)} MB/s`
               : `${(speed / 1024).toFixed(0)} KB/s`;
 
+            const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
+            const etaStr = eta > 60 ? `${Math.floor(eta / 60)}m ${eta % 60}s` : `${eta}s`;
+
             onProgress({
               modelId,
               downloadedBytes,
               totalBytes,
-              percent: Math.round((downloadedBytes / totalBytes) * 100),
+              percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
               speed: speedStr,
-            });
+              eta: etaStr,
+            } as DownloadProgress & { eta: string });
           });
 
           res.pipe(file);
 
           file.on('finish', () => {
             file.close(() => {
-              fs.renameSync(tempPath, destPath);
-              this.config.selectedModel = modelId;
-              this.saveConfig();
-              resolve(destPath);
+              try {
+                fs.renameSync(tempPath, destPath);
+                this.config.selectedModel = modelId;
+                this.saveConfig();
+                onProgress({
+                  modelId,
+                  downloadedBytes: totalBytes,
+                  totalBytes,
+                  percent: 100,
+                  speed: '0 KB/s',
+                });
+                resolve(destPath);
+              } catch (err) {
+                reject(err);
+              }
             });
           });
 
-          file.on('error', (err) => {
-            fs.unlinkSync(tempPath);
+          res.on('error', (err) => {
+            file.destroy();
+            try { fs.unlinkSync(tempPath); } catch {}
             reject(err);
           });
-        }).on('error', reject);
+
+          file.on('error', (err) => {
+            try { fs.unlinkSync(tempPath); } catch {}
+            reject(err);
+          });
+        });
+
+        req.on('error', (err) => {
+          reject(new Error(`Network error: ${err.message}`));
+        });
+
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('Connection timed out'));
+        });
       };
 
       doRequest(entry.url);

@@ -229,29 +229,290 @@ html, body {
 }
 #user-input:focus { outline: none; border-color: var(--accent); }
 
-/* Welcome Screen */
+/* Welcome / Setup Wizard */
 #welcome-screen {
   justify-content: center;
   align-items: center;
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #12122a 50%, var(--bg-secondary) 100%);
 }
-.welcome-container {
+.wizard {
+  width: 100%;
+  max-width: 580px;
+  padding: 3rem 2.5rem;
   text-align: center;
-  max-width: 500px;
-  padding: 2rem;
 }
-.welcome-container h1 {
-  font-size: 2.5rem;
+.wizard-logo {
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: 0.35em;
   color: var(--accent);
-  margin-bottom: 1rem;
-  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 40px rgba(233, 69, 96, 0.3);
 }
-.welcome-container p {
+.wizard-tagline {
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   line-height: 1.6;
 }
 
-/* Progress Bar */
+/* Step indicator */
+.wizard-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+.wizard-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.4s ease;
+}
+.wizard-step-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.5);
+  transform: scale(1.3);
+}
+.wizard-step-dot.done {
+  background: var(--success);
+}
+
+/* Wizard content area */
+.wizard-content {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.wizard-step {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  animation: wizardFadeIn 0.4s ease;
+}
+.wizard-step.active { display: flex; }
+@keyframes wizardFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Step headings */
+.wizard-step h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+.wizard-step p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 420px;
+}
+
+/* Model info card in wizard */
+.wizard-model-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  width: 100%;
+  max-width: 440px;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+.wizard-model-card h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+.wizard-model-card .model-specs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.wizard-model-card .spec {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.wizard-model-card .spec-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+.wizard-model-card .spec-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.wizard-model-card .model-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Wizard buttons */
+.wizard-btn {
+  padding: 0.85rem 2.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 0.5rem;
+}
+.wizard-btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 16px rgba(233, 69, 96, 0.3);
+}
+.wizard-btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 6px 24px rgba(233, 69, 96, 0.4);
+  transform: translateY(-1px);
+}
+.wizard-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Download progress in wizard */
+.wizard-progress {
+  width: 100%;
+  max-width: 440px;
+  margin-top: 0.5rem;
+}
+.wizard-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.wizard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ff6b6b);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+.wizard-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: progressShimmer 2s infinite;
+}
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.wizard-progress-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.wizard-progress-stats .stat-highlight {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Wizard error state */
+.wizard-error {
+  background: rgba(233, 69, 96, 0.1);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 440px;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+/* Success checkmark animation */
+.wizard-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.wizard-success-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: white;
+  stroke-width: 3;
+  fill: none;
+}
+@keyframes successPop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+/* System check items */
+.system-checks {
+  width: 100%;
+  max-width: 440px;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+.system-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+}
+.system-check:last-child { border-bottom: none; }
+.system-check-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.system-check-icon.pending {
+  border: 2px solid var(--border);
+  animation: checkPulse 1.5s infinite;
+}
+.system-check-icon.pass {
+  background: var(--success);
+  color: white;
+}
+.system-check-icon.warn {
+  background: #f59e0b;
+  color: white;
+}
+@keyframes checkPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Legacy progress bar (for models page) */
 .progress-bar {
   width: 100%;
   height: 8px;
