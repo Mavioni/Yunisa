@@ -222,14 +222,18 @@ export function initWelcome() {
   // Error box
   const errorBox = document.createElement('div');
   errorBox.className = 'wizard-error hidden';
+  const errorIcon = createSvgWarn();
+  errorBox.appendChild(errorIcon);
   const errorMsg = document.createElement('span');
   errorMsg.textContent = '';
   errorBox.appendChild(errorMsg);
-  const retryBtn = document.createElement('button');
-  retryBtn.className = 'wizard-btn wizard-btn-primary';
-  retryBtn.textContent = 'Try Again';
-  errorBox.appendChild(retryBtn);
   step3.appendChild(errorBox);
+
+  // Retry button (separate from error box, replaces download button on failure)
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'wizard-btn wizard-btn-primary hidden';
+  retryBtn.textContent = 'Try Again';
+  step3.appendChild(retryBtn);
 
   content.appendChild(step3);
 
@@ -307,21 +311,13 @@ export function initWelcome() {
       setCheckState('disk', 'pass');
     }
 
-    // Check 3: Internet connection (test actual connectivity by fetching registry list)
+    // Check 3: Internet connection
     await new Promise(r => setTimeout(r, 350));
-    let internetOk = false;
+    registryData = await window.yunisa.models.listRegistry();
     try {
-      registryData = await window.yunisa.models.listRegistry();
-      // listRegistry returns hardcoded data, so also test actual network
-      const testResponse = await fetch('https://huggingface.co/api/models/microsoft/BitNet-b1.58-2B-4T-gguf', {
-        method: 'HEAD',
-        signal: AbortSignal.timeout(5000),
-      });
-      internetOk = testResponse.ok;
+      const internetOk = await window.yunisa.app.checkInternet();
       setCheckState('internet', internetOk ? 'pass' : 'warn');
     } catch {
-      // Fetch failed — no internet or HuggingFace down
-      registryData = await window.yunisa.models.listRegistry();
       setCheckState('internet', 'warn');
     }
 
@@ -333,6 +329,7 @@ export function initWelcome() {
   // ── Download logic ──
   async function startDownload() {
     downloadBtn.classList.add('hidden');
+    retryBtn.classList.add('hidden');
     errorBox.classList.add('hidden');
     progressArea.classList.remove('hidden');
     progressFill.style.width = '0%';
@@ -350,9 +347,10 @@ export function initWelcome() {
       goToStep(3);
     } catch (err) {
       progressArea.classList.add('hidden');
-      errorMsg.textContent = err.message || 'Download failed. Please check your connection.';
+      const msg = (err && err.message) ? err.message : 'Download failed. Please check your internet connection and try again.';
+      errorMsg.textContent = msg;
       errorBox.classList.remove('hidden');
-      downloadBtn.classList.remove('hidden');
+      retryBtn.classList.remove('hidden');
     }
   }
 

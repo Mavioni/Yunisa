@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { net } from 'electron';
+import https from 'https';
+import http from 'http';
 
 export interface ModelRegistryEntry {
   id: string;
@@ -117,89 +118,156 @@ export class ModelManager {
     const destPath = path.join(this.modelsDir, entry.localFilename);
     const tempPath = destPath + '.download';
 
-    // Clean up any previous partial download
-    try { if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath); } catch {}
-
-    // Use Electron's net.fetch (Chromium network stack) — handles redirects,
-    // proxies, and certificates properly unlike Node's https module
-    const response = await net.fetch(entry.url, {
-      headers: { 'User-Agent': 'YUNISA/1.0' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Download failed: HTTP ${response.status} ${response.statusText}`);
-    }
-
-    const totalBytes = parseInt(response.headers.get('content-length') || '0', 10) || entry.sizeBytes;
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error('No response body');
-
-    const file = fs.createWriteStream(tempPath);
-    const startTime = Date.now();
-    let downloadedBytes = 0;
-    let lastProgressTime = 0;
-
+    // Check for existing partial download to resume
+    let existingBytes = 0;
     try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        file.write(Buffer.from(value));
-        downloadedBytes += value.byteLength;
-
-        // Throttle progress updates to max 4 per second
-        const now = Date.now();
-        if (now - lastProgressTime < 250) continue;
-        lastProgressTime = now;
-
-        const elapsed = (now - startTime) / 1000;
-        const speed = elapsed > 0 ? downloadedBytes / elapsed : 0;
-        const speedStr = speed > 1048576
-          ? `${(speed / 1048576).toFixed(1)} MB/s`
-          : `${(speed / 1024).toFixed(0)} KB/s`;
-        const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
-
-        onProgress({
-          modelId,
-          downloadedBytes,
-          totalBytes,
-          percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
-          speed: speedStr,
-          etaSeconds: eta,
-        });
+      if (fs.existsSync(tempPath)) {
+        existingBytes = fs.statSync(tempPath).size;
       }
+    } catch {}
 
-      // Wait for file to finish writing
-      await new Promise<void>((res, rej) => {
-        file.end(() => {
-          try {
-            fs.renameSync(tempPath, destPath);
-            res();
-          } catch (err) {
-            rej(err);
+    return new Promise<string>((resolve, reject) => {
+      const doRequest = (url: string, redirectCount: number) => {
+        if (redirectCount > 5) {
+          reject(new Error('Too many redirects'));
+          return;
+        }
+
+        const parsed = new URL(url);
+        const transport = parsed.protocol === 'https:' ? https : http;
+        const reqHeaders: Record<string, string> = { 'User-Agent': 'YUNISA/1.0' };
+        if (existingBytes > 0) {
+          reqHeaders['Range'] = `bytes=${existingBytes}-`;
+        }
+
+        const req = transport.get(
+          {
+            hostname: parsed.hostname,
+            port: parsed.port,
+            path: parsed.pathname + parsed.search,
+            headers: reqHeaders,
+          },
+          (res) => {
+            // Follow redirects — clear this request's timeout before recursing
+            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+              req.setTimeout(0); // cancel timeout so it doesn't fire during the real download
+              res.resume();
+              const redirectUrl = new URL(res.headers.location, url).href;
+              doRequest(redirectUrl, redirectCount + 1);
+              return;
+            }
+
+            if (res.statusCode !== 200 && res.statusCode !== 206) {
+              res.resume();
+              reject(new Error(`Download failed: HTTP ${res.statusCode}`));
+              return;
+            }
+
+            const isResume = res.statusCode === 206 && existingBytes > 0;
+            if (!isResume && existingBytes > 0) {
+              // Server doesn't support range — start fresh
+              try { fs.unlinkSync(tempPath); } catch {}
+              existingBytes = 0;
+            }
+
+            const contentLength = parseInt(res.headers['content-length'] || '0', 10);
+            const totalBytes = isResume
+              ? existingBytes + contentLength
+              : (contentLength || entry.sizeBytes);
+
+            const file = fs.createWriteStream(tempPath, isResume ? { flags: 'a' } : undefined);
+            const startTime = Date.now();
+            let downloadedBytes = isResume ? existingBytes : 0;
+            let lastProgressTime = 0;
+
+            // Data is flowing — cancel the connect timeout
+            req.setTimeout(0);
+
+            res.on('data', (chunk: Buffer) => {
+              // Handle backpressure: if write buffer is full, pause the network stream
+              const canContinue = file.write(chunk);
+              downloadedBytes += chunk.length;
+
+              if (!canContinue) {
+                res.pause();
+                file.once('drain', () => res.resume());
+              }
+
+              // Throttle progress updates to max 4 per second
+              const now = Date.now();
+              if (now - lastProgressTime < 250) return;
+              lastProgressTime = now;
+
+              const elapsed = (now - startTime) / 1000;
+              const bytesThisSession = downloadedBytes - (isResume ? existingBytes : 0);
+              const speed = elapsed > 0 ? bytesThisSession / elapsed : 0;
+              const speedStr = speed > 1048576
+                ? `${(speed / 1048576).toFixed(1)} MB/s`
+                : `${(speed / 1024).toFixed(0)} KB/s`;
+              const eta = speed > 0 ? Math.round((totalBytes - downloadedBytes) / speed) : 0;
+
+              onProgress({
+                modelId,
+                downloadedBytes,
+                totalBytes,
+                percent: Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)),
+                speed: speedStr,
+                etaSeconds: eta,
+              });
+            });
+
+            res.on('end', () => {
+              file.end(() => {
+                try {
+                  fs.renameSync(tempPath, destPath);
+                } catch (err) {
+                  reject(err);
+                  return;
+                }
+
+                this.config.selectedModel = modelId;
+                this.saveConfig();
+
+                onProgress({
+                  modelId,
+                  downloadedBytes: totalBytes,
+                  totalBytes,
+                  percent: 100,
+                  speed: '0 KB/s',
+                  etaSeconds: 0,
+                });
+
+                resolve(destPath);
+              });
+            });
+
+            res.on('error', (err) => {
+              file.destroy();
+              // Don't delete temp file — allows resume on retry
+              reject(new Error(`Download interrupted: ${err.message}. Click "Try Again" to resume.`));
+            });
+
+            file.on('error', (err) => {
+              res.destroy();
+              reject(new Error(`Failed to write file: ${err.message}`));
+            });
           }
+        );
+
+        req.on('error', (err) => {
+          reject(new Error(`Connection failed: ${err.message}. Please check your internet connection.`));
         });
-        file.on('error', rej);
-      });
 
-      this.config.selectedModel = modelId;
-      this.saveConfig();
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('Connection timed out. Click "Try Again" to resume the download.'));
+        });
 
-      onProgress({
-        modelId,
-        downloadedBytes: totalBytes,
-        totalBytes,
-        percent: 100,
-        speed: '0 KB/s',
-        etaSeconds: 0,
-      });
+        req.setTimeout(30000); // 30s connect timeout
+      };
 
-      return destPath;
-    } catch (err) {
-      file.destroy();
-      try { fs.unlinkSync(tempPath); } catch {}
-      throw err;
-    }
+      doRequest(entry.url, 0);
+    });
   }
 
   delete(modelId: string): void {

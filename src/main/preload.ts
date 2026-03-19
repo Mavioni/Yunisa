@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('yunisa', {
 
   app: {
     getDataDir: () => ipcRenderer.invoke('app:get-data-dir'),
+    checkInternet: () => ipcRenderer.invoke('app:check-internet'),
     quit: () => ipcRenderer.invoke('app:quit'),
   },
 

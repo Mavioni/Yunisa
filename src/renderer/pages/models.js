@@ -84,11 +84,18 @@ async function refreshModels() {
       dlBtn.addEventListener('click', async () => {
         dlBtn.classList.add('hidden');
         progressDiv.classList.remove('hidden');
+        pText.textContent = 'Downloading...';
+        fill.style.width = '0%';
         window.yunisa.models.onDownloadProgress((progress) => {
           if (progress.modelId === model.id) { fill.style.width = progress.percent + '%'; pText.textContent = progress.percent + '% - ' + progress.speed; }
         });
         try { await window.yunisa.models.download(model.id); refreshModels(); }
-        catch { pText.textContent = 'Download failed.'; dlBtn.classList.remove('hidden'); }
+        catch (err) {
+          progressDiv.classList.add('hidden');
+          pText.textContent = 'Download failed.';
+          dlBtn.textContent = 'Retry Download';
+          dlBtn.classList.remove('hidden');
+        }
       });
       actions.appendChild(dlBtn);
     }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, net } from 'electron';
 import path from 'path';
 import { ServerManager } from './server-manager';
 import { ConversationStore } from './conversation-store';
@@ -101,6 +101,17 @@ function registerIpcHandlers(): void {
 
   // App
   ipcMain.handle('app:get-data-dir', () => getDataDir());
+  ipcMain.handle('app:check-internet', async () => {
+    try {
+      const response = await net.fetch('https://huggingface.co/api/models/microsoft/BitNet-b1.58-2B-4T-gguf', {
+        method: 'HEAD',
+        headers: { 'User-Agent': 'YUNISA/1.0' },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  });
   ipcMain.handle('app:quit', () => {
     (app as any).isQuitting = true;
     app.quit();

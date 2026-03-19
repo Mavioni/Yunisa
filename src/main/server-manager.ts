@@ -112,7 +112,13 @@ export class ServerManager {
         }
 
         const req = http.get(`http://127.0.0.1:${this.port}/health`, (res) => {
-          resolve(res.statusCode === 200);
+          res.resume(); // drain the response body
+          if (res.statusCode === 200) {
+            resolve(true);
+          } else {
+            // Server is up but not ready yet (e.g. 503 while loading model) — retry
+            setTimeout(check, 500);
+          }
         });
 
         req.on('error', () => {
