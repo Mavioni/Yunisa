@@ -47,7 +47,7 @@ export class ServerManager {
 
     this.process = spawn(serverExe, [
       '--model', modelPath,
-      '--ctx-size', '2048',
+      '--ctx-size', '0',
       '--port', String(this.port),
       '--host', '127.0.0.1',
     ], {
