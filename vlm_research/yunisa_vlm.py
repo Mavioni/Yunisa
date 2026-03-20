@@ -28,14 +28,21 @@ class YunisaVLM(PreTrainedModel):
     
     def __init__(self, config):
         super().__init__(config)
+        
+        # Auto-detect CUDA to ensure we utilize Nvidia hardware natively for vision tasks
+        self.device_target = "cuda" if torch.cuda.is_available() else "cpu"
+        
         # Vision Encoder - The "Eyes" (Using Google SigLIP)
-        self.vision_model = AutoModel.from_pretrained(config.vision_model_id)
+        self.vision_model = AutoModel.from_pretrained(config.vision_model_id).to(self.device_target)
         
         # Multimodal Projector 
-        self.projector = MLPProjector(config.vision_hidden_size, config.text_hidden_size)
+        self.projector = MLPProjector(config.vision_hidden_size, config.text_hidden_size).to(self.device_target)
         
         # 1-bit Language Model Backbone - The "Brain" (BitNet)
-        self.language_model = AutoModelForCausalLM.from_pretrained(config.text_model_id)
+        # Note for Inception Architecture:
+        # PENDING: Future architecture iteration will swap AutoModelForCausalLM 
+        # for tensorrt_llm.Builder to maximize inference throughput on RTX edge devices.
+        self.language_model = AutoModelForCausalLM.from_pretrained(config.text_model_id).to(self.device_target)
         
         # Freeze vision model to save VRAM and keep pre-trained feature extraction stable
         for param in self.vision_model.parameters():
