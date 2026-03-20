@@ -2,5 +2,3 @@ gui-agents
 pyautogui
 pillow
 requests
-flask
-airllm

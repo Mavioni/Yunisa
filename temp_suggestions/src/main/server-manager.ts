@@ -43,46 +43,30 @@ export class ServerManager {
     this.port = await this.findAvailablePort(8080);
     this.status = 'starting';
 
-    // YUNISA DUAL-ENGINE ARCHITECTURE routing
-    if (modelPath.includes('airllm')) {
-      console.log('[server-manager] Routing to AirLLM Python Optimization layer...');
-      const pythonScript = path.join(this.binariesDir, '..', '..', 'python', 'airllm_server.py');
-      
-      let targetModel = 'meta-llama/Meta-Llama-3-70B-Instruct';
-      try {
-        const stubContent = JSON.parse(fs.readFileSync(modelPath, 'utf8'));
-        if (stubContent.target) targetModel = stubContent.target;
-      } catch (e) {}
-      
-      this.process = spawn('python', [pythonScript, '--model', targetModel, '--port', String(this.port)], {
-        cwd: path.join(this.binariesDir, '..', '..', 'python'),
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      this.lastModelPath = modelPath;
-    } else {
-      const serverExe = path.join(this.binariesDir, 'llama-server.exe');
-      
-      let gpuArgs: string[] = [];
-      try {
-        execSync('nvidia-smi', { stdio: 'ignore' });
-        console.log('[server-manager] NVIDIA RTX Acceleration Auto-Enabled');
-        gpuArgs = ['--n-gpu-layers', '99']; // Offload all layers to cuBLAS
-      } catch (e) {
-        console.log('[server-manager] No NVIDIA GPU detected. Running pure CPU inference.');
-      }
-
-      this.process = spawn(serverExe, [
-        '--model', modelPath,
-        '--ctx-size', '16384',
-        '--port', String(this.port),
-        '--host', '127.0.0.1',
-        ...gpuArgs
-      ], {
-        cwd: this.binariesDir,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      this.lastModelPath = modelPath;
+    const serverExe = path.join(this.binariesDir, 'llama-server.exe');
+    
+    // Auto-detect Nvidia GPU for Hybrid Edge hardware acceleration
+    let gpuArgs: string[] = [];
+    try {
+      execSync('nvidia-smi', { stdio: 'ignore' });
+      console.log('[server-manager] NVIDIA RTX Acceleration Auto-Enabled');
+      gpuArgs = ['--n-gpu-layers', '99']; // Offload all layers to cuBLAS
+    } catch (e) {
+      console.log('[server-manager] No NVIDIA GPU detected. Running pure CPU inference.');
     }
+
+    this.process = spawn(serverExe, [
+      '--model', modelPath,
+      '--ctx-size', '16384',
+      '--port', String(this.port),
+      '--host', '127.0.0.1',
+      ...gpuArgs
+    ], {
+      cwd: this.binariesDir,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    this.lastModelPath = modelPath;
 
     this.process.on('exit', (code) => {
       this.process = null;

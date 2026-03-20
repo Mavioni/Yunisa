@@ -44,17 +44,6 @@ const MODEL_REGISTRY: ModelRegistryEntry[] = [
     description: '2.4B parameter 1-bit LLM. Fast CPU inference, low energy.',
     default: true,
   },
-  {
-    id: 'airllm-llama-3-70b',
-    name: 'AirLLM Llama-3 70B (Optimized)',
-    size: 'Cloud/VRAM Bound',
-    sizeBytes: 1024,
-    url: 'meta-llama/Meta-Llama-3-70B-Instruct',
-    localFilename: 'airllm-meta-llama-3-70b.stub',
-    sha256: '',
-    description: '70B parameters natively bridged to 8GB VRAM cards via AirLLM layer-wise tensor injection.',
-    default: false,
-  }
 ];
 
 export class ModelManager {
@@ -127,18 +116,6 @@ export class ModelManager {
     if (!entry) throw new Error(`Model ${modelId} not found in registry`);
 
     const destPath = path.join(this.modelsDir, entry.localFilename);
-    
-    // Auto-intercept AirLLM proxy models
-    if (modelId.startsWith('airllm')) {
-      return new Promise((resolve) => {
-        fs.writeFileSync(destPath, JSON.stringify({ engine: 'airllm', target: entry.url }));
-        this.config.selectedModel = modelId;
-        this.saveConfig();
-        onProgress({ modelId, downloadedBytes: 1024, totalBytes: 1024, percent: 100, speed: 'INSTANT', etaSeconds: 0 });
-        resolve(destPath);
-      });
-    }
-
     const tempPath = destPath + '.download';
 
     // Check for existing partial download to resume

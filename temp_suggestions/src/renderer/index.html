@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; connect-src http://127.0.0.1:* https://huggingface.co https://*.huggingface.co; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+  <title>YUNISA</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading-screen" class="screen active">
+      <div class="loading-container">
+        <img src="styles/logo.png" alt="YUNISA" class="logo-img">
+        <h1 class="logo">YUNISA</h1>
+        <div class="spinner"></div>
+        <p id="loading-status">Starting...</p>
+      </div>
+    </div>
+
+    <div id="welcome-screen" class="screen">
+    </div>
+
+    <div id="chat-screen" class="screen">
+      <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <button id="new-chat-btn" class="btn btn-primary">+ New Chat</button>
+        </div>
+        <div id="conversation-list" class="conversation-list"></div>
+        <div class="sidebar-footer">
+          <button id="interpreter-btn" class="btn btn-ghost">Interpreter</button>
+          <button id="models-btn" class="btn btn-ghost">Models</button>
+          <button id="settings-btn" class="btn btn-ghost">Settings</button>
+        </div>
+      </div>
+      <div class="chat-main">
+        <div id="chat-header" class="chat-header">
+          <button id="toggle-sidebar" class="btn btn-icon">&#9776;</button>
+          <span id="chat-title">New Chat</span>
+          <span id="model-badge" class="badge"></span>
+        </div>
+        <div id="messages" class="messages"></div>
+        <div id="context-warning" class="context-warning hidden">
+          Older messages truncated to fit context window
+        </div>
+        <div class="input-area">
+          <textarea id="user-input" placeholder="Type a message..." rows="1"></textarea>
+          <button id="send-btn" class="btn btn-primary" disabled>Send</button>
+          <button id="stop-btn" class="btn btn-danger hidden">Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="interpreter-screen" class="screen">
+    </div>
+
+    <div id="models-screen" class="screen">
+    </div>
+
+    <div id="settings-screen" class="screen">
+    </div>
+  </div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

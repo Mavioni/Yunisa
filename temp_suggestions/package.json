@@ -1,0 +1,65 @@
+{
+  "name": "yunisa",
+  "version": "1.0.0",
+  "description": "YUNISA - Local AI powered by BitNet",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build:ts": "tsc",
+    "start": "npm run build:ts && electron .",
+    "rebuild": "npx @electron/rebuild",
+    "dist": "npm run build:ts && electron-builder",
+    "postinstall": "npx @electron/rebuild"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.yunisa.app",
+    "productName": "YUNISA",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "extraResources": [
+      {
+        "from": "resources/binaries",
+        "to": "binaries",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "files": [
+      "dist/**/*",
+      "src/renderer/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "massimo-rnd",
+      "repo": "yunisa"
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "electron-updater": "^6.8.3",
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.4"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.3",
+    "@types/better-sqlite3": "^7.6.13",
+    "electron": "^41.0.2",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.9.3"
+  }
+}

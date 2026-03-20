@@ -102,9 +102,8 @@ def handle_message(instruction: str, session_id: str):
                 "session_id": session_id
             })
 
-            # BitNet b1.58 is text-only. Replace massive desktop screenshots 
-            # with a 1x1 placeholder so we don't overwhelm the LLM with 2MB token payloads.
-            screenshot = Image.new("RGB", (1, 1), color="black")
+            screenshot = pyautogui.screenshot()
+            screenshot = screenshot.resize((scaled_width, scaled_height), Image.LANCZOS)
             buffered = io.BytesIO()
             screenshot.save(buffered, format="PNG")
             

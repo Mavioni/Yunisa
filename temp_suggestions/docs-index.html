@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Massimo Yunis — Sovereign Intelligence</title>
+<meta name="description" content="Sovereign AI infrastructure — ternary-native, local-first, post-quantum encrypted. Nine systems, zero cloud dependencies.">
+<meta name="author" content="Massimo Yunis">
+<meta name="keywords" content="sovereign AI, ternary computing, local-first, post-quantum, MIZU, DTIA, CoRax, YUNISA, BitNet, Yunis AI">
+<meta property="og:title" content="Massimo Yunis — Sovereign Intelligence">
+<meta property="og:description" content="Nine sovereign AI systems. Zero cloud dependencies. Ternary-native, local-first, post-quantum encrypted.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.yunisai.com">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Massimo Yunis — Sovereign Intelligence">
+<meta name="twitter:description" content="Nine sovereign AI systems. Zero cloud. Ternary-native, local-first, post-quantum encrypted.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100;0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,300;1,9..144,400&family=Epilogue:wght@200;300;400;500&family=JetBrains+Mono:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET & TOKENS ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  /* Ocean */
+  --ocean: #2A9D8F;
+  --ocean-d: #1A7A6F;
+  --ocean-l: #5CC3B5;
+  --ocean-g: rgba(42,157,143,.12);
+  /* Forest */
+  --forest: #2D6A4F;
+  --forest-d: #1B4332;
+  --forest-l: #52B788;
+  --forest-g: rgba(45,106,79,.1);
+  /* Depth */
+  --bg: #061219;
+  --s1: #0B1820;
+  --s2: #101F28;
+  --s3: #162830;
+  --s4: #1C3038;
+  /* Text */
+  --mist: #E8F0ED;
+  --foam: #B8CCC4;
+  --drift: #6A8078;
+  --silt: #3A4E48;
+  /* Accent */
+  --coral: #E07A5F;
+  --sand: #C9AE7C;
+  /* System */
+  --border: rgba(184,204,196,.08);
+  --border-h: rgba(184,204,196,.16);
+  /* Type */
+  --f: 'Fraunces', Georgia, serif;
+  --b: 'Epilogue', system-ui, sans-serif;
+  --m: 'JetBrains Mono', monospace;
+  /* Layout */
+  --max: 920px;
+  --pad: clamp(24px, 5vw, 64px);
+}
+
+body {
+  background: var(--bg);
+  color: var(--foam);
+  font-family: var(--b);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.75;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ═══ GRAIN OVERLAY ═══ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  opacity: .35;
+  mix-blend-mode: soft-light;
+}
+
+canvas#deep { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); position: relative; z-index: 1; }
+
+/* ═══ NAV ═══ */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6,18,25,.88);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border-bottom: 1px solid var(--border);
+}
+.nav { display: flex; justify-content: space-between; align-items: center; height: 56px; }
+.nav-brand {
+  font-family: var(--f); font-size: 15px; font-weight: 400;
+  color: var(--mist); letter-spacing: -.01em; cursor: pointer;
+  transition: color .3s; display: flex; align-items: center; gap: 10px;
+}
+.nav-brand:hover { color: var(--ocean-l); }
+.nav-brand svg { width: 20px; height: 20px; opacity: .5; transition: opacity .3s; }
+.nav-brand:hover svg { opacity: .9; }
+.nav-links { display: flex; gap: clamp(16px,3vw,32px); list-style: none; }
+.nav-links a {
+  font-family: var(--m); font-size: 10px; font-weight: 300;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--drift); position: relative; cursor: pointer; padding-bottom: 4px;
+  transition: color .3s;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  width: 0; height: 1px; background: var(--ocean);
+  transition: width .35s cubic-bezier(.23,1,.32,1), left .35s cubic-bezier(.23,1,.32,1);
+}
+.nav-links a:hover::after, .nav-links a.on::after { width: 100%; left: 0; }
+.nav-links a:hover, .nav-links a.on { color: var(--mist); }
+
+/* ═══ PAGES & TRANSITIONS ═══ */
+.page { display: none; }
+.page.on { display: block; animation: iris .5s cubic-bezier(.23,1,.32,1); }
+@keyframes iris {
+  from { opacity: 0; clip-path: inset(3% 3% 3% 3% round 6px); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* ═══ SCROLL REVEAL VARIANTS ═══ */
+.rv { opacity: 0; transition: all .7s cubic-bezier(.23,1,.32,1); }
+.rv.v { opacity: 1; }
+.rv-up { transform: translateY(30px); }     .rv-up.v { transform: translateY(0); }
+.rv-l  { transform: translateX(-36px); }    .rv-l.v  { transform: translateX(0); }
+.rv-r  { transform: translateX(36px); }     .rv-r.v  { transform: translateX(0); }
+.rv-s  { transform: scale(.93); }           .rv-s.v  { transform: scale(1); }
+.rv-b  { filter: blur(6px); }               .rv-b.v  { filter: blur(0); }
+
+/* ═══ SECTION HELPERS ═══ */
+.sec-head { display: flex; align-items: center; gap: 16px; margin-bottom: clamp(36px,5vh,56px); }
+.sec-lbl { font-family: var(--m); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--drift); }
+.sec-line { flex: 1; height: 1px; background: var(--border); position: relative; overflow: hidden; }
+.sec-line::after {
+  content: ''; position: absolute; top: 0; left: -60%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--ocean-g), transparent);
+  animation: shim 5s ease-in-out infinite;
+}
+@keyframes shim { 0% { left: -60%; } 50% { left: 100%; } 100% { left: 100%; } }
+.sec-num { font-family: var(--m); font-size: 10px; letter-spacing: .1em; color: var(--silt); }
+.s-title { font-family: var(--f); font-size: clamp(28px,4.5vw,42px); font-weight: 100; color: var(--mist); line-height: 1.1; letter-spacing: -1px; margin-bottom: 12px; }
+.s-title em { font-style: italic; color: var(--ocean); }
+.s-desc { font-size: 14px; font-weight: 300; color: var(--drift); max-width: 520px; line-height: 1.85; margin-bottom: 48px; }
+
+/* ═══ HOME: HERO ═══ */
+.hero {
+  min-height: 92vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 0 clamp(48px,8vh,80px);
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.hero-eye {
+  font-family: var(--m); font-size: 10px; font-weight: 300;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ocean);
+  margin-bottom: 28px; display: flex; align-items: center; gap: 12px;
+  opacity: 0; animation: fadeIn .6s ease .1s forwards;
+}
+.hero-eye::before { content: ''; width: 24px; height: 1px; background: var(--ocean); }
+.hero h1 {
+  font-family: var(--f); font-size: clamp(36px,7vw,68px);
+  font-weight: 100; line-height: 1.05; letter-spacing: -2px;
+  color: var(--mist); margin-bottom: 48px;
+}
+.hero h1 em { font-style: italic; color: var(--ocean); }
+.char {
+  display: inline-block; opacity: 0;
+  transform: translateY(36px) rotate(2deg);
+  animation: charPop .45s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes charPop { to { opacity: 1; transform: translateY(0) rotate(0); } }
+
+.hero-dove {
+  position: absolute; top: clamp(48px,8vh,80px); right: 0;
+  width: clamp(140px,18vw,240px); opacity: 0;
+  animation: doveIn 1s ease .8s forwards, doveDrift 8s ease-in-out 1.8s infinite alternate;
+}
+@keyframes doveIn { to { opacity: .04; } }
+@keyframes doveDrift { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+.hero-coords {
+  position: absolute; right: 0; bottom: clamp(48px,8vh,80px);
+  font-family: var(--m); font-size: 9px; letter-spacing: .12em;
+  color: var(--silt); writing-mode: vertical-rl; text-transform: uppercase;
+  opacity: 0; animation: fadeIn .6s ease 1.2s forwards;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.thesis-block {
+  display: grid; grid-template-columns: 2px 1fr; gap: 0 24px;
+  max-width: 520px; opacity: 0; animation: fadeIn .7s ease .9s forwards;
+}
+.thesis-rule {
+  background: linear-gradient(180deg, var(--ocean), var(--forest));
+  width: 2px; align-self: stretch; border-radius: 1px;
+}
+.thesis-text {
+  font-family: var(--f); font-size: clamp(16px,2.2vw,20px);
+  font-weight: 300; font-style: italic; line-height: 1.55; color: var(--foam);
+}
+
+/* ═══ HOME: STATS ═══ */
+.stats {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  margin: clamp(56px,8vh,80px) 0; padding: 32px 0;
+}
+.stat { text-align: left; padding: 0 clamp(16px,2vw,28px); border-right: 1px solid var(--border); }
+.stat:first-child { padding-left: 0; }
+.stat:last-child { border-right: none; }
+.stat-v {
+  font-family: var(--f); font-size: clamp(28px,4vw,40px); font-weight: 700;
+  background: linear-gradient(135deg, var(--ocean), var(--forest-l), var(--sand));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; line-height: 1;
+}
+.stat-l { font-family: var(--m); font-size: 10px; color: var(--drift); margin-top: 6px; letter-spacing: .04em; }
+
+/* ═══ HOME: CAPABILITIES ═══ */
+.caps { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: clamp(56px,8vh,80px); }
+.cap {
+  background: var(--s1); border: 1px solid var(--border); padding: 32px 28px;
+  transition: all .4s cubic-bezier(.23,1,.32,1);
+}
+.cap:last-child { grid-column: 1 / -1; }
+.cap:last-child .cap-b { max-width: 560px; }
+.cap:hover { background: var(--s2); border-color: var(--border-h); transform: translateY(-3px); }
+.cap-bar { width: 28px; height: 2px; border-radius: 1px; margin-bottom: 16px; }
+.cap-t { font-family: var(--f); font-size: 16px; font-weight: 600; color: var(--mist); margin-bottom: 10px; }
+.cap-b { font-size: 13px; font-weight: 300; color: var(--drift); line-height: 1.65; }
+
+/* ═══ HOME: FEATURED PROJECT ═══ */
+.feat { padding: clamp(48px,7vh,72px) 0; border-bottom: 1px solid var(--border); }
+.feat-lbl { font-family: var(--m); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--drift); margin-bottom: 28px; }
+.feat-card {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border); background: var(--s1);
+  cursor: pointer; transition: all .4s cubic-bezier(.23,1,.32,1);
+  position: relative; overflow: hidden;
+}
+.feat-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(42,157,143,.04) 50%, transparent 60%);
+  transform: translateX(-100%); transition: transform .6s; pointer-events: none;
+}
+.feat-card:hover::after { transform: translateX(100%); }
+.feat-card:hover { border-color: var(--ocean); box-shadow: 0 0 40px rgba(42,157,143,.06); }
+.feat-l { padding: clamp(24px,3vh,40px); border-right: 1px solid var(--border); }
+.feat-tag { font-family: var(--m); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--coral); margin-bottom: 16px; }
+.feat-name { font-family: var(--f); font-size: clamp(32px,5vw,48px); font-weight: 100; letter-spacing: -1px; color: var(--mist); margin-bottom: 14px; }
+.feat-desc { font-size: 13px; font-weight: 300; color: var(--drift); line-height: 1.85; }
+.feat-r { padding: clamp(24px,3vh,40px); display: flex; flex-direction: column; justify-content: space-between; }
+.trit-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.trit-row:last-child { border-bottom: none; }
+.trit-v { font-family: var(--f); font-size: 20px; font-weight: 300; width: 28px; flex-shrink: 0; color: var(--mist); }
+.trit-i { font-size: 12px; color: var(--drift); line-height: 1.4; }
+.trit-i strong { display: block; color: var(--foam); font-weight: 400; font-size: 13px; }
+.feat-link { font-family: var(--m); font-size: 10px; letter-spacing: .1em; color: var(--ocean); margin-top: 20px; transition: all .3s; }
+.feat-link:hover { color: var(--ocean-l); letter-spacing: .14em; }
+.home-strip { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+.strip-cta { font-family: var(--m); font-size: 11px; letter-spacing: .08em; color: var(--ocean); cursor: pointer; transition: all .3s; }
+.strip-cta:hover { color: var(--ocean-l); letter-spacing: .12em; }
+.strip-loc { font-family: var(--m); font-size: 10px; letter-spacing: .12em; color: var(--silt); text-transform: uppercase; }
+
+/* ═══ WORK ═══ */
+.work-h { padding: clamp(48px,7vh,72px) 0 0; }
+.work-h h2 { font-family: var(--f); font-size: clamp(36px,6vw,56px); font-weight: 100; line-height: 1; letter-spacing: -1px; color: var(--mist); margin-bottom: 8px; }
+.work-h h2 em { font-style: italic; color: var(--ocean); }
+.fils { display: flex; gap: 12px; padding: 20px 0 36px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.fil {
+  font-family: var(--m); font-size: 10px; font-weight: 300; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--drift); cursor: pointer; padding: 5px 14px;
+  border: 1px solid transparent; border-radius: 2px; transition: all .3s cubic-bezier(.23,1,.32,1);
+}
+.fil:hover { color: var(--foam); background: var(--s2); }
+.fil.on { color: var(--mist); border-color: var(--ocean); background: rgba(42,157,143,.06); }
+
+.proj {
+  display: grid; grid-template-columns: 72px 1fr; gap: 24px;
+  align-items: start; padding: 24px 0;
+  border-bottom: 1px solid var(--border); cursor: default;
+  transition: all .3s cubic-bezier(.23,1,.32,1); position: relative;
+}
+.proj::before {
+  content: ''; position: absolute; inset: -1px -20px;
+  background: linear-gradient(90deg, transparent, var(--ocean-g), transparent);
+  opacity: 0; transition: opacity .4s; pointer-events: none; border-radius: 4px;
+}
+.proj:hover::before { opacity: 1; }
+.proj:hover { transform: translateX(6px); }
+.proj:hover .proj-t { color: var(--mist); }
+.proj-n { font-family: var(--f); font-size: 28px; font-weight: 800; color: var(--s4); transition: color .4s cubic-bezier(.23,1,.32,1); }
+.proj:hover .proj-n { color: var(--ocean); }
+.proj-cat { font-family: var(--m); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--drift); margin-bottom: 4px; }
+.proj-t { font-family: var(--f); font-size: clamp(20px,2.5vw,28px); font-weight: 400; color: var(--foam); margin-bottom: 6px; transition: color .3s; }
+.proj-d { font-size: 13px; font-weight: 300; color: var(--drift); line-height: 1.8; max-width: 500px; }
+.proj-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.ptag {
+  font-family: var(--m); font-size: 9px; letter-spacing: .05em;
+  color: var(--drift); padding: 2px 8px;
+  border: 1px solid var(--border); border-radius: 2px; transition: all .3s;
+}
+.proj:hover .ptag { border-color: var(--ocean-g); color: var(--foam); }
+
+/* ═══ ARCHITECTURE ═══ */
+.arch-intro { padding: clamp(48px,7vh,72px) 0 36px; }
+.canyon { display: flex; flex-direction: column; position: relative; margin-bottom: 48px; }
+.canyon::before {
+  content: ''; position: absolute; left: clamp(32px,5vw,64px); top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(var(--border), var(--ocean-g), var(--forest-g), var(--ocean-g), var(--border));
+}
+.layer {
+  display: grid; grid-template-columns: clamp(64px,9vw,120px) 1fr;
+  gap: clamp(12px,2vw,32px); padding: clamp(20px,3vh,36px) 0; cursor: default; position: relative;
+}
+.layer:hover .l-dot { transform: scale(1.8); box-shadow: 0 0 12px var(--ocean-g); }
+.layer:hover .l-n { color: var(--ocean); }
+.l-dot {
+  position: absolute; left: calc(clamp(32px,5vw,64px) - 4px); top: clamp(28px,3vh,42px);
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--s3); border: 1px solid var(--foam);
+  transition: all .4s cubic-bezier(.23,1,.32,1);
+}
+.l-hd { text-align: right; padding-right: clamp(8px,1.5vw,24px); }
+.l-n { font-family: var(--f); font-size: clamp(20px,2.5vw,28px); font-weight: 800; color: var(--s4); line-height: 1; transition: color .4s cubic-bezier(.23,1,.32,1); }
+.l-lb { font-family: var(--m); font-size: 9px; letter-spacing: 2px; color: var(--drift); text-transform: uppercase; margin-top: 3px; }
+.l-bd h3 { font-family: var(--f); font-size: clamp(15px,1.5vw,18px); font-weight: 400; color: var(--mist); margin-bottom: 6px; }
+.l-bd p { font-size: 13px; font-weight: 300; color: var(--drift); line-height: 1.8; max-width: 480px; }
+
+/* LUMINA relic */
+.relic {
+  padding: clamp(32px,4vh,56px) clamp(24px,3vw,48px);
+  background: linear-gradient(135deg, rgba(42,157,143,.03), rgba(45,106,79,.03)), var(--s1);
+  border: 1px solid var(--border); position: relative; margin-bottom: 48px;
+  overflow: hidden; transition: border-color .4s;
+}
+.relic:hover { border-color: var(--border-h); }
+.relic::before {
+  content: 'LUMINA'; position: absolute; top: clamp(32px,4vh,56px); right: clamp(24px,3vw,48px);
+  font-family: var(--f); font-size: clamp(48px,7vw,72px); font-weight: 800; font-style: italic;
+  color: rgba(42,157,143,.03); line-height: 1; pointer-events: none;
+}
+.relic::after {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(42,157,143,.04), transparent 70%);
+  transform: translate(-50%,-50%); pointer-events: none; animation: glow 6s ease-in-out infinite;
+}
+@keyframes glow {
+  0%, 100% { opacity: .3; transform: translate(-50%,-50%) scale(.8); }
+  50%      { opacity: 1;  transform: translate(-50%,-50%) scale(1.2); }
+}
+.relic-g { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px,3vw,40px); align-items: start; position: relative; z-index: 1; }
+.relic-p { font-family: var(--f); font-size: 15px; font-weight: 300; font-style: italic; color: var(--foam); line-height: 1.85; }
+.relic-p strong { font-weight: 400; font-style: normal; color: var(--mist); }
+.relic-specs { display: flex; flex-direction: column; }
+.spec { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.spec:last-child { border-bottom: none; }
+.spec-k { font-family: var(--m); font-size: 9px; letter-spacing: 2px; color: var(--drift); text-transform: uppercase; padding-top: 2px; }
+.spec-v { font-size: 13px; color: var(--mist); font-weight: 400; }
+
+/* Roadmap strata */
+.strata { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 48px; }
+.st {
+  background: var(--bg); padding: 24px 20px;
+  transition: all .4s cubic-bezier(.23,1,.32,1); position: relative; overflow: hidden;
+}
+.st::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; opacity: 0; transition: opacity .4s; }
+.st:nth-child(1)::before { background: var(--ocean); }
+.st:nth-child(2)::before { background: linear-gradient(90deg, var(--ocean), var(--forest)); }
+.st:nth-child(3)::before { background: var(--forest-l); }
+.st:nth-child(4)::before { background: var(--sand); }
+.st:hover { background: var(--s1); }
+.st:hover::before { opacity: 1; }
+.st-ph { font-family: var(--f); font-size: 28px; font-weight: 800; color: var(--s4); }
+.st-tm { font-family: var(--m); font-size: 9px; letter-spacing: 2px; color: var(--drift); text-transform: uppercase; margin-bottom: 12px; }
+.st-nm { font-family: var(--f); font-size: 15px; font-weight: 400; color: var(--mist); margin-bottom: 6px; }
+.st-bd { font-size: 12px; color: var(--drift); line-height: 1.7; }
+
+/* ═══ STACK ═══ */
+.stack-h { padding: clamp(48px,7vh,72px) 0 0; }
+.stack-h h2 { font-family: var(--f); font-size: clamp(36px,6vw,56px); font-weight: 100; color: var(--mist); letter-spacing: -1px; margin-bottom: 36px; }
+.sg { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 48px; }
+.sc { background: var(--bg); padding: 24px 20px; transition: all .35s cubic-bezier(.23,1,.32,1); cursor: default; }
+.sc:hover { background: var(--s1); transform: scale(1.01); }
+.sc-t { font-family: var(--m); font-size: 9px; font-weight: 500; letter-spacing: .15em; text-transform: uppercase; color: var(--ocean); margin-bottom: 10px; }
+.sc-l { font-size: 12px; color: var(--drift); line-height: 2.1; }
+
+/* Publications */
+.pubs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 48px; }
+.pub {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; background: var(--s1); border: 1px solid var(--border);
+  transition: all .3s cubic-bezier(.23,1,.32,1); cursor: default;
+}
+.pub:hover { background: var(--s2); border-color: var(--border-h); transform: translateX(4px); }
+.pub-t { font-family: var(--f); font-size: 15px; font-weight: 600; color: var(--mist); margin-right: 12px; white-space: nowrap; }
+.pub-d { font-size: 13px; font-weight: 300; color: var(--drift); flex: 1; }
+.pub-s {
+  font-family: var(--m); font-size: 9px; font-weight: 400; letter-spacing: .1em;
+  text-transform: uppercase; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.pub-s::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+.pub-s.done { color: var(--forest-l); }
+.pub-s.done::before { background: var(--forest-l); box-shadow: 0 0 6px rgba(82,183,136,.4); }
+.pub-s.wip { color: var(--ocean); }
+.pub-s.wip::before { background: var(--ocean); }
+
+/* Quote */
+.qb { padding: clamp(48px,7vh,72px) 0; text-align: center; border-top: 1px solid var(--border); }
+.qb blockquote { font-family: var(--f); font-size: clamp(18px,3vw,26px); font-weight: 100; font-style: italic; color: var(--mist); max-width: 560px; margin: 0 auto 12px; line-height: 1.5; }
+.qb cite { font-family: var(--m); font-size: 10px; letter-spacing: .15em; color: var(--drift); text-transform: uppercase; font-style: normal; }
+.q-div { width: 32px; height: 1px; background: linear-gradient(90deg, var(--ocean), var(--forest)); margin: 36px auto; }
+
+/* ═══ CONTACT ═══ */
+.contact-pg { padding: clamp(64px,10vh,120px) 0; }
+.contact-pg h2 { font-family: var(--f); font-size: clamp(36px,6vw,56px); font-weight: 100; line-height: 1.1; letter-spacing: -1px; color: var(--mist); margin-bottom: 48px; }
+.contact-pg h2 em { font-style: italic; color: var(--ocean); }
+.cg { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 36px; }
+.cc { background: var(--bg); padding: 20px; transition: background .3s; }
+.cc:hover { background: var(--s1); }
+.cc-l { font-family: var(--m); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--drift); margin-bottom: 6px; }
+.cc-v { font-size: 14px; font-weight: 400; color: var(--mist); }
+.cc-v a { border-bottom: 1px solid var(--border); transition: border-color .3s; }
+.cc-v a:hover { border-color: var(--ocean); }
+.c-note { font-size: 13px; font-weight: 300; color: var(--drift); line-height: 1.85; max-width: 520px; }
+
+/* ═══ FOOTER ═══ */
+footer { border-top: 1px solid var(--border); padding: 20px 0; display: flex; justify-content: space-between; align-items: center; }
+footer span { font-family: var(--m); font-size: 10px; letter-spacing: .08em; color: var(--silt); }
+.ft { background: linear-gradient(90deg, var(--ocean), var(--forest-l), var(--sand)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 500; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  .feat-card { grid-template-columns: 1fr; }
+  .feat-l { border-right: none; border-bottom: 1px solid var(--border); }
+  .relic-g { grid-template-columns: 1fr; }
+  .sg { grid-template-columns: 1fr 1fr; }
+  .cg { grid-template-columns: 1fr 1fr 1fr; }
+  .strata { grid-template-columns: 1fr 1fr; }
+  .proj { grid-template-columns: 48px 1fr; }
+  .layer { grid-template-columns: 48px 1fr; }
+  .canyon::before { left: 23px; }
+  .l-dot { left: 20px; }
+  .hero-dove, .hero-coords { display: none; }
+  .caps { grid-template-columns: 1fr; }
+  .cap:last-child { grid-column: auto; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .hero { min-height: 80vh; }
+  .pub { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+@media (max-width: 500px) {
+  .nav-links { gap: 12px; }
+  .nav-links a { font-size: 9px; letter-spacing: .08em; }
+  .sg, .strata { grid-template-columns: 1fr; }
+  .cg { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<canvas id="deep"></canvas>
+
+<!-- ═══ NAV ═══ -->
+<header><div class="wrap"><div class="nav">
+  <div class="nav-brand" onclick="go('home')">
+    <svg viewBox="0 0 64 64" fill="none">
+      <path d="M32 8c-6 0-14 4-18 12-2 4-2 8-1 12 1 4 4 7 7 9l4 2c2 1 4 1 6 0l3-2c4-3 7-8 8-14 0 0 6 2 10 8 2 3 3 7 2 10-2 6-8 10-16 11H32c-8-1-14-5-16-11-1-3 0-7 2-10 4-6 10-8 10-8 1 6 4 11 8 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+      <ellipse cx="38" cy="38" rx="6" ry="3" transform="rotate(-20 38 38)" stroke="#52B788" stroke-width=".8" opacity=".5"/>
+    </svg>
+    Massimo Yunis
+  </div>
+  <ul class="nav-links">
+    <li><a id="n-home" class="on" onclick="go('home')">Home</a></li>
+    <li><a id="n-work" onclick="go('work')">Work</a></li>
+    <li><a id="n-arch" onclick="go('arch')">Architecture</a></li>
+    <li><a id="n-stack" onclick="go('stack')">Stack</a></li>
+    <li><a id="n-contact" onclick="go('contact')">Contact</a></li>
+    <li><a href="https://github.com/Mavioni" target="_blank">GitHub ↗</a></li>
+  </ul>
+</div></div></header>
+
+<!-- ═══════════════════════════════════════
+     HOME
+     ═══════════════════════════════════════ -->
+<div class="page on" id="p-home"><div class="wrap">
+
+  <section class="hero">
+    <svg class="hero-dove" viewBox="0 0 200 200" fill="none">
+      <path d="M100 30c-20 0-44 12-56 36-6 12-6 24-3 36 4 12 12 21 21 27l12 6c6 3 12 3 18 0l9-6c12-9 21-24 24-42 0 0 18 6 30 24 6 9 9 18 6 27-6 18-24 30-48 33h-12c-24-3-42-15-48-33-3-9 0-18 6-27 12-18 30-24 30-24 3 18 12 33 24 42" stroke="var(--mist)" stroke-width=".6" stroke-linecap="round" fill="none"/>
+      <ellipse cx="118" cy="116" rx="18" ry="8" transform="rotate(-15 118 116)" stroke="var(--forest-l)" stroke-width=".5" opacity=".4"/>
+      <line x1="108" y1="118" x2="128" y2="113" stroke="var(--forest-l)" stroke-width=".4" opacity=".3"/>
+    </svg>
+    <div class="hero-eye">Massimo Mavioni — Yunis AI — 2026</div>
+    <h1 id="heroName"></h1>
+    <div class="thesis-block">
+      <div class="thesis-rule"></div>
+      <div>
+        <div class="thesis-text">Sovereign inference engines. Post-quantum cryptography. Custom hardware. Programming languages built on three-valued logic. Privacy through architecture, not policy.</div>
+      </div>
+    </div>
+    <div class="hero-coords">34.6100° N / 112.3101° W</div>
+  </section>
+
+  <div class="stats rv rv-s">
+    <div class="stat"><div class="stat-v">9</div><div class="stat-l">systems designed</div></div>
+    <div class="stat"><div class="stat-v">6</div><div class="stat-l">books authored</div></div>
+    <div class="stat"><div class="stat-v">7</div><div class="stat-l">security layers</div></div>
+    <div class="stat"><div class="stat-v">0</div><div class="stat-l">cloud dependencies</div></div>
+  </div>
+
+  <div class="caps">
+    <div class="cap rv rv-l">
+      <div class="cap-bar" style="background:var(--ocean)"></div>
+      <div class="cap-t">On-Device Intelligence</div>
+      <div class="cap-b">AI inference that runs natively on phones, embedded systems, and air-gapped hardware. Ternary-weight networks at 3× efficiency. No API keys. No telemetry.</div>
+    </div>
+    <div class="cap rv rv-up">
+      <div class="cap-bar" style="background:var(--coral)"></div>
+      <div class="cap-t">Post-Quantum Security</div>
+      <div class="cap-b">Seven-layer defense architecture from hardware root of trust to meta-security watchdog. Dual-layer cryptography. Zero-knowledge identity. Sovereign by construction.</div>
+    </div>
+    <div class="cap rv rv-r">
+      <div class="cap-bar" style="background:var(--forest-l)"></div>
+      <div class="cap-t">Systems &amp; Language Design</div>
+      <div class="cap-b">Programming languages, protocol specifications, cognitive middleware, and constitutional AI frameworks. New computing paradigms engineered from first principles.</div>
+    </div>
+  </div>
+
+  <section class="feat rv rv-up">
+    <div class="feat-lbl">Featured Project</div>
+    <div class="feat-card" onclick="go('work')">
+      <div class="feat-l">
+        <div class="feat-tag">Inference Architecture</div>
+        <div class="feat-name">DTIA</div>
+        <p class="feat-desc">Six-layer inference pipeline that stress-tests every conclusion against its own strongest counterargument. Receive → decompose → research → oppose → synthesize → verify. Claims that can't survive structured opposition get discarded.</p>
+      </div>
+      <div class="feat-r">
+        <div>
+          <div class="trit-row"><span class="trit-v">+1</span><div class="trit-i"><strong>Thesis</strong>Conservative path</div></div>
+          <div class="trit-row"><span class="trit-v">0</span><div class="trit-i"><strong>Kappa field</strong>Tension measurement</div></div>
+          <div class="trit-row"><span class="trit-v">−1</span><div class="trit-i"><strong>Antithesis</strong>Exploratory path</div></div>
+        </div>
+        <div class="feat-link">View all work →</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="home-strip rv rv-up">
+    <span class="strip-cta" onclick="go('contact')">Get in touch →</span>
+    <span class="strip-loc">github.com/Mavioni · Eclipse Ventures · Prescott Valley, AZ</span>
+  </div>
+
+</div></div>
+
+<!-- ═══════════════════════════════════════
+     WORK
+     ═══════════════════════════════════════ -->
+<div class="page" id="p-work"><div class="wrap">
+
+  <div class="work-h"><h2>Nine systems,<br><em>zero cloud</em></h2></div>
+
+  <div class="fils">
+    <span class="fil on" onclick="filt('all',this)">All</span>
+    <span class="fil" onclick="filt('ai',this)">Intelligence</span>
+    <span class="fil" onclick="filt('dev',this)">Language Design</span>
+    <span class="fil" onclick="filt('hw',this)">Hardware</span>
+    <span class="fil" onclick="filt('prod',this)">Product</span>
+  </div>
+
+  <div id="plist">
+    <div class="proj rv rv-l" data-cat="ai"><div class="proj-n">01</div><div><div class="proj-cat">Inference Architecture</div><div class="proj-t">DTIA</div><p class="proj-d">Six-layer inference pipeline that stress-tests every conclusion against its own strongest counterargument. Receive → decompose → research → oppose → synthesize → verify. Measurably reduces hallucination.</p><div class="proj-tags"><span class="ptag">Architecture</span><span class="ptag">Reasoning</span><span class="ptag">Verification</span></div></div></div>
+    <div class="proj rv rv-r" data-cat="dev"><div class="proj-n">02</div><div><div class="proj-cat">Dialectical Meta-Language</div><div class="proj-t">MIZU</div><p class="proj-d">Every operation resolves through opposition. Composition replaced with synthesis. Iteration with adaptive evolution. Mutation becomes transdifferentiation — transformation without destruction. Named for water: doesn't force its path, still carves canyons.</p><div class="proj-tags"><span class="ptag">Language Design</span><span class="ptag">DSL</span><span class="ptag">Compiler</span></div></div></div>
+    <div class="proj rv rv-l" data-cat="dev"><div class="proj-n">03</div><div><div class="proj-cat">Ternary Programming Language</div><div class="proj-t">Na'Tari</div><p class="proj-d">Language designed from first principles around three-valued logic. Sovereign compilation pipeline. Natural language input → AI-mediated translation → valid ternary code → real-time swarm execution. The first language where uncertainty is a first-class type, not an error.</p><div class="proj-tags"><span class="ptag">Language Design</span><span class="ptag">Compiler</span><span class="ptag">IDE</span></div></div></div>
+    <div class="proj rv rv-r" data-cat="ai"><div class="proj-n">04</div><div><div class="proj-cat">On-Device AI</div><div class="proj-t">Sovereign Inference Engine</div><p class="proj-d">On-device AI with ternary-weight networks. 3× energy efficiency. Under 150MB. Every parameter stored as {-1, 0, +1} — balanced ternary replacing 32-bit floats. Purpose-built for phones, embedded systems, and air-gapped environments.</p><div class="proj-tags"><span class="ptag">AI/ML</span><span class="ptag">Edge</span><span class="ptag">Ternary</span></div></div></div>
+    <div class="proj rv rv-l" data-cat="ai"><div class="proj-n">05</div><div><div class="proj-cat">Constitutional Agent Swarm</div><div class="proj-t">CoRax</div><p class="proj-d">Multi-agent AI with ethical constraints encoded as arithmetic — not guidelines agents can ignore. 99-page constitutional specification. Every decision routed through ternary gates: restrict, evaluate, permit. The safety constraints ARE the computation.</p><div class="proj-tags"><span class="ptag">Multi-Agent</span><span class="ptag">Safety</span><span class="ptag">Governance</span></div></div></div>
+    <div class="proj rv rv-r" data-cat="ai"><div class="proj-n">06</div><div><div class="proj-cat">Android Runtime</div><div class="proj-t">ITACHI</div><p class="proj-d">Native ARM64 inference engine targeting 6MB total footprint. C++ JNI bridge with streaming generation, thermal management, and memory-mapped model loading. Full GGUF ecosystem support — Llama, Mistral, Qwen, Phi. Completely offline.</p><div class="proj-tags"><span class="ptag">Android</span><span class="ptag">C++</span><span class="ptag">ARM64</span></div></div></div>
+    <div class="proj rv rv-l" data-cat="hw"><div class="proj-n">07</div><div><div class="proj-cat">AI Hardware Platform</div><div class="proj-t">Cyberdeck</div><p class="proj-d">Custom cyberdeck with 40 TOPS neural acceleration, hardware kill switches, and a sovereign OS. Eleven-volume technical specification. Immutable root filesystem, mandatory access control, full-disk encryption. Defense procurement pathway documented.</p><div class="proj-tags"><span class="ptag">Hardware</span><span class="ptag">Custom OS</span><span class="ptag">Security</span></div></div></div>
+    <div class="proj rv rv-r" data-cat="prod"><div class="proj-n">08</div><div><div class="proj-cat">Historical Figure AI</div><div class="proj-t">P.S.AI</div><p class="proj-d">Converse with AI reconstructions of real historical minds. Voice-first interaction. Personas grounded in verified published works and authenticated letters. No hallucinated quotes. Designed for education, research, and contemplative practice.</p><div class="proj-tags"><span class="ptag">AI</span><span class="ptag">Education</span><span class="ptag">Voice</span></div></div></div>
+    <div class="proj rv rv-l" data-cat="ai"><div class="proj-n">09</div><div><div class="proj-cat">Local Desktop AI</div><div class="proj-t"><a href="https://github.com/Mavioni/Yunisa" target="_blank" style="color:inherit;border-bottom:1px solid var(--border);transition:border-color .3s">YUNISA</a></div><p class="proj-d">Electron desktop app running a full AI chatbot on your machine — no cloud, no API keys, no telemetry. Powered by BitNet.cpp with 1.58-bit ternary quantization on CPU. Python bridges for computer use and web search. VLM research track for local vision-language models. Open-source.</p><div class="proj-tags"><span class="ptag">Electron</span><span class="ptag">BitNet</span><span class="ptag">Local-First</span><span class="ptag"><a href="https://github.com/Mavioni/Yunisa" target="_blank" style="color:var(--ocean)">Source ↗</a></span></div></div></div>
+  </div>
+
+</div></div>
+
+<!-- ═══════════════════════════════════════
+     ARCHITECTURE
+     ═══════════════════════════════════════ -->
+<div class="page" id="p-arch"><div class="wrap">
+
+  <div class="arch-intro">
+    <div class="s-title">Six-Layer<br><em>Sovereign Architecture</em></div>
+    <div class="s-desc">MIZU is the mind. LUMINA is the body. The pendant captures; the architecture thinks; the aligned output returns through the same titanium shell.</div>
+  </div>
+
+  <div class="canyon">
+    <div class="layer rv rv-l"><div class="l-dot"></div><div class="l-hd"><div class="l-n">00</div><div class="l-lb">Philosophy</div></div><div class="l-bd"><h3>Foundational Axioms</h3><p>Sovereignty constraint, ternary evaluation, 8-fold alignment gates derived from the Noble Eightfold Path. Jeet Kune Do as computational philosophy.</p></div></div>
+    <div class="layer rv rv-r"><div class="l-dot"></div><div class="l-hd"><div class="l-n">01</div><div class="l-lb">Engine</div></div><div class="l-bd"><h3>DTIA — Dialectical Ternary Inference</h3><p>Thesis path (+1) conservative. Antithesis path (−1) exploratory. Tension field measures kappa. Transdifferentiation produces synthesis. Depth multiplier 1.58.</p></div></div>
+    <div class="layer rv rv-l"><div class="l-dot"></div><div class="l-hd"><div class="l-n">02</div><div class="l-lb">OS</div></div><div class="l-bd"><h3>MIZU — The Meta-Language</h3><p>Dialectical cells as grammar. Compiler: Parse → IR → Backend. Targets web, mobile, bare metal. Na'Tari and YunisOS as runtime.</p></div></div>
+    <div class="layer rv rv-r"><div class="l-dot"></div><div class="l-hd"><div class="l-n">03</div><div class="l-lb">Intelligence</div></div><div class="l-bd"><h3>Edge Runtime &amp; Multi-Agent Fabric</h3><p>Snapdragon NPU at 45 TOPS. SPECTER orchestrates thesis/antithesis sub-agents. Vector memory meets knowledge graph. Local-first, always.</p></div></div>
+    <div class="layer rv rv-l"><div class="l-dot"></div><div class="l-hd"><div class="l-n">04</div><div class="l-lb">Applications</div></div><div class="l-bd"><h3>Sovereign Products</h3><p>P.S.AI resurfaces historical intelligence. Project Mirror builds a 7-layer digital twin. Every product compiles through MIZU.</p></div></div>
+    <div class="layer rv rv-r"><div class="l-dot"></div><div class="l-hd"><div class="l-n">05</div><div class="l-lb">Hardware</div></div><div class="l-bd"><h3>LUMINA — The Sovereign Companion</h3><p>45mm titanium. Continuous audio, event-triggered video. Post-quantum encrypted. Solar-supplemented. 7+ days autonomous.</p></div></div>
+  </div>
+
+  <div class="relic rv rv-s">
+    <div class="relic-g">
+      <div class="relic-p">
+        <strong>The pendant captures.</strong> The architecture thinks. The aligned output returns through the same titanium shell.<br><br>
+        One button. Press it. Thirty seconds later, an aligned, sovereignty-verified, post-quantum-encrypted memory exists in the personal archive.<br><br>
+        <strong>A novice presses the button.</strong> A master inspects the 8-fold alignment vector.
+      </div>
+      <div class="relic-specs">
+        <div class="spec"><div class="spec-k">Form</div><div class="spec-v">45mm × 12mm · 25g · Grade 5 Titanium</div></div>
+        <div class="spec"><div class="spec-k">Processor</div><div class="spec-v">Snapdragon Wear 5100+ · 4× A53 @ 1.7GHz</div></div>
+        <div class="spec"><div class="spec-k">Vision</div><div class="spec-v">OV5647 5MP · MIPI CSI-2 · Sapphire window</div></div>
+        <div class="spec"><div class="spec-k">Audio</div><div class="spec-v">Dual MEMS · SPH0645LM4H · Continuous</div></div>
+        <div class="spec"><div class="spec-k">Sensors</div><div class="spec-v">6-axis IMU · Barometer · GPS (u-blox)</div></div>
+        <div class="spec"><div class="spec-k">Power</div><div class="spec-v">500mAh SSB · Solar · 7+ days autonomous</div></div>
+        <div class="spec"><div class="spec-k">Security</div><div class="spec-v">ML-KEM-768 · X25519MLKEM768 · Hard boundary</div></div>
+        <div class="spec"><div class="spec-k">Rating</div><div class="spec-v">IP67+ · MIL-STD-810H · Zero cloud calls</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">Trajectory</span><div class="sec-line"></div><span class="sec-num">Roadmap</span></div>
+  <div class="strata rv rv-up">
+    <div class="st"><div class="st-ph">01</div><div class="st-tm">Q1–Q2 2026</div><div class="st-nm">Foundation</div><div class="st-bd">MIZU web compiler. Provisional patents. Architecture specs. IP Chain timestamps.</div></div>
+    <div class="st"><div class="st-ph">02</div><div class="st-tm">Q3–Q4 2026</div><div class="st-nm">Credibility Gate</div><div class="st-bd">Edge Runtime v1.0. MIZU Android backend. Cyberdeck demo — the artifact that closes the deal.</div></div>
+    <div class="st"><div class="st-ph">03</div><div class="st-tm">H1 2027</div><div class="st-nm">Product</div><div class="st-bd">LUMINA v1. P.S.AI beta. ODM partners. MV Phone prototype. Defense entry.</div></div>
+    <div class="st"><div class="st-ph">04</div><div class="st-tm">H2 2027+</div><div class="st-nm">Scale</div><div class="st-bd">MV Phone production. YunisOS release. Complete sovereign stack — philosophy to silicon.</div></div>
+  </div>
+
+</div></div>
+
+<!-- ═══════════════════════════════════════
+     STACK
+     ═══════════════════════════════════════ -->
+<div class="page" id="p-stack"><div class="wrap">
+
+  <div class="stack-h"><h2>Daily Tools</h2></div>
+  <div class="sg">
+    <div class="sc rv rv-up"><div class="sc-t">Languages</div><div class="sc-l">Python · TypeScript · Rust<br>C++ · Solidity · PHP</div></div>
+    <div class="sc rv rv-up"><div class="sc-t">AI / Inference</div><div class="sc-l">llama.cpp · BitNet · GGUF<br>LlamaIndex · Whisper · Ollama</div></div>
+    <div class="sc rv rv-up"><div class="sc-t">Frontend</div><div class="sc-l">React · Next.js · Three.js<br>GSAP · Tauri 2.x</div></div>
+    <div class="sc rv rv-up"><div class="sc-t">Backend</div><div class="sc-l">FastAPI · Express<br>SQLite · Kùzu graph</div></div>
+    <div class="sc rv rv-up"><div class="sc-t">Infrastructure</div><div class="sc-l">Docker · Podman · Nginx<br>WireGuard · Tor</div></div>
+    <div class="sc rv rv-up"><div class="sc-t">Cryptography</div><div class="sc-l">SPHINCS+ · Kyber<br>libsodium · SELinux · TPM</div></div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">Publications</span><div class="sec-line"></div><span class="sec-num">6 Books</span></div>
+  <div class="s-desc" style="margin-top:-20px">Published under Yunis AI Press</div>
+  <div class="pubs">
+    <div class="pub rv rv-l"><div class="pub-t">ISOMORPHIC</div><div class="pub-d">Formal equivalence of balanced ternary logic, Hegelian dialectics, and sovereign agency.</div><div class="pub-s done">Published</div></div>
+    <div class="pub rv rv-r"><div class="pub-t">It From Trit</div><div class="pub-d">Nine chapters mapping three-valued computing as architectural foundation and metaphysical framework.</div><div class="pub-s done">Published</div></div>
+    <div class="pub rv rv-l"><div class="pub-t">The Sovereign Doctrine</div><div class="pub-d">Twenty-one chapter field manual for sovereign technology systems.</div><div class="pub-s done">Published</div></div>
+    <div class="pub rv rv-r"><div class="pub-t">The Forge</div><div class="pub-d">Stoic character formation. Resilience and clarity under pressure.</div><div class="pub-s done">Published</div></div>
+    <div class="pub rv rv-l"><div class="pub-t">Learn to Learn</div><div class="pub-d">Eighteen chapters on evidence-based skill acquisition.</div><div class="pub-s done">Published</div></div>
+    <div class="pub rv rv-r"><div class="pub-t">Speak with Energy</div><div class="pub-d">Communication as energy transfer. 53,000+ words.</div><div class="pub-s wip">In Progress</div></div>
+  </div>
+
+  <div class="qb">
+    <div class="rv rv-b"><blockquote>"The most powerful technology is the kind you forget is there. It earns trust through structure, not promises."</blockquote><cite>Massimo Yunis</cite></div>
+    <div class="q-div"></div>
+    <div class="rv rv-b"><p style="font-size:14px;font-weight:300;color:var(--drift);line-height:1.85;max-width:540px;margin:0 auto">Local-first. Sovereign by design. Mathematically constrained rather than policy-constrained. Technology that belongs to the people who use it — architecturally, not contractually.</p></div>
+  </div>
+
+</div></div>
+
+<!-- ═══════════════════════════════════════
+     CONTACT
+     ═══════════════════════════════════════ -->
+<div class="page" id="p-contact"><div class="wrap">
+  <div class="contact-pg">
+    <h2 class="rv rv-up">Let's build<br>something <em>real.</em></h2>
+    <div class="cg rv rv-s">
+      <div class="cc"><div class="cc-l">Phone</div><div class="cc-v"><a href="tel:4809797321">(480) 979-7321</a></div></div>
+      <div class="cc"><div class="cc-l">GitHub</div><div class="cc-v"><a href="https://github.com/Mavioni" target="_blank">Mavioni ↗</a></div></div>
+      <div class="cc"><div class="cc-l">Domain</div><div class="cc-v">yunisai.com</div></div>
+      <div class="cc"><div class="cc-l">Location</div><div class="cc-v">Prescott Valley, AZ</div></div>
+      <div class="cc"><div class="cc-l">Affiliation</div><div class="cc-v">Eclipse Ventures</div></div>
+    </div>
+    <p class="c-note rv rv-up">Building sovereign AI infrastructure — ternary-native, local-first, post-quantum encrypted. Open to research collaborations, hardware partnerships, and clients who want AI systems that don't depend on infrastructure they don't control.</p>
+  </div>
+</div></div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="wrap">
+  <footer>
+    <span>© 2026 Massimo Yunis</span>
+    <span>Sovereign · Local-First · <span class="ft">−1 · 0 · +1</span></span>
+  </footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// HERO — character-by-character reveal
+// ═══════════════════════════════════════════════════════════════
+function splitHero() {
+  const el = document.getElementById('heroName');
+  if (!el) return;
+  const lines = [
+    { text: 'I build AI that',       tag: 'span' },
+    { text: 'lives on your device,',  tag: 'em'   },
+    { text: "not someone else\u2019s cloud.", tag: 'span' }
+  ];
+  let html = '', delay = 0;
+  lines.forEach((line, i) => {
+    if (i) html += '<br>';
+    if (line.tag === 'em') html += '<em>';
+    for (let c = 0; c < line.text.length; c++) {
+      const ch = line.text[c] === ' ' ? '&nbsp;' : line.text[c];
+      html += '<span class="char" style="animation-delay:' + (0.3 + delay * 0.04) + 's">' + ch + '</span>';
+      delay++;
+    }
+    if (line.tag === 'em') html += '</em>';
+  });
+  el.innerHTML = html;
+}
+splitHero();
+
+// ═══════════════════════════════════════════════════════════════
+// WEB AUDIO — underwater ambient
+// ═══════════════════════════════════════════════════════════════
+let audioCtx = null, started = false;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Master gain — fade in
+  const master = audioCtx.createGain();
+  master.gain.value = 0;
+  master.connect(audioCtx.destination);
+
+  // Noise buffer (4 seconds, stereo)
+  const bufLen = audioCtx.sampleRate * 4;
+  const buf = audioCtx.createBuffer(2, bufLen, audioCtx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buf;
+  noise.loop = true;
+
+  // Deep ocean rumble (lowpass at 180Hz)
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 180; lp.Q.value = 1.2;
+
+  // Mid-water movement (bandpass at 400Hz)
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = 0.5;
+  const bpGain = audioCtx.createGain();
+  bpGain.gain.value = 0.15;
+
+  // LFO modulates lowpass for tidal breathing
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.value = 0.0088; lfoGain.gain.value = 60;
+  lfo.connect(lfoGain); lfoGain.connect(lp.frequency); lfo.start();
+
+  // Second LFO for bandpass drift
+  const lfo2 = audioCtx.createOscillator();
+  const lfo2Gain = audioCtx.createGain();
+  lfo2.frequency.value = 0.0055; lfo2Gain.gain.value = 30;
+  lfo2.connect(lfo2Gain); lfo2Gain.connect(bp.frequency); lfo2.start();
+
+  // Wire it up
+  noise.connect(lp);  lp.connect(master);
+  noise.connect(bp);  bp.connect(bpGain); bpGain.connect(master);
+  noise.start();
+
+  // Gentle fade in over ~3 seconds
+  master.gain.setTargetAtTime(0.12, audioCtx.currentTime, 2.5);
+  started = true;
+}
+
+// Start ambient on first interaction (browser policy)
+document.addEventListener('click', function() { if (!started) initAudio(); });
+document.addEventListener('touchstart', function() { if (!started) initAudio(); });
+
+// ═══════════════════════════════════════════════════════════════
+// SPA NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function go(page) {
+  // Hide all pages, deactivate nav
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('on'); });
+  document.querySelectorAll('.nav-links a[id]').forEach(function(a) { a.classList.remove('on'); });
+
+  // Show target page — reset reveals first so they re-animate
+  var target = document.getElementById('p-' + page);
+  if (target) {
+    target.querySelectorAll('.rv').forEach(function(r) { r.classList.remove('v'); });
+    target.classList.add('on');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // Activate nav link
+  var navLink = document.getElementById('n-' + page);
+  if (navLink) navLink.classList.add('on');
+
+  // Re-init reveals for new page
+  setTimeout(initReveals, 80);
+
+  // Re-split hero text when returning home
+  if (page === 'home') splitHero();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROJECT FILTER
+// ═══════════════════════════════════════════════════════════════
+function filt(cat, el) {
+  document.querySelectorAll('.fil').forEach(function(f) { f.classList.remove('on'); });
+  el.classList.add('on');
+  document.querySelectorAll('.proj').forEach(function(p) {
+    var show = (cat === 'all' || p.dataset.cat === cat);
+    p.style.display = show ? 'grid' : 'none';
+    if (show) {
+      p.classList.remove('v');
+      setTimeout(function() { p.classList.add('v'); }, 50);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UNDERWATER CANVAS — volumetric god rays + caustics + particles
+// ═══════════════════════════════════════════════════════════════
+var cv = document.getElementById('deep');
+var cx = cv.getContext('2d');
+var W, H, frame = 0;
+
+function onResize() { W = cv.width = innerWidth; H = cv.height = innerHeight; }
+onResize();
+window.addEventListener('resize', onResize);
+
+// Soft light washes — wide, overlapping, gaussian-like
+var lights = [];
+for (var i = 0; i < 7; i++) {
+  lights.push({
+    x: 0.08 + i * 0.14 + (Math.random() - 0.5) * 0.06,
+    width: 0.12 + Math.random() * 0.15,
+    brightness: 0.04 + Math.random() * 0.05,
+    drift: 0.00003 + Math.random() * 0.00005,
+    phase: Math.random() * Math.PI * 2,
+    pulse: 0.0002 + Math.random() * 0.0003,
+    pulseP: Math.random() * Math.PI * 2,
+    tilt: (Math.random() - 0.5) * 0.06,
+    depth: 0.5 + Math.random() * 0.5
+  });
+}
+
+function drawOcean() {
+  frame++;
+  cx.clearRect(0, 0, W, H);
+
+  // ── DEEP WATER — rich gradient, not black
+  var bg = cx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0,    '#0D2A3A');
+  bg.addColorStop(0.04, '#103242');
+  bg.addColorStop(0.12, '#0D2C3A');
+  bg.addColorStop(0.35, '#0A2430');
+  bg.addColorStop(0.6,  '#071C26');
+  bg.addColorStop(1,    '#04121A');
+  cx.fillStyle = bg;
+  cx.fillRect(0, 0, W, H);
+
+  // ── SURFACE LIGHT — bright wash at the top, wide falloff
+  var sg = cx.createLinearGradient(0, 0, 0, H * 0.35);
+  sg.addColorStop(0,   'rgba(120,200,190,0.10)');
+  sg.addColorStop(0.1, 'rgba(90,175,165,0.06)');
+  sg.addColorStop(0.3, 'rgba(60,140,130,0.025)');
+  sg.addColorStop(1,   'transparent');
+  cx.fillStyle = sg;
+  cx.fillRect(0, 0, W, H * 0.35);
+
+  // ── LIGHT SHAFTS — soft gaussian columns, not hard edges
+  lights.forEach(function(l) {
+    var sway = Math.sin(frame * l.drift + l.phase) * 0.03;
+    var centerX = (l.x + sway) * W;
+    var pulse = 1 + Math.sin(frame * l.pulse + l.pulseP) * 0.25;
+    var alpha = l.brightness * pulse;
+    var shaftW = l.width * W;
+
+    // Each shaft is multiple overlapping gradients for soft falloff
+    for (var pass = 0; pass < 3; pass++) {
+      var w = shaftW * (1 + pass * 0.6);
+      var a = alpha * (1 - pass * 0.3);
+      var fadeH = H * l.depth * (1 + pass * 0.15);
+
+      var grad = cx.createLinearGradient(0, 0, 0, fadeH);
+      grad.addColorStop(0,   'rgba(130,210,195,' + (a * 0.9) + ')');
+      grad.addColorStop(0.06,'rgba(100,185,170,' + (a * 0.7) + ')');
+      grad.addColorStop(0.2, 'rgba(70,155,145,' + (a * 0.4) + ')');
+      grad.addColorStop(0.5, 'rgba(45,120,110,' + (a * 0.12) + ')');
+      grad.addColorStop(1,   'transparent');
+
+      // Horizontal gaussian via radial gradient mask
+      var rg = cx.createRadialGradient(centerX, fadeH * 0.3, 0, centerX, fadeH * 0.3, w);
+      rg.addColorStop(0,   'rgba(110,195,180,' + (a * 0.5) + ')');
+      rg.addColorStop(0.3, 'rgba(80,165,155,' + (a * 0.25) + ')');
+      rg.addColorStop(0.7, 'rgba(50,130,120,' + (a * 0.06) + ')');
+      rg.addColorStop(1,   'transparent');
+
+      cx.fillStyle = rg;
+      cx.fillRect(centerX - w, 0, w * 2, fadeH);
+
+      // Vertical fade overlay
+      cx.fillStyle = grad;
+      cx.globalAlpha = 0.6;
+      cx.fillRect(centerX - w * 0.5, 0, w, fadeH);
+      cx.globalAlpha = 1;
+    }
+  });
+
+  // ── CAUSTIC WASH — soft undulating light patches, not connected dots
+  var causticAlpha = 0.018 + Math.sin(frame * 0.0003) * 0.006;
+  for (var i = 0; i < 5; i++) {
+    var cx1 = (0.15 + i * 0.18 + Math.sin(frame * 0.0002 + i * 1.8) * 0.08) * W;
+    var cy1 = (0.15 + Math.sin(frame * 0.00015 + i * 2.2) * 0.12 + i * 0.14) * H;
+    var cr = 120 + Math.sin(frame * 0.0004 + i) * 40;
+    var cg2 = cx.createRadialGradient(cx1, cy1, 0, cx1, cy1, cr);
+    cg2.addColorStop(0,   'rgba(130,215,200,' + (causticAlpha * 1.5) + ')');
+    cg2.addColorStop(0.4, 'rgba(90,180,165,' + (causticAlpha * 0.6) + ')');
+    cg2.addColorStop(1,   'transparent');
+    cx.fillStyle = cg2;
+    cx.beginPath();
+    cx.arc(cx1, cy1, cr, 0, Math.PI * 2);
+    cx.fill();
+  }
+
+  // ── SURFACE RIPPLE — subtle undulating line at the very top
+  cx.save();
+  cx.globalAlpha = 0.15;
+  cx.shadowColor = 'rgba(140,220,210,0.2)';
+  cx.shadowBlur = 8;
+  cx.beginPath();
+  for (var x = 0; x <= W; x += 3) {
+    var y = 3 + Math.sin(x * 0.005 + frame * 0.0015) * 3
+              + Math.sin(x * 0.009 + frame * 0.0028) * 1.8
+              + Math.cos(x * 0.014 + frame * 0.002) * 1;
+    x === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+  }
+  cx.strokeStyle = 'rgba(160,235,220,0.6)';
+  cx.lineWidth = 1.5;
+  cx.stroke();
+  cx.restore();
+
+  // ── DEPTH ATMOSPHERE — soft horizontal haze layers
+  for (var i = 0; i < 4; i++) {
+    var fy = (0.25 + i * 0.2) * H + Math.sin(frame * 0.00015 + i * 1.7) * 20;
+    var fg = cx.createLinearGradient(0, fy - 80, 0, fy + 80);
+    fg.addColorStop(0,   'transparent');
+    fg.addColorStop(0.5, 'rgba(8,28,38,' + (0.035 + Math.sin(frame * 0.0002 + i) * 0.01) + ')');
+    fg.addColorStop(1,   'transparent');
+    cx.fillStyle = fg;
+    cx.fillRect(0, fy - 80, W, 160);
+  }
+
+  requestAnimationFrame(drawOcean);
+}
+drawOcean();
+
+// ═══════════════════════════════════════════════════════════════
+// SCROLL REVEAL — scoped to active page, resets on navigation
+// ═══════════════════════════════════════════════════════════════
+function initReveals() {
+  var activePage = document.querySelector('.page.on');
+  if (!activePage) return;
+  var elements = activePage.querySelectorAll('.rv:not(.v)');
+  if (!elements.length) return;
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var idx = Array.from(elements).indexOf(entry.target);
+        setTimeout(function() { entry.target.classList.add('v'); }, Math.max(0, idx * 60));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.06, rootMargin: '0px 0px -10px 0px' });
+
+  elements.forEach(function(el) { observer.observe(el); });
+}
+initReveals();
+</script>
+</body>
+</html>
