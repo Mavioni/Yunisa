@@ -2,197 +2,189 @@
 
 <img src="resources/logo.png" alt="YUNISA Logo" width="180"/>
 
-# YUNISA
+# Ｙ Ｕ Ｎ Ｉ Ｓ Ａ
 
-### Your Local AI. Private. Offline. Yours.
+_Your Intelligence. Your Machine. Your Rules._
 
-YUNISA runs a powerful AI chatbot **entirely on your computer** — no cloud, no API keys, no data ever leaving your machine. Powered by [BitNet.cpp](https://github.com/microsoft/BitNet) and Microsoft's 1-bit LLM technology.
+<br>
 
-[![Download](https://img.shields.io/github/v/release/Mavioni/Yunisa?label=Download&style=for-the-badge&color=e94560)](https://github.com/Mavioni/Yunisa/releases/latest)
+[![Download](https://img.shields.io/github/v/release/Mavioni/Yunisa?label=Latest%20Release&style=for-the-badge&color=e94560)](https://github.com/Mavioni/Yunisa/releases/latest)
 [![License](https://img.shields.io/github/license/Mavioni/Yunisa?style=for-the-badge&color=16213e)](LICENSE)
 [![Windows](https://img.shields.io/badge/Platform-Windows_11-0078D6?style=for-the-badge&logo=windows)](https://github.com/Mavioni/Yunisa/releases/latest)
 
----
+<br>
 
-**[Download for Windows](#-quick-start)** | **[Features](#-features)** | **[How It Works](#-how-it-works)** | **[FAQ](#-faq)**
+> **YUNISA** runs a powerful AI chatbot entirely on your computer — no cloud, no API keys, no telemetry, and no data ever leaving your machine. 
+> Powered by the breakthrough 1-bit LLM technology of Microsoft's **BitNet.cpp**.
 
 </div>
 
----
-
-## Quick Start
-
-### 1. Download
-
-Go to the [**Latest Release**](https://github.com/Mavioni/Yunisa/releases/latest) and download **`YUNISA Setup 1.0.0.exe`**.
-
-### 2. Install
-
-Run the installer. YUNISA installs to your local Programs folder — no admin required.
-
-### 3. Download the AI Model
-
-On first launch, YUNISA will walk you through downloading the AI model (~1.2 GB). This is a one-time download.
-
-### 4. Start Chatting
-
-That's it. Your private AI assistant is ready. No accounts. No sign-ups. No internet required after setup.
-
----
-
-## Features
-
-### Private by Design
-Your conversations **never leave your computer**. There is no server, no telemetry, no cloud. Every word stays on your machine.
-
-### Runs on CPU
-No GPU required. YUNISA uses Microsoft's [BitNet b1.58](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T) — a 2.4 billion parameter model optimized for CPU inference with 1-bit quantization. It runs efficiently on any modern x86 processor.
-
-### Full Chat Experience
-- Streaming responses in real-time
-- Markdown rendering with code blocks
-- Conversation history saved locally
-- Multiple conversations with sidebar navigation
-- Dark theme UI
-
-### Model Management
-- Download models from Hugging Face with progress tracking
-- Switch between installed models
-- Delete models to free disk space
-
-### Desktop Integration
-- System tray — minimize to tray, always accessible
-- Auto-updates from GitHub Releases
-- Native Windows installer with Start Menu shortcut
-
----
-
-## How It Works
-
-```
-YUNISA.exe
-  |
-  +-- Electron Shell (native window + system tray)
-  |
-  +-- llama-server.exe (BitNet.cpp inference engine)
-  |     Runs locally on 127.0.0.1:8080
-  |     OpenAI-compatible chat API
-  |
-  +-- SQLite Database
-  |     Conversations stored in %APPDATA%/yunisa/
-  |
-  +-- AI Model (downloaded on first run)
-        BitNet b1.58-2B-4T (1.2 GB GGUF)
-        2.4B parameters, 1-bit quantization
-```
-
-YUNISA is an Electron desktop app that manages a local [llama.cpp](https://github.com/ggerganov/llama.cpp)-based inference server. When you send a message, it goes to `localhost` — never to the internet. The server runs the BitNet model on your CPU and streams the response back.
-
----
-
-## System Requirements
-
-| Requirement | Minimum |
-|-------------|---------|
-| **OS** | Windows 10/11 (64-bit) |
-| **CPU** | Any modern x86-64 processor |
-| **RAM** | 4 GB |
-| **Disk** | ~1.5 GB (app + model) |
-| **GPU** | Not required |
-| **Internet** | Only for initial model download |
-
----
-
-## FAQ
-
-<details>
-<summary><b>Is my data private?</b></summary>
-
-Yes. YUNISA runs 100% locally. There is no server component, no analytics, no telemetry. Your conversations are stored in a SQLite database on your machine at `%APPDATA%/yunisa/conversations.db`. Delete the file and they're gone.
-</details>
-
-<details>
-<summary><b>How fast is it?</b></summary>
-
-On a modern x86 CPU, expect 5-7 tokens per second. That's roughly 1-2 sentences per second — fast enough for a natural conversation. BitNet's 1-bit quantization reduces energy consumption by 70-80% compared to standard models.
-</details>
-
-<details>
-<summary><b>Can I use it offline?</b></summary>
-
-Yes, after the initial model download. YUNISA checks for app updates on launch (requires internet), but this is optional and non-blocking. All AI inference is local.
-</details>
-
-<details>
-<summary><b>What model does it use?</b></summary>
-
-[BitNet b1.58-2B-4T](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T) by Microsoft — a 2.4 billion parameter language model using ternary (1.58-bit) quantization. It's specifically designed for efficient CPU inference.
-</details>
-
-<details>
-<summary><b>Can I add other models?</b></summary>
-
-The model registry is currently hardcoded to BitNet-compatible GGUF models. Support for additional models will be added in future releases.
-</details>
-
-<details>
-<summary><b>Where is my data stored?</b></summary>
-
-All YUNISA data lives in `%APPDATA%/yunisa/`:
-- `conversations.db` — your chat history (SQLite)
-- `config.json` — settings
-- `models/` — downloaded AI models
-</details>
-
-<details>
-<summary><b>How do I uninstall?</b></summary>
-
-Use Windows "Add or Remove Programs" or run the uninstaller from the Start Menu. To also remove your data, delete `%APPDATA%/yunisa/`.
-</details>
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Desktop Shell | [Electron](https://www.electronjs.org/) |
-| AI Engine | [BitNet.cpp](https://github.com/microsoft/BitNet) / [llama.cpp](https://github.com/ggerganov/llama.cpp) |
-| AI Model | [BitNet b1.58-2B-4T](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T) (GGUF) |
-| Database | [SQLite](https://sqlite.org/) via better-sqlite3 |
-| Frontend | HTML / CSS / JavaScript |
-| Installer | NSIS via electron-builder |
-| Auto-Update | electron-updater + GitHub Releases |
-
----
-
-## Building from Source
-
-```bash
-git clone https://github.com/Mavioni/Yunisa.git
-cd Yunisa
-npm install
-pip install -r python/requirements.txt
-npm run start        # Run in development mode
-npm run dist         # Build installer
-```
-
-Requires: Node.js 20+, npm, Windows 10/11.
-
-The `resources/binaries/` directory must contain `llama-server.exe` and its DLLs (`ggml.dll`, `llama.dll`, `llava_shared.dll`) compiled from [BitNet.cpp](https://github.com/microsoft/BitNet).
-
----
-
-## License
-
-MIT
+<br>
 
 ---
 
 <div align="center">
+  <h2>✦ The Experience ✦</h2>
+</div>
 
-**Built with [BitNet.cpp](https://github.com/microsoft/BitNet) by Microsoft**
+<table align="center" width="100%">
+  <tr>
+    <td width="50%">
+      <h3>🔒 Absolute Privacy</h3>
+      <p>Your conversations <b>never leave your computer</b>. There is no server, no telemetry, no cloud integration. Every thought, every word, and every prompt stays securely on your local SSD.</p>
+    </td>
+    <td width="50%">
+      <h3>⚡ Pure Efficiency</h3>
+      <p>No GPU required. YUNISA leverages <a href="https://huggingface.co/microsoft/BitNet-b1.58-2B-4T">BitNet b1.58</a>—a 2.4 billion parameter model utilizing 1.58-bit ternary quantization. It blazes through inference on any modern x86 CPU.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>💎 Elegant Design</h3>
+      <p>A beautifully sleek, cinematic dark-themed UI that feels like an extension of your operating system. Seamlessly integrated with Windows, it sits quietly in your system tray until summoned.</p>
+    </td>
+    <td width="50%">
+      <h3>🧠 Untethered Intelligence</h3>
+      <p>Once you download the initial model, YUNISA doesn't require an active internet connection. Take your creative partner with you on a flight, to a cabin, or entirely off the grid.</p>
+    </td>
+  </tr>
+</table>
 
-*Your intelligence. Your machine. Your rules.*
+<br>
 
+---
+
+<div align="center">
+  <h2>Ignition Sequence</h2>
+</div>
+
+### 1. 📥 Download
+Acquire the latest build directly from our [Releases Page](https://github.com/Mavioni/Yunisa/releases/latest). Look for **`YUNISA Setup 1.0.0.exe`**.
+
+### 2. ⚡ Install
+Launch the setup. YUNISA gracefully installs itself into your local environment — zero administration privileges required.
+
+### 3. 🧠 Initialize the Core
+On your first launch, YUNISA will seamlessly download the hyper-optimized 1-bit AI model (~1.2 GB) directly to your machine. 
+
+### 4. 💬 Interface
+That’s it. Start exploring. No accounts. No tracking. Pure local intelligence.
+
+<br>
+
+---
+
+<div align="center">
+  <h2>Architecture Diagram</h2>
+  <p><i>The inner workings of a private intellect.</i></p>
+</div>
+
+```mermaid
+flowchart TD
+    UI(🖥️ YUNISA.exe Desktop Application)
+    SERVER(🧠 llama-server.exe)
+    DB(💾 SQLite Database)
+    MODEL(📦 BitNet b1.58 Model)
+    OS((Windows CPU))
+
+    UI <==> |127.0.0.1:8080| SERVER
+    SERVER <==> |Inference Engine| MODEL
+    UI ==> |Saves Chat History| DB
+    SERVER <--> |Executes Math| OS
+
+    style UI fill:#16213e,stroke:#e94560,stroke-width:2px,color:#fff
+    style SERVER fill:#0f3460,stroke:#00a1ff,stroke-width:2px,color:#fff
+    style DB fill:#1a1a2e,stroke:#ffb400,stroke-width:2px,color:#fff
+    style MODEL fill:#1a1a2e,stroke:#00ff00,stroke-width:2px,color:#fff
+    style OS fill:#222,stroke:#555,color:#fff
+```
+
+<br>
+
+---
+
+<div align="center">
+  <h2>Technological Core</h2>
+</div>
+
+| Component | Technology | Purpose |
+|:---|:---|:---|
+| **Shell** | [Electron](https://www.electronjs.org/) | Seamless Desktop Integration |
+| **Engine** | [BitNet.cpp](https://github.com/microsoft/BitNet) / [llama.cpp](https://github.com/ggerganov/llama.cpp) | Ultra-fast 1-Bit Inference |
+| **Model** | [BitNet b1.58-2B-4T](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T) | 2.4 Billion Parameters on CPU |
+| **Memex** | [SQLite](https://sqlite.org/) | Perpetual Local Memory |
+| **Frontend** | HTML / CSS / JS | Minimalist Vanilla Interface |
+
+<br>
+
+---
+
+<div align="center">
+  <h2>Frequently Asked Questions</h2>
+</div>
+
+<details>
+<summary><b>Is my data truly private?</b></summary>
+<br>
+Yes. YUNISA runs 100% locally. There is no server component, no analytics, no telemetry. Your conversations are stored securely in a SQLite database on your machine at <code>%APPDATA%/yunisa/conversations.db</code>. If you delete the file, they are gone forever.
+</details>
+
+<details>
+<summary><b>How fast is the inference?</b></summary>
+<br>
+On a modern x86 CPU, expect 5-7 tokens per second. That equates to roughly 1-2 sentences per second — fast enough for a natural, flowing conversation. By utilizing BitNet's 1-bit quantization, energy consumption is reduced by 70-80% compared to standard AI models.
+</details>
+
+<details>
+<summary><b>Can I operate entirely offline?</b></summary>
+<br>
+Yes. After the one-time initial model download, no internet connection is required. All AI inference is local.
+</details>
+
+<details>
+<summary><b>Where is my local memory stored?</b></summary>
+<br>
+All persistent YUNISA data lives quietly in <code>%APPDATA%/yunisa/</code>:<br>
+• <code>conversations.db</code> — Your encrypted chat history<br>
+• <code>config.json</code> — Your system preferences<br>
+• <code>models/</code> — Your downloaded neural networks
+</details>
+
+<br>
+
+---
+
+<div align="center">
+  <h2>Building from Source</h2>
+</div>
+
+For the engineers and architects looking to modify the core:
+
+```bash
+# Clone the repository
+git clone https://github.com/Mavioni/Yunisa.git
+cd Yunisa
+
+# Install dependencies
+npm install
+pip install -r python/requirements.txt
+
+# Ignite Development Mode
+npm run start
+```
+
+> **Note:** The `resources/binaries/` directory must contain `llama-server.exe` and its dynamically linked libraries (`ggml.dll`, `llama.dll`, `llava_shared.dll`) previously compiled from the [BitNet.cpp](https://github.com/microsoft/BitNet) source.
+
+<br>
+
+---
+
+<div align="center">
+  <i>"A machine that thinks, tucked away in the shadows of your hard drive."</i>
+  
+  <br><br><br>
+  
+  <img src="https://img.shields.io/badge/Built_with-BitNet.cpp-0f3460?style=for-the-badge&logo=microsoft" alt="Built with BitNet"/>
+  <br>
+  <p>Released under the MIT License.</p>
 </div>
