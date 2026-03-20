@@ -6,27 +6,32 @@ These interactive diagrams map out the macro-architecture, the training sequence
 This map visualizes the core components and datasets intersecting to create the VLM brain.
 
 ```mermaid
-mindmap
-  root((YunisaVLM))
-    Vision Encoder
-      Google SigLIP
-      So400m Patch14
-      Frozen Weights
-    Projector Optic Nerve
-      Multi-Layer Perceptron
-      GELU Activation
-      bfloat16 precision
-    Language Brain
-      Microsoft BitNet b1.58
-      Ternary Weights -1/0/1
-    Training Data
-      LLaVA-Instruct-150K
-      Screenshot Contexts
-      Bounding Box Coordinates
-    Infrastructure
-      PyTorch DDP
-      8x Nvidia H100
-      HuggingFace Accelerate
+flowchart TD
+    root((YunisaVLM))
+
+    root --> VE[Vision Encoder]
+    VE --> VE1[Google SigLIP]
+    VE --> VE2[So400m Patch14]
+    VE --> VE3[Frozen Weights]
+
+    root --> PON[Projector Optic Nerve]
+    PON --> PON1[Multi-Layer Perceptron]
+    PON --> PON2[GELU Activation]
+    PON --> PON3[bfloat16 precision]
+
+    root --> LB[Language Brain]
+    LB --> LB1[Microsoft BitNet b1.58]
+    LB --> LB2[Ternary Weights -1/0/1]
+
+    root --> TD[Training Data]
+    TD --> TD1[LLaVA-Instruct-150K]
+    TD --> TD2[Screenshot Contexts]
+    TD --> TD3[Bounding Box Coordinates]
+
+    root --> INFRA[Infrastructure]
+    INFRA --> INFRA1[PyTorch DDP]
+    INFRA --> INFRA2[8x Nvidia H100]
+    INFRA --> INFRA3[HuggingFace Accelerate]
 ```
 
 ## 2. End-to-End Training Sequence Diagram
