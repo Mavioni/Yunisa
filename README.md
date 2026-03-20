@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="resources/logo.png" alt="YUNISA Logo" width="180"/>
+
 # YUNISA
 
 ### Your Local AI. Private. Offline. Yours.
