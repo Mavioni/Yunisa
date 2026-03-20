@@ -172,6 +172,7 @@ Use Windows "Add or Remove Programs" or run the uninstaller from the Start Menu.
 git clone https://github.com/Mavioni/Yunisa.git
 cd Yunisa
 npm install
+pip install -r python/requirements.txt
 npm run start        # Run in development mode
 npm run dist         # Build installer
 ```

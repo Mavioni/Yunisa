@@ -1,0 +1,4 @@
+gui-agents
+pyautogui
+pillow
+requests
