@@ -8,8 +8,11 @@ import sys
 import traceback
 import io
 import time
+import os
 
 try:
+    # Inject agent-s_repo into Python path so gui_agents can be imported
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent-s_repo'))
     import pyautogui
     from PIL import Image
     from gui_agents.s3.agents.agent_s import AgentS3
@@ -114,6 +117,14 @@ def handle_message(instruction: str, session_id: str):
 
             # Block while calling AgentS3
             info, code = agent.predict(instruction=instruction, observation=obs)
+
+            if not code or len(code) == 0:
+                emit({
+                    "type": "text_delta",
+                    "content": "\n⚠️ Agent produced no executable action.",
+                    "session_id": session_id
+                })
+                break
 
             if "done" in code[0].lower() or "fail" in code[0].lower():
                 emit({
