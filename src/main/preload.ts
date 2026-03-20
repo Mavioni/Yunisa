@@ -34,6 +34,17 @@ contextBridge.exposeInMainWorld('yunisa', {
     getMessages: (convId: string) => ipcRenderer.invoke('conversations:get-messages', convId),
   },
 
+  interpreter: {
+    start: () => ipcRenderer.invoke('interpreter:start'),
+    send: (content: string, sessionId: string) =>
+      ipcRenderer.invoke('interpreter:send', content, sessionId),
+    abort: (sessionId: string) => ipcRenderer.invoke('interpreter:abort', sessionId),
+    onChunk: (callback: (chunk: any) => void) => {
+      ipcRenderer.removeAllListeners('interpreter:chunk');
+      ipcRenderer.on('interpreter:chunk', (_, chunk) => callback(chunk));
+    },
+  },
+
   app: {
     getDataDir: () => ipcRenderer.invoke('app:get-data-dir'),
     checkInternet: () => ipcRenderer.invoke('app:check-internet'),

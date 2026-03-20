@@ -3,6 +3,7 @@ import path from 'path';
 import { ServerManager } from './server-manager';
 import { ConversationStore } from './conversation-store';
 import { ModelManager } from './model-manager';
+import { InterpreterManager } from './interpreter-manager';
 import { setupAutoUpdater } from './auto-updater';
 import { setupTray } from './tray';
 
@@ -11,6 +12,7 @@ let tray: Tray | null = null;
 let serverManager: ServerManager;
 let conversationStore: ConversationStore;
 let modelManager: ModelManager;
+let interpreterManager: InterpreterManager;
 
 function getResourcePath(relativePath: string): string {
   if (app.isPackaged) {
@@ -45,11 +47,9 @@ function createWindow(): void {
     mainWindow?.show();
   });
 
-  mainWindow.on('close', (event) => {
-    if (!(app as any).isQuitting) {
-      event.preventDefault();
-      mainWindow?.hide();
-    }
+  mainWindow.on('close', () => {
+    (app as any).isQuitting = true;
+    app.quit();
   });
 }
 
@@ -59,9 +59,14 @@ async function initialize(): Promise<void> {
     ? path.join(process.resourcesPath, 'binaries')
     : path.join(__dirname, '..', '..', 'resources', 'binaries');
 
+  const appRoot = app.isPackaged
+    ? path.join(process.resourcesPath, 'app')
+    : path.join(__dirname, '..', '..');
+
   conversationStore = new ConversationStore(dataDir);
   modelManager = new ModelManager(dataDir);
   serverManager = new ServerManager(binariesDir, dataDir);
+  interpreterManager = new InterpreterManager(appRoot);
 
   registerIpcHandlers();
 
@@ -117,6 +122,24 @@ function registerIpcHandlers(): void {
     app.quit();
   });
 
+  // Interpreter
+  ipcMain.handle('interpreter:start', async () => {
+    const port = serverManager.getPort();
+    await interpreterManager.start(port);
+    interpreterManager.onChunk((chunk) => {
+      mainWindow?.webContents.send('interpreter:chunk', chunk);
+    });
+    return { status: 'ready' };
+  });
+
+  ipcMain.handle('interpreter:send', (_, content: string, sessionId: string) => {
+    interpreterManager.sendMessage(content, sessionId);
+  });
+
+  ipcMain.handle('interpreter:abort', (_, sessionId: string) => {
+    interpreterManager.abort(sessionId);
+  });
+
   // Updater
   ipcMain.handle('updater:download', () => {
     const { autoUpdater } = require('electron-updater');
@@ -131,12 +154,14 @@ function registerIpcHandlers(): void {
 app.on('ready', initialize);
 
 app.on('window-all-closed', () => {
-  // Don't quit — tray keeps app alive
+  app.quit();
 });
 
 app.on('before-quit', () => {
   (app as any).isQuitting = true;
   serverManager?.stop();
+  interpreterManager?.stop();
+  conversationStore?.close();
 });
 
 app.on('activate', () => {

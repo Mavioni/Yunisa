@@ -233,7 +233,41 @@ async function sendMessage() {
       fullResponse += "\n\n*[Generation stopped]*";
       renderMarkdown(assistantEl, fullResponse);
     } else {
-      renderMarkdown(assistantEl, `**Connection error**: ${err.message}`);
+      // Check if server is still alive
+      const serverStatus = await window.yunisa.server.status();
+      if (serverStatus !== "ready") {
+        renderMarkdown(
+          assistantEl,
+          "**Connection lost** — the AI engine stopped unexpectedly. Restarting..."
+        );
+        // Attempt restart
+        try {
+          const active = await window.yunisa.models.getActive();
+          if (active) {
+            const result = await window.yunisa.server.start(active.path);
+            const port = await window.yunisa.server.port();
+            if (port) serverPort = port;
+            if (result.status === "ready") {
+              renderMarkdown(
+                assistantEl,
+                "**Reconnected** — the AI engine has restarted. Please send your message again."
+              );
+            } else {
+              renderMarkdown(
+                assistantEl,
+                "**Failed to restart** the AI engine. Please restart YUNISA."
+              );
+            }
+          }
+        } catch {
+          renderMarkdown(
+            assistantEl,
+            "**Failed to restart** the AI engine. Please restart YUNISA."
+          );
+        }
+      } else {
+        renderMarkdown(assistantEl, `**Connection error**: ${err.message}`);
+      }
     }
   } finally {
     abortController = null;

@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, execSync, ChildProcess } from 'child_process';
 import path from 'path';
 import http from 'http';
 import fs from 'fs';
@@ -12,6 +12,10 @@ export class ServerManager {
   private port: number = 8080;
   private binariesDir: string;
   private dataDir: string;
+  private lastModelPath: string | null = null;
+  private restartCount: number = 0;
+  private maxRestarts: number = 3;
+  private restartCooldown: number = 5000;
 
   constructor(binariesDir: string, dataDir: string) {
     this.binariesDir = binariesDir;
@@ -51,11 +55,25 @@ export class ServerManager {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
+    this.lastModelPath = modelPath;
+
     this.process.on('exit', (code) => {
-      if (this.status !== 'stopped') {
-        this.status = 'error';
-      }
       this.process = null;
+      if (this.status === 'stopped') return;
+
+      // Server crashed unexpectedly — attempt auto-restart
+      this.status = 'error';
+      if (this.restartCount < this.maxRestarts && this.lastModelPath) {
+        this.restartCount++;
+        console.error(`[server-manager] llama-server exited (code ${code}), restarting (attempt ${this.restartCount}/${this.maxRestarts})...`);
+        setTimeout(() => {
+          if (this.lastModelPath && this.status === 'error') {
+            this.start(this.lastModelPath);
+          }
+        }, this.restartCooldown);
+      } else {
+        console.error(`[server-manager] llama-server exited (code ${code}), max restarts reached`);
+      }
     });
 
     this.process.stderr?.on('data', (data: Buffer) => {
@@ -64,23 +82,29 @@ export class ServerManager {
 
     const healthy = await this.waitForHealth(30000);
     this.status = healthy ? 'ready' : 'error';
+    if (healthy) this.restartCount = 0;
 
     return { status: this.status, port: this.port };
   }
 
   stop(): void {
+    this.status = 'stopped';
     if (this.process) {
       const pid = this.process.pid;
       if (pid) {
         try {
-          process.kill(pid);
+          // Kill the entire process tree on Windows to avoid orphaned llama-server
+          if (process.platform === 'win32') {
+            execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' });
+          } else {
+            process.kill(pid, 'SIGTERM');
+          }
         } catch {
           // Process already exited
         }
       }
       this.process = null;
     }
-    this.status = 'stopped';
   }
 
   private async findAvailablePort(startPort: number): Promise<number> {
