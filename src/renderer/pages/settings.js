@@ -7,13 +7,13 @@ export async function initSettings() {
   const config = await window.yunisa.config.get();
 
   const container = document.createElement('div');
-  container.className = 'models-container';
-  container.style.cssText = 'max-width: 800px; margin: 0 auto; padding-bottom: 3rem;';
+  container.className = 'models-container settings-scroll-container';
+  container.style.cssText = 'width: 100%; max-width: 800px; margin: 0 auto; padding: 1.5rem; align-self: flex-start; overflow-y: auto; max-height: 100%;';
   
   const header = document.createElement('div');
-  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem;';
+  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 0.75rem;';
   const title = document.createElement('h2');
-  title.style.cssText = 'color: #e94560; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase;';
+  title.style.cssText = 'color: #e94560; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.25rem;';
   title.textContent = 'Ecosystem Control Subsystem';
   header.appendChild(title);
   
@@ -26,7 +26,7 @@ export async function initSettings() {
   const createCard = (titleText, descText) => {
     const card = document.createElement('div');
     card.className = 'model-card';
-    card.style.cssText = 'margin-bottom: 1.5rem; padding: 1.5rem; border-left: 3px solid #00a1ff; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 1rem;';
+    card.style.cssText = 'margin-bottom: 0.75rem; padding: 1rem 1.25rem; border-left: 3px solid #00a1ff; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 0.5rem;';
     const title = document.createElement('h3');
     title.style.cssText = 'margin: 0; color: #fff; font-size: 1.1rem;';
     title.textContent = titleText;

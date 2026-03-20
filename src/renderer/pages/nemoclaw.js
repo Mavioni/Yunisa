@@ -22,10 +22,17 @@ export function initNemoclaw() {
   
   container.appendChild(header);
 
+  container.style.position = 'relative';
+
+  const fallback = document.createElement('div');
+  fallback.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-family: monospace; color: #777; z-index: 0; pointer-events: none; width: 100%;';
+  fallback.innerHTML = `<h2 style="color: #e94560; margin-bottom: 0.5rem;">OFFLINE NODE</h2><p>NVIDIA NemoClaw sandbox is completely disconnected.<br>Ensure the OpenShell container is actively broadcasting on Port 3000.</p>`;
+  container.appendChild(fallback);
+
   // Mount the NemoClaw iframe
   const iframe = document.createElement('iframe');
   iframe.src = 'http://127.0.0.1:3000'; // Standard local execution port for UI dashboards
-  iframe.style.cssText = 'width: 100%; height: calc(100% - 50px); border: none; background: #000;';
+  iframe.style.cssText = 'position: relative; z-index: 1; width: 100%; height: calc(100% - 50px); border: none; background: transparent;';
   
   // Note: the iframe natively loads the NemoClaw UI. 
   // Instruct the user that NemoClaw must be configured to point to http://127.0.0.1:8080/v1

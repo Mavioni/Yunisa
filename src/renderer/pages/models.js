@@ -36,7 +36,7 @@ async function refreshModels() {
     card.className = 'model-card';
     const h3 = document.createElement('h3');
     h3.textContent = model.name + ' ';
-    if (isActive) { const badge = document.createElement('span'); badge.className = 'badge'; badge.style.background = 'var(--success)'; badge.textContent = 'Active'; h3.appendChild(badge); }
+    if (isActive) { const badge = document.createElement('span'); badge.className = 'badge'; badge.style.background = 'var(--success)'; badge.style.color = '#ffffff'; badge.textContent = 'Active'; h3.appendChild(badge); }
     card.appendChild(h3);
     const meta = document.createElement('p');
     meta.className = 'model-meta';
