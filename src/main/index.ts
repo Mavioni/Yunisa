@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, net } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { ServerManager } from './server-manager';
 import { ConversationStore } from './conversation-store';
 import { ModelManager } from './model-manager';
@@ -23,6 +24,25 @@ function getResourcePath(relativePath: string): string {
 
 function getDataDir(): string {
   return path.join(app.getPath('appData'), 'yunisa');
+}
+
+function getConfigPath(): string {
+  return path.join(getDataDir(), 'config.json');
+}
+
+function getConfig(): any {
+  const configPath = getConfigPath();
+  if (fs.existsSync(configPath)) {
+    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
+  return {};
+}
+
+function setConfig(key: string, value: any): void {
+  const configPath = getConfigPath();
+  const config = getConfig();
+  config[key] = value;
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
 function createWindow(): void {
@@ -121,6 +141,10 @@ function registerIpcHandlers(): void {
     (app as any).isQuitting = true;
     app.quit();
   });
+
+  // Config
+  ipcMain.handle('config:get', () => getConfig());
+  ipcMain.handle('config:set', (_, key: string, value: any) => setConfig(key, value));
 
   // Interpreter
   ipcMain.handle('interpreter:start', async () => {

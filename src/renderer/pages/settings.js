@@ -1,61 +1,156 @@
 import { showScreen } from '../app.js';
 
-export function initSettings() {
+export async function initSettings() {
   const screen = document.getElementById('settings-screen');
+  screen.innerHTML = ''; // Clear previous
+
+  const config = await window.yunisa.config.get();
+
   const container = document.createElement('div');
   container.className = 'models-container';
+  container.style.cssText = 'max-width: 800px; margin: 0 auto; padding-bottom: 3rem;';
+  
   const header = document.createElement('div');
-  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;';
+  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem;';
   const title = document.createElement('h2');
-  title.textContent = 'Settings';
+  title.style.cssText = 'color: #e94560; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase;';
+  title.textContent = 'Ecosystem Control Subsystem';
   header.appendChild(title);
+  
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-ghost';
-  backBtn.textContent = 'Back to Chat';
+  backBtn.textContent = '⟨ Initialize Chat Sequence';
   header.appendChild(backBtn);
   container.appendChild(header);
-  const aboutCard = document.createElement('div');
-  aboutCard.className = 'model-card';
-  const aboutTitle = document.createElement('h3');
-  aboutTitle.textContent = 'About YUNISA';
-  aboutCard.appendChild(aboutTitle);
-  const aboutMeta = document.createElement('p');
-  aboutMeta.className = 'model-meta';
-  aboutMeta.style.marginTop = '0.5rem';
-  aboutMeta.textContent = 'Version 1.0.0 | Local AI powered by BitNet.cpp | Your conversations never leave your computer.';
-  aboutCard.appendChild(aboutMeta);
-  container.appendChild(aboutCard);
-  const serverCard = document.createElement('div');
-  serverCard.className = 'model-card';
-  const serverTitle = document.createElement('h3');
-  serverTitle.textContent = 'Server Status';
-  serverCard.appendChild(serverTitle);
-  const serverStatus = document.createElement('p');
-  serverStatus.className = 'model-meta';
-  serverStatus.style.marginTop = '0.5rem';
-  serverStatus.textContent = 'Checking...';
-  serverCard.appendChild(serverStatus);
-  container.appendChild(serverCard);
-  const dataCard = document.createElement('div');
-  dataCard.className = 'model-card';
-  const dataTitle = document.createElement('h3');
-  dataTitle.textContent = 'Data Location';
-  dataCard.appendChild(dataTitle);
-  const dataDir = document.createElement('p');
-  dataDir.className = 'model-meta';
-  dataDir.style.marginTop = '0.5rem';
-  dataDir.textContent = 'Loading...';
-  dataCard.appendChild(dataDir);
-  container.appendChild(dataCard);
+
+  const createCard = (titleText, descText) => {
+    const card = document.createElement('div');
+    card.className = 'model-card';
+    card.style.cssText = 'margin-bottom: 1.5rem; padding: 1.5rem; border-left: 3px solid #00a1ff; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 1rem;';
+    const title = document.createElement('h3');
+    title.style.cssText = 'margin: 0; color: #fff; font-size: 1.1rem;';
+    title.textContent = titleText;
+    const desc = document.createElement('p');
+    desc.style.cssText = 'margin: 0; color: #aaa; font-size: 0.9rem;';
+    desc.textContent = descText;
+    card.appendChild(title);
+    card.appendChild(desc);
+    return card;
+  };
+
+  const createInput = (placeholder, key) => {
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.style.cssText = 'width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid #333; border-radius: 4px; outline: none; transition: border 0.2s; box-sizing: border-box;';
+    input.placeholder = placeholder;
+    input.value = config[key] || '';
+    input.addEventListener('focus', () => input.style.borderColor = '#00a1ff');
+    input.addEventListener('blur', () => input.style.borderColor = '#333');
+    input.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.value));
+    return input;
+  };
+
+  const createToggle = (labelStr, key) => {
+    const label = document.createElement('label');
+    label.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; color: #fff; cursor: pointer; user-select: none; font-size: 0.95rem;';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: #e94560; cursor: pointer;';
+    checkbox.checked = config[key] || false;
+    checkbox.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.checked));
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(labelStr));
+    return label;
+  };
+
+  const createSelect = (optionsMap, key) => {
+    const select = document.createElement('select');
+    select.style.cssText = 'width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid #333; border-radius: 4px; outline: none; cursor: pointer; box-sizing: border-box;';
+    optionsMap.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.value;
+      opt.textContent = p.text;
+      if (config[key] === p.value) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.value));
+    return select;
+  };
+
+  // 1. Hardware Monitor [System 01 DTIA]
+  const sysCard = createCard('System 01 [DTIA] Hardware Monitor', 'Real-time telemetry of the Dialectical Ternary Inference Architecture.');
+  sysCard.style.borderLeftColor = '#00ff00';
+  sysCard.innerHTML += `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; background: #0b0f19; padding: 1rem; border-radius: 6px;">
+        <div>
+            <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Compute Core</span>
+            <div id="rtx-status" style="color: #00ff00; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">SECURE</div>
+        </div>
+        <div>
+            <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Inference Engine</span>
+            <div id="server-stats" style="color: #00a1ff; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">Checking...</div>
+        </div>
+    </div>
+  `;
+  container.appendChild(sysCard);
+
+  // 2. Hardware Allocation
+  const allocCard = createCard('Resource Allocation', 'Configure local hardware bounds for the Yunisa runtime.');
+  allocCard.appendChild(createSelect([
+    {value: '4096', text: '4,096 Tokens (Standard)'},
+    {value: '8192', text: '8,192 Tokens (Extended)'},
+    {value: '16384', text: '16,384 Tokens (Developer)'},
+    {value: '32768', text: '32,768 Tokens (Maximum - RTX Requires)'}
+  ], 'contextSize'));
+  allocCard.appendChild(createSelect([
+    {value: 'auto', text: 'Auto-detect Physical Cores'},
+    {value: '4', text: '4 Threads (Low Power)'},
+    {value: '8', text: '8 Threads (Balanced)'},
+    {value: 'max', text: 'Max Threads (Aggressive)'}
+  ], 'cpuThreads'));
+  container.appendChild(allocCard);
+
+  // 3. System 08 [P.S.AI] Personas
+  const psaiCard = createCard('System 08 [P.S.AI] Identity Core', 'Bind Yunisa to specific Historical Figure Resurrection or Advisory personas.');
+  psaiCard.appendChild(createSelect([
+    { value: 'default', text: 'Baseline Intelligence (Default)' },
+    { value: 'sovereign', text: 'The Sovereign Advisor' },
+    { value: 'kinetic', text: 'Kinetic High-Energy Director' },
+    { value: 'cyberdeck', text: 'System 07 Cyberdeck Protocol' }
+  ], 'psaiCore'));
+  container.appendChild(psaiCard);
+
+  // 4. System 05 [CoRax] Governance
+  const coraxCard = createCard('System 05 [CoRax] Governance', 'Constitutional Agent framework filtering and output safety parameters.');
+  coraxCard.appendChild(createSelect([
+    { value: 'strict', text: 'Absolute Output Filtering (Strict)' },
+    { value: 'guarded', text: 'Constitutional Boundaries (Guarded)' },
+    { value: 'unrestricted', text: 'Unrestricted Developer Mode (Danger)' }
+  ], 'coraxLevel'));
+  container.appendChild(coraxCard);
+
+  // 5. System 06 [ITACHI] Mobile Sync
+  const itachiCard = createCard('System 06 [ITACHI] Mobile Sync', 'Enable ARM64 inference bridging to broadcast localhost server across the LAN.');
+  itachiCard.appendChild(createToggle('Expose 0.0.0.0 local network binding for ITACHI connection', 'itachiLANBinding'));
+  container.appendChild(itachiCard);
+
+  // 6. External Orbits [NIM]
+  const nimCard = createCard('NVIDIA Inference Microservices [NIM]', 'Secure bridge for offloading tensor operations beyond local hardware limits.');
+  nimCard.style.borderLeftColor = '#e94560';
+  nimCard.appendChild(createInput('nvapi-xxxxxxxxxxxxxxxxxxxxxxxx', 'nvidiaApiKey'));
+  nimCard.appendChild(createToggle('Airgap Mode: Prevent all outbound NIM/Internet telemetry automatically', 'airgapMode'));
+  container.appendChild(nimCard);
+
   screen.appendChild(container);
+
   backBtn.addEventListener('click', () => showScreen('chat'));
+
   const observer = new MutationObserver(async () => {
     if (screen.classList.contains('active')) {
       const status = await window.yunisa.server.status();
       const port = await window.yunisa.server.port();
-      serverStatus.textContent = 'Status: ' + status + ' | Port: ' + port;
-      const dir = await window.yunisa.app.getDataDir();
-      dataDir.textContent = dir;
+      const el = document.getElementById('server-stats');
+      if (el) el.textContent = status.toUpperCase() + ' // PORT: ' + port;
     }
   });
   observer.observe(screen, { attributes: true, attributeFilter: ['class'] });

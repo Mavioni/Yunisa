@@ -51,6 +51,11 @@ contextBridge.exposeInMainWorld('yunisa', {
     quit: () => ipcRenderer.invoke('app:quit'),
   },
 
+  config: {
+    get: () => ipcRenderer.invoke('config:get'),
+    set: (key: string, value: any) => ipcRenderer.invoke('config:set', key, value),
+  },
+
   updater: {
     onUpdateAvailable: (callback: (info: { version: string }) => void) => {
       ipcRenderer.on('updater:update-available', (_, info) => callback(info));
