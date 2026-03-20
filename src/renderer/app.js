@@ -3,6 +3,7 @@ import { initWelcome } from './pages/welcome.js';
 import { initModels } from './pages/models.js';
 import { initSettings } from './pages/settings.js';
 import { initInterpreter } from './pages/interpreter.js';
+import { initNemoclaw } from './pages/nemoclaw.js';
 
 const screens = {
   loading: document.getElementById('loading-screen'),
@@ -11,6 +12,7 @@ const screens = {
   interpreter: document.getElementById('interpreter-screen'),
   models: document.getElementById('models-screen'),
   settings: document.getElementById('settings-screen'),
+  nemoclaw: document.getElementById('nemoclaw-screen'),
 };
 
 export function showScreen(name) {
@@ -31,6 +33,7 @@ async function boot() {
   initSettings();
   initChat();
   initInterpreter();
+  initNemoclaw();
 
   // Setup auto-updater notifications
   window.yunisa.updater.onUpdateAvailable((info) => {
