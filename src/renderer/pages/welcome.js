@@ -81,6 +81,12 @@ export function initWelcome() {
   const step1 = document.createElement('div');
   step1.className = 'wizard-step active';
 
+  const logoImg = document.createElement('img');
+  logoImg.src = 'styles/logo.png';
+  logoImg.alt = 'YUNISA';
+  logoImg.className = 'wizard-logo-img';
+  step1.appendChild(logoImg);
+
   const logo = document.createElement('h1');
   logo.className = 'wizard-logo';
   logo.textContent = 'YUNISA';

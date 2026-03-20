@@ -5,35 +5,41 @@
 }
 
 :root {
-  --bg-base: #0a0a12;
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --bg-glass-hover: rgba(255, 255, 255, 0.07);
-  --bg-glass-active: rgba(255, 255, 255, 0.1);
-  --bg-glass-strong: rgba(255, 255, 255, 0.06);
-  --bg-frosted: rgba(15, 15, 25, 0.7);
-  --text-primary: #f0f0f5;
-  --text-secondary: rgba(240, 240, 245, 0.5);
-  --text-tertiary: rgba(240, 240, 245, 0.3);
-  --accent: #7c6aef;
-  --accent-glow: rgba(124, 106, 239, 0.25);
-  --accent-hover: #9585f5;
-  --accent-soft: rgba(124, 106, 239, 0.12);
-  --border: rgba(255, 255, 255, 0.06);
-  --border-light: rgba(255, 255, 255, 0.1);
-  --msg-user: rgba(124, 106, 239, 0.1);
-  --msg-assistant: rgba(255, 255, 255, 0.03);
+  /* Deep navy-slate base from logo background */
+  --bg-base: #0b1120;
+  --bg-glass: rgba(140, 180, 220, 0.04);
+  --bg-glass-hover: rgba(140, 180, 220, 0.08);
+  --bg-glass-active: rgba(140, 180, 220, 0.12);
+  --bg-glass-strong: rgba(140, 180, 220, 0.06);
+  --bg-frosted: rgba(11, 17, 32, 0.75);
+  --text-primary: #e4eaf4;
+  --text-secondary: rgba(200, 215, 235, 0.55);
+  --text-tertiary: rgba(200, 215, 235, 0.3);
+  /* Crystalline ice-blue accent from the gem */
+  --accent: #5ba4d9;
+  --accent-glow: rgba(91, 164, 217, 0.25);
+  --accent-hover: #7bbdee;
+  --accent-soft: rgba(91, 164, 217, 0.12);
+  /* Warm gold from the filigree */
+  --gold: #c8a44e;
+  --gold-glow: rgba(200, 164, 78, 0.2);
+  --gold-soft: rgba(200, 164, 78, 0.1);
+  --border: rgba(140, 180, 220, 0.08);
+  --border-light: rgba(140, 180, 220, 0.14);
+  --msg-user: rgba(91, 164, 217, 0.1);
+  --msg-assistant: rgba(140, 180, 220, 0.03);
   --success: #34d399;
   --success-soft: rgba(52, 211, 153, 0.12);
   --danger: #f87171;
   --danger-soft: rgba(248, 113, 113, 0.12);
-  --warning: #fbbf24;
+  --warning: #c8a44e;
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 16px;
   --glass-blur: blur(24px);
   --glass-border: 1px solid var(--border);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.35);
   --shadow-glow: 0 0 20px var(--accent-glow);
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -53,9 +59,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(124, 106, 239, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(52, 211, 153, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 50%, rgba(91, 164, 217, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(200, 164, 78, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(91, 130, 180, 0.06) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -84,6 +90,14 @@ body::before {
   color: var(--text-primary);
   margin-bottom: 2.5rem;
   text-shadow: 0 0 60px var(--accent-glow);
+}
+.logo-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  margin: 0 auto 1.5rem;
+  display: block;
+  box-shadow: 0 0 40px var(--accent-glow), 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 .spinner {
   width: 32px; height: 32px;
@@ -272,7 +286,7 @@ body::before {
   background: var(--msg-user);
   align-self: flex-end;
   border-bottom-right-radius: 4px;
-  border-color: rgba(124, 106, 239, 0.15);
+  border-color: rgba(91, 164, 217, 0.15);
 }
 .message.assistant, .message-assistant {
   background: var(--msg-assistant);
@@ -356,8 +370,8 @@ body::before {
 }
 #user-input:focus, #interp-input:focus {
   outline: none;
-  border-color: rgba(124, 106, 239, 0.4);
-  box-shadow: 0 0 0 3px rgba(124, 106, 239, 0.08);
+  border-color: rgba(91, 164, 217, 0.4);
+  box-shadow: 0 0 0 3px rgba(91, 164, 217, 0.08);
 }
 #user-input::placeholder, #interp-input::placeholder {
   color: var(--text-tertiary);
@@ -376,12 +390,20 @@ body::before {
   text-align: center;
 }
 .wizard-logo {
-  font-size: 3rem;
+  font-size: 2.6rem;
   font-weight: 200;
   letter-spacing: 0.5em;
   color: var(--text-primary);
   margin-bottom: 0.75rem;
   text-shadow: 0 0 80px var(--accent-glow);
+}
+.wizard-logo-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 22px;
+  margin: 0 auto 1.5rem;
+  display: block;
+  box-shadow: 0 0 60px var(--accent-glow), 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 .wizard-tagline {
   font-size: 0.88rem;
@@ -784,6 +806,33 @@ body::before {
   flex-shrink: 0;
 }
 
+.interp-search-results {
+  background: rgba(91, 164, 217, 0.06);
+  border: 1px solid rgba(91, 164, 217, 0.12);
+  border-radius: var(--radius);
+  margin: 0.5rem 1.25rem;
+  overflow: hidden;
+  backdrop-filter: var(--glass-blur);
+}
+.interp-search-results .interp-lang-badge {
+  background: rgba(91, 164, 217, 0.1);
+  color: var(--accent);
+  border-bottom-color: rgba(91, 164, 217, 0.12);
+}
+.interp-search-content {
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.interp-search-content strong {
+  color: var(--text-primary);
+}
+
+.interp-search-indicator::before {
+  border-top-color: var(--accent) !important;
+}
+
 .message-error {
   background: var(--danger-soft);
   border: 1px solid rgba(248, 113, 113, 0.15);
@@ -804,6 +853,17 @@ body::before {
 
 /* ═══════════════ Selection ═══════════════ */
 ::selection {
-  background: rgba(124, 106, 239, 0.3);
+  background: rgba(91, 164, 217, 0.3);
   color: white;
+}
+
+/* Gold accent for active states */
+.conversation-item.active {
+  border-left: 2px solid var(--gold);
+  background: var(--gold-soft);
+}
+.badge[style*="success"] {
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-color: rgba(200, 164, 78, 0.2);
 }

@@ -1,37 +1,120 @@
-"""Thin Python bridge between Electron and the local LLM + code executor.
+"""YUNISA Agent Bridge — connects Electron to local LLM + code execution + web search.
 
 Communicates via stdin/stdout using newline-delimited JSON.
-Uses only stdlib (no pip dependencies) — urllib for HTTP, json for protocol.
+Uses only stdlib (no pip dependencies).
 """
 
 import json
 import re
 import sys
+import traceback
 import urllib.request
 import urllib.error
 from executor import execute
+from web_search import search, fetch_page
+from computer_use import run_tool as computer_tool, TOOLS as COMPUTER_TOOLS
 
 # Configuration (set by 'configure' command)
 port = 8080
 model = "bitnet"
-max_loops = 5  # max LLM->execute->LLM loops per user message
+max_loops = 8  # max agent iterations per user message
 
 SYSTEM_PROMPT = """\
-You are YUNISA Interpreter, an AI assistant that can execute code on the user's computer.
+You are YUNISA, an AI agent running locally on the user's Windows computer.
+You can execute code, search the web, AND control the computer's GUI.
 
-When the user asks you to do something that requires code, write the code in a fenced markdown code block with the language specified. For example:
+## Available Actions
+
+### 1. Execute Code
+Write code in a fenced markdown block with the language tag:
 
 ```python
-print("hello")
+print("hello world")
 ```
 
-Supported languages: python, javascript, bash, powershell.
+Supported: python, javascript, bash, powershell
+Code runs automatically. You will see the output.
 
-After you write code, it will be executed automatically and you will see the output. Use it to verify your work and continue if needed.
+### 2. Web Search
+To search the web for current information:
 
-When you are done and no more code needs to run, respond in plain text without any code blocks.
+```search
+your search query here
+```
 
-Keep responses concise. Prefer Python for general tasks.\
+### 3. Read Web Page
+To read the full text of a URL:
+
+```fetch
+https://example.com/page
+```
+
+### 4. Computer Control (GUI Agent)
+To interact with the screen, use JSON inside a `tool` block:
+
+```tool
+{"name": "screenshot"}
+```
+Captures the screen and returns OCR text of everything visible.
+
+```tool
+{"name": "click", "args": {"x": 500, "y": 300}}
+```
+Clicks at screen coordinates. Options: button ("left"/"right"), clicks (1/2).
+
+```tool
+{"name": "type", "args": {"text": "hello world"}}
+```
+Types text at the current cursor position.
+
+```tool
+{"name": "hotkey", "args": {"keys": ["ctrl", "c"]}}
+```
+Presses a keyboard shortcut.
+
+```tool
+{"name": "press", "args": {"key": "enter"}}
+```
+Presses a single key (enter, tab, escape, backspace, etc).
+
+```tool
+{"name": "scroll", "args": {"clicks": -3}}
+```
+Scrolls the mouse wheel. Negative = down, positive = up.
+
+```tool
+{"name": "list_windows"}
+```
+Lists all open windows with titles.
+
+```tool
+{"name": "focus_window", "args": {"title": "Notepad"}}
+```
+Brings a window to the foreground by partial title match.
+
+```tool
+{"name": "screen_size"}
+```
+Returns the screen resolution.
+
+```tool
+{"name": "mouse_position"}
+```
+Returns the current mouse cursor position.
+
+## Agent Workflow for GUI Tasks
+1. Take a screenshot to see what's on screen
+2. Read the OCR text to understand the current state
+3. Decide what action to take (click, type, etc.)
+4. Take another screenshot to verify the result
+5. Repeat until the task is complete
+
+## Guidelines
+- For current events, news, prices, weather: ALWAYS search first.
+- For file/system tasks: prefer code over GUI.
+- For app interaction (browsers, editors, etc.): use GUI tools.
+- Do NOT import pyautogui or PIL directly — use the tool blocks above instead.
+- Keep responses concise. When done, reply in plain text without code blocks.
 """
 
 
@@ -41,20 +124,30 @@ def emit(obj: dict):
     sys.stdout.flush()
 
 
-def parse_code_blocks(text: str) -> list[dict]:
-    """Extract fenced code blocks from markdown text."""
-    pattern = r"```(\w*)\s*\n([\s\S]*?)```"
-    blocks = []
+def parse_actions(text: str) -> list[dict]:
+    """Extract all action blocks (code, search, fetch, tool) from markdown."""
+    pattern = r"```(\w+)\s*\n([\s\S]*?)```"
+    actions = []
     for match in re.finditer(pattern, text):
-        lang = match.group(1) or "python"
-        code = match.group(2).rstrip()
-        blocks.append({"language": lang, "code": code})
-    return blocks
-
-
-def strip_code_blocks(text: str) -> str:
-    """Return text with code blocks removed (just the prose)."""
-    return re.sub(r"```\w*\s*\n[\s\S]*?```", "", text).strip()
+        tag = match.group(1).lower()
+        content = match.group(2).rstrip()
+        if tag == "search":
+            actions.append({"type": "search", "query": content})
+        elif tag == "fetch":
+            actions.append({"type": "fetch", "url": content.strip()})
+        elif tag == "tool":
+            try:
+                tool_data = json.loads(content)
+                actions.append({
+                    "type": "tool",
+                    "name": tool_data.get("name", ""),
+                    "args": tool_data.get("args", {}),
+                })
+            except json.JSONDecodeError:
+                actions.append({"type": "code", "language": "json", "code": content})
+        else:
+            actions.append({"type": "code", "language": tag, "code": content})
+    return actions
 
 
 def call_llm(messages: list[dict], session_id: str) -> str:
@@ -86,10 +179,13 @@ def call_llm(messages: list[dict], session_id: str) -> str:
                     break
                 try:
                     parsed = json.loads(data)
-                    delta = parsed.get("choices", [{}])[0].get("delta", {}).get("content")
+                    delta = (
+                        parsed.get("choices", [{}])[0]
+                        .get("delta", {})
+                        .get("content")
+                    )
                     if delta:
                         full_response += delta
-                        # Stream text chunks to the UI
                         emit({
                             "type": "text_delta",
                             "content": delta,
@@ -98,9 +194,17 @@ def call_llm(messages: list[dict], session_id: str) -> str:
                 except (json.JSONDecodeError, IndexError, KeyError):
                     continue
     except urllib.error.URLError as e:
+        reason = str(getattr(e, "reason", e))
         emit({
             "type": "error",
-            "content": f"Failed to reach AI engine: {e.reason}",
+            "content": f"Failed to reach AI engine: {reason}",
+            "session_id": session_id,
+        })
+        return ""
+    except Exception as e:
+        emit({
+            "type": "error",
+            "content": f"LLM connection error: {e}",
             "session_id": session_id,
         })
         return ""
@@ -108,8 +212,60 @@ def call_llm(messages: list[dict], session_id: str) -> str:
     return full_response
 
 
+def handle_search(query: str, session_id: str) -> str:
+    """Run a web search and return formatted results."""
+    emit({
+        "type": "search_start",
+        "query": query,
+        "session_id": session_id,
+    })
+
+    results = search(query, max_results=5)
+
+    if not results:
+        output = "No search results found."
+    else:
+        lines = []
+        for i, r in enumerate(results, 1):
+            lines.append(f"{i}. **{r['title']}**")
+            lines.append(f"   URL: {r['url']}")
+            if r["snippet"]:
+                lines.append(f"   {r['snippet'][:200]}")
+            lines.append("")
+        output = "\n".join(lines)
+
+    emit({
+        "type": "search_results",
+        "content": output,
+        "count": len(results),
+        "session_id": session_id,
+    })
+
+    return output
+
+
+def handle_fetch(url: str, session_id: str) -> str:
+    """Fetch a web page and return its text content."""
+    emit({
+        "type": "fetch_start",
+        "url": url,
+        "session_id": session_id,
+    })
+
+    content = fetch_page(url, max_chars=6000)
+
+    emit({
+        "type": "fetch_result",
+        "content": content[:500] + ("..." if len(content) > 500 else ""),
+        "url": url,
+        "session_id": session_id,
+    })
+
+    return content
+
+
 def handle_message(content: str, session_id: str):
-    """Process a user message: LLM call -> parse code -> execute -> loop."""
+    """Agent loop: LLM call -> parse actions -> execute -> feed back -> repeat."""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": content},
@@ -121,49 +277,95 @@ def handle_message(content: str, session_id: str):
         if not response_text:
             break
 
-        # Parse code blocks
-        code_blocks = parse_code_blocks(response_text)
+        # Parse actions from the response
+        actions = parse_actions(response_text)
 
-        # If no code blocks, we're done
-        if not code_blocks:
+        # If no actions, the agent is done
+        if not actions:
             emit({"type": "done", "session_id": session_id})
             return
 
-        # Execute each code block
         messages.append({"role": "assistant", "content": response_text})
 
-        for block in code_blocks:
-            emit({
-                "type": "code",
-                "language": block["language"],
-                "content": block["code"],
-                "session_id": session_id,
-            })
-            emit({
-                "type": "execution_start",
-                "language": block["language"],
-                "session_id": session_id,
-            })
+        # Execute each action
+        for action in actions:
+            if action["type"] == "search":
+                result_text = handle_search(action["query"], session_id)
+                messages.append({
+                    "role": "user",
+                    "content": f"Search results for \"{action['query']}\":\n{result_text}",
+                })
 
-            result = execute(block["language"], block["code"])
+            elif action["type"] == "fetch":
+                result_text = handle_fetch(action["url"], session_id)
+                messages.append({
+                    "role": "user",
+                    "content": f"Page content from {action['url']}:\n{result_text[:4000]}",
+                })
 
-            output = result["stdout"]
-            if result["stderr"]:
-                output += ("\n" if output else "") + result["stderr"]
-            output = output.strip() or "(no output)"
+            elif action["type"] == "tool":
+                tool_name = action["name"]
+                tool_args = action.get("args", {})
 
-            emit({
-                "type": "execution_output",
-                "content": output,
-                "exit_code": result["exit_code"],
-                "session_id": session_id,
-            })
+                # Handle hotkey args (list → positional)
+                if tool_name == "hotkey" and "keys" in tool_args:
+                    keys = tool_args.pop("keys")
+                    tool_args = {}  # clear, pass keys positionally below
+                    from computer_use import keyboard_hotkey
+                    result_data = keyboard_hotkey(*keys)
+                else:
+                    result_data = computer_tool(tool_name, tool_args)
 
-            # Feed output back to LLM for the next iteration
-            messages.append({
-                "role": "user",
-                "content": f"Code execution result (exit code {result['exit_code']}):\n```\n{output}\n```",
-            })
+                emit({
+                    "type": "tool_result",
+                    "name": tool_name,
+                    "content": json.dumps(result_data, default=str),
+                    "session_id": session_id,
+                })
+
+                # Feed result back to LLM
+                if isinstance(result_data, dict) and "text" in result_data:
+                    # Screenshot OCR — send the text content
+                    feedback = f"Screen OCR text ({result_data.get('width', '?')}x{result_data.get('height', '?')}):\n{result_data['text'][:3000]}"
+                else:
+                    feedback = f"Tool '{tool_name}' result: {json.dumps(result_data, default=str)}"
+
+                messages.append({
+                    "role": "user",
+                    "content": feedback,
+                })
+
+            elif action["type"] == "code":
+                emit({
+                    "type": "code",
+                    "language": action["language"],
+                    "content": action["code"],
+                    "session_id": session_id,
+                })
+                emit({
+                    "type": "execution_start",
+                    "language": action["language"],
+                    "session_id": session_id,
+                })
+
+                result = execute(action["language"], action["code"])
+
+                output = result["stdout"]
+                if result["stderr"]:
+                    output += ("\n" if output else "") + result["stderr"]
+                output = output.strip() or "(no output)"
+
+                emit({
+                    "type": "execution_output",
+                    "content": output,
+                    "exit_code": result["exit_code"],
+                    "session_id": session_id,
+                })
+
+                messages.append({
+                    "role": "user",
+                    "content": f"Code execution result (exit code {result['exit_code']}):\n```\n{output}\n```",
+                })
 
     emit({"type": "done", "session_id": session_id})
 
@@ -198,7 +400,7 @@ def main():
             except Exception as e:
                 emit({
                     "type": "error",
-                    "content": str(e),
+                    "content": f"{e}\n{traceback.format_exc()}",
                     "session_id": session_id,
                 })
 

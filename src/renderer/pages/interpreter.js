@@ -185,6 +185,104 @@ function handleChunk(chunk) {
       break;
     }
 
+    case 'search_start': {
+      currentTextEl = null;
+      currentTextContent = '';
+      const searchSpinner = document.createElement('div');
+      searchSpinner.className = 'interp-executing interp-search-indicator';
+      searchSpinner.id = 'interp-search-spinner';
+      searchSpinner.textContent = 'Searching: ' + chunk.query;
+      messages.appendChild(searchSpinner);
+      scrollToBottom();
+      break;
+    }
+
+    case 'search_results': {
+      const ss = document.getElementById('interp-search-spinner');
+      if (ss) ss.remove();
+
+      const searchBox = document.createElement('div');
+      searchBox.className = 'interp-search-results';
+
+      const searchHeader = document.createElement('span');
+      searchHeader.className = 'interp-lang-badge';
+      searchHeader.textContent = chunk.count + ' result' + (chunk.count !== 1 ? 's' : '');
+      searchBox.appendChild(searchHeader);
+
+      const searchContent = document.createElement('div');
+      searchContent.className = 'interp-search-content';
+      renderMarkdown(searchContent, chunk.content);
+      searchBox.appendChild(searchContent);
+
+      messages.appendChild(searchBox);
+      scrollToBottom();
+      break;
+    }
+
+    case 'fetch_start': {
+      currentTextEl = null;
+      currentTextContent = '';
+      const fetchSpinner = document.createElement('div');
+      fetchSpinner.className = 'interp-executing';
+      fetchSpinner.id = 'interp-fetch-spinner';
+      fetchSpinner.textContent = 'Reading page...';
+      messages.appendChild(fetchSpinner);
+      scrollToBottom();
+      break;
+    }
+
+    case 'fetch_result': {
+      const fs = document.getElementById('interp-fetch-spinner');
+      if (fs) fs.remove();
+
+      const fetchBox = document.createElement('div');
+      fetchBox.className = 'interp-output success';
+      const fetchPre = document.createElement('pre');
+      fetchPre.textContent = chunk.content;
+      fetchBox.appendChild(fetchPre);
+      messages.appendChild(fetchBox);
+      scrollToBottom();
+      break;
+    }
+
+    case 'tool_result': {
+      currentTextEl = null;
+      currentTextContent = '';
+      // Remove any active spinner
+      const ts = document.getElementById('interp-exec-spinner') ||
+                 document.getElementById('interp-search-spinner') ||
+                 document.getElementById('interp-fetch-spinner');
+      if (ts) ts.remove();
+
+      const toolBox = document.createElement('div');
+      toolBox.className = 'interp-output success';
+
+      const toolLabel = document.createElement('div');
+      toolLabel.style.cssText = 'font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-tertiary);margin-bottom:0.3rem;';
+      toolLabel.textContent = chunk.name;
+      toolBox.appendChild(toolLabel);
+
+      const toolPre = document.createElement('pre');
+      try {
+        const parsed = JSON.parse(chunk.content);
+        if (parsed.text) {
+          // OCR result — show text content
+          toolPre.textContent = parsed.text.substring(0, 1000) + (parsed.text.length > 1000 ? '...' : '');
+        } else if (parsed.error) {
+          toolBox.className = 'interp-output error';
+          toolPre.textContent = parsed.error;
+        } else {
+          toolPre.textContent = chunk.content;
+        }
+      } catch {
+        toolPre.textContent = chunk.content;
+      }
+      toolBox.appendChild(toolPre);
+      messages.appendChild(toolBox);
+      scrollToBottom();
+      break;
+    }
+
     case 'done':
       setRunning(false);
       currentTextEl = null;
