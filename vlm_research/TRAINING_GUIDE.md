@@ -28,10 +28,6 @@ graph TD
     B -->|2. Image Embeddings| C{MLP Projector Layer}
     C -->|3. Alignment Mapping| D[1-Bit BitNet ForCausalLM]
     D --> E[Predicted Action / Text Response]
-    
-    style B fill:#1e4d2b,stroke="#00ff00",color:#fff
-    style C fill:#4b0082,stroke="#9d00ff",color:#fff
-    style D fill:#003f5c,stroke="#00a1ff",color:#fff
 ```
 
 <!-- slide -->

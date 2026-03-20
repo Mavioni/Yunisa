@@ -72,8 +72,4 @@ flowchart TD
     F --> G[Restart Yunisa App]
     G --> H[llama-server Loads VLM]
     H --> I[Agent-S Sees Webpages Locally!]
-    
-    style A fill:#ff9900,color:#fff
-    style D fill:#003f5c,color:#fff
-    style I fill:#00ff00,stroke:#333,color:#000
 ```
