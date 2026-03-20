@@ -137,10 +137,10 @@ export async function initSettings() {
   nimCard.appendChild(createToggle('Airgap Mode: Prevent all outbound NIM/Internet telemetry automatically', 'airgapMode'));
   container.appendChild(nimCard);
 
-  // 7. OpenClaw Sandbox Boundary
-  const clawCard = createCard('OpenClaw Ecosystem Sandbox', 'Configure network permissions for the NemoClaw Agent container.');
+  // 7. NemoClaw Sandbox Boundary
+  const clawCard = createCard('NemoClaw Ecosystem Sandbox', 'Configure network permissions for the NemoClaw Agent container.');
   clawCard.style.borderLeftColor = '#f59e0b';
-  clawCard.appendChild(createToggle('Enable Online Mode (Allow OpenClaw agents unrestricted live internet access)', 'openclawOnlineMode'));
+  clawCard.appendChild(createToggle('Enable Online Mode (Allow NemoClaw agents unrestricted live internet access)', 'nemoclawOnlineMode'));
   container.appendChild(clawCard);
 
   screen.appendChild(container);
