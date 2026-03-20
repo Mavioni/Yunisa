@@ -4,6 +4,10 @@ export function initNemoclaw() {
   const container = document.getElementById('nemoclaw-screen');
   container.innerHTML = '';
   
+  // Force column layout so the header stacks above the iframe
+  container.style.flexDirection = 'column';
+  container.style.width = '100%';
+  
   // Add a top header bar for navigating back, because iframes eat inputs sometimes
   const header = document.createElement('div');
   header.style.cssText = 'height: 50px; background: #0f3460; display: flex; align-items: center; padding: 0 1rem; justify-content: space-between; border-bottom: 2px solid #00ff00;';
