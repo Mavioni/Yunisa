@@ -129,10 +129,6 @@ export async function initSettings() {
   ], 'coraxLevel'));
   container.appendChild(coraxCard);
 
-  // 5. System 06 [ITACHI] Mobile Sync
-  const itachiCard = createCard('System 06 [ITACHI] Mobile Sync', 'Enable ARM64 inference bridging to broadcast localhost server across the LAN.');
-  itachiCard.appendChild(createToggle('Expose 0.0.0.0 local network binding for ITACHI connection', 'itachiLANBinding'));
-  container.appendChild(itachiCard);
 
   // 6. External Orbits [NIM]
   const nimCard = createCard('NVIDIA Inference Microservices [NIM]', 'Secure bridge for offloading tensor operations beyond local hardware limits.');
