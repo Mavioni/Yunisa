@@ -12,10 +12,9 @@ export function initVlm() {
 
   // ── Header ───────────────────────────────────────────────────────
   const header = document.createElement('div');
-  header.style.cssText = 'height: 60px; background: linear-gradient(90deg, #1f1105 0%, #0d1117 100%); display: flex; align-items: center; padding: 0 1.5rem; justify-content: space-between; border-bottom: 2px solid #ff9900; box-shadow: 0 4px 15px rgba(255, 153, 0, 0.1);';
+  header.className = 'vlm-header';
   
   const title = document.createElement('h3');
-  title.style.cssText = 'color: #fff; margin: 0; font-size: 1.1rem; letter-spacing: 1px;';
   title.innerHTML = '<span style="color:#ff9900; font-size: 1.3rem;">◈</span> VLM MATRIX STUDIO';
   header.appendChild(title);
 
@@ -25,11 +24,11 @@ export function initVlm() {
 
   const trainBtn = document.createElement('button');
   trainBtn.textContent = 'Commence VLM Alignment';
-  trainBtn.style.cssText = 'background: #ff9900; color: #000; border: none; border-radius: 4px; padding: 0.5rem 1.5rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; text-transform: uppercase;';
+  trainBtn.className = 'vlm-train-btn';
   
   const stopBtn = document.createElement('button');
   stopBtn.textContent = 'HALT';
-  stopBtn.style.cssText = 'background: transparent; color: #f44336; border: 1px solid #f44336; border-radius: 4px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; display: none;';
+  stopBtn.className = 'vlm-halt-btn';
   
   controls.appendChild(stopBtn);
   controls.appendChild(trainBtn);
@@ -38,21 +37,24 @@ export function initVlm() {
 
   // ── Dashboard Body ───────────────────────────────────────────────
   const body = document.createElement('div');
-  body.style.cssText = 'flex: 1; display: flex; flex-direction: column; padding: 1.5rem; gap: 1.5rem; overflow: hidden; max-width: 1200px; margin: 0 auto; width: 100%;';
+  body.className = 'vlm-body';
   
   // Stats Row
   const statsRow = document.createElement('div');
-  statsRow.style.cssText = 'display: flex; gap: 1rem; height: 100px;';
+  statsRow.className = 'vlm-stats-row';
   
   const createCard = (label, color) => {
     const card = document.createElement('div');
-    card.style.cssText = `flex: 1; background: #161b22; border: 1px solid #30363d; border-radius: 8px; border-top: 3px solid ${color}; padding: 1rem; display: flex; flex-direction: column; justify-content: center;`;
+    card.className = 'vlm-stat-card';
+    card.style.borderTopColor = color;
+    card.style.borderTopWidth = '3px';
+    card.style.borderTopStyle = 'solid';
     const titleObj = document.createElement('div');
     titleObj.textContent = label;
-    titleObj.style.cssText = 'font-size: 0.8rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;';
+    titleObj.className = 'vlm-stat-label';
     const valueObj = document.createElement('div');
     valueObj.textContent = '---';
-    valueObj.style.cssText = 'font-size: 1.8rem; font-weight: bold; color: #fff;';
+    valueObj.className = 'vlm-stat-value';
     card.appendChild(titleObj);
     card.appendChild(valueObj);
     return { card, valueObj };
@@ -70,11 +72,11 @@ export function initVlm() {
   // Terminal Console
   const termHeader = document.createElement('div');
   termHeader.innerHTML = '<span style="color: #ff9900;">⚡</span> TENSOR OPERATIONS LOG';
-  termHeader.style.cssText = 'font-size: 0.85rem; color: #8b949e; letter-spacing: 1px; margin-bottom: -1rem;';
+  termHeader.className = 'vlm-term-label';
   body.appendChild(termHeader);
 
   const term = document.createElement('div');
-  term.style.cssText = 'flex: 1; background: #000; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; overflow-y: auto; font-family: "Courier New", Courier, monospace; font-size: 0.85rem; line-height: 1.5; color: #a5d6ff;';
+  term.className = 'vlm-terminal';
   body.appendChild(term);
   container.appendChild(body);
 

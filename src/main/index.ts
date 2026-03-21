@@ -93,7 +93,6 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
-    // mainWindow?.webContents.openDevTools(); // open devtools for user too
   });
 
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {

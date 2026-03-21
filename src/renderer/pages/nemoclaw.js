@@ -10,10 +10,10 @@ export function initNemoclaw() {
 
   // ── Header & Tabs ──────────────────────────────────────────────
   const header = document.createElement('div');
-  header.style.cssText = 'height: 55px; background: rgba(5,5,5,0.7); display: flex; align-items: center; padding: 0 1.5rem; border-bottom: 1px solid var(--border); gap: 1rem; backdrop-filter: blur(20px);';
+  header.className = 'sandbox-header';
   
   const titleGroup = document.createElement('div');
-  titleGroup.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; margin-right: 2rem;';
+  titleGroup.className = 'sandbox-title-group';
   titleGroup.innerHTML = '<span style="color:var(--green); font-size: 1.2rem;">⟐</span><span style="font-family: var(--font-display); font-weight: 500; font-size: 1rem; letter-spacing: 0.1em; color: #fff;">SANDBOX</span>';
   header.appendChild(titleGroup);
 
@@ -53,7 +53,7 @@ export function initNemoclaw() {
 
   // ── Main Content Area ───────────────────────────────────────────
   const contentArea = document.createElement('div');
-  contentArea.style.cssText = 'flex: 1; position: relative; background: var(--bg-void); display: flex; flex-direction: column; overflow: hidden;';
+  contentArea.className = 'sandbox-content';
   container.appendChild(contentArea);
 
   // ── Tab 1: OpenShell Dashboard ──────────────────────────────────
@@ -62,12 +62,7 @@ export function initNemoclaw() {
 
   const fallback = document.createElement('div');
   fallback.id = 'nemoclaw-fallback';
-  fallback.style.cssText = `
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    text-align: center; color: var(--text-tertiary); z-index: 2; pointer-events: auto; width: 100%; max-width: 400px;
-    background: var(--bg-card); padding: 3rem; border-radius: var(--radius-lg); border: 1px solid var(--border-light);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5); backdrop-filter: var(--blur);
-  `;
+  fallback.className = 'sandbox-fallback';
   fallback.innerHTML = `
     <div style="width: 70px; height: 70px; margin: 0 auto 1.5rem; border-radius: 50%; border: 2px solid var(--red); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--red-soft);">
       <span style="font-size: 1.8rem; color: var(--red);">⟐</span>
@@ -158,7 +153,7 @@ export function initNemoclaw() {
 
   // ── Tab 3: NVIDIA TRT ──────────────────────────────────────────
   const panelTrt = document.createElement('div');
-  panelTrt.style.cssText = 'width: 100%; height: 100%; display: none; align-items: center; justify-content: center; flex-direction: column; color: var(--text-tertiary); font-family: var(--font-display);';
+  panelTrt.className = 'sandbox-trt-panel';
   panelTrt.innerHTML = `
     <span style="font-size: 3rem; margin-bottom: 1rem; color: #76b900;">⚙️</span>
     <h3 style="color: #76b900; letter-spacing: 0.1em; margin-bottom: 0.5rem;">NVIDIA TENSORRT INTEGRATION</h3>
@@ -179,14 +174,12 @@ export function initNemoclaw() {
       t.style.color = 'var(--text-secondary)';
     });
     
-    panels[tabName].style.display = tabName === 'OpenShell' ? 'flex' : (tabName === 'Cli' ? 'flex' : 'flex');
+    panels[tabName].style.display = 'flex';
     const activeTab = tabs[tabName];
     activeTab.dataset.active = "true";
     activeTab.style.color = 'var(--blue)';
     activeTab.style.background = 'rgba(59, 130, 246, 0.1)';
     activeTab.style.border = '1px solid rgba(59, 130, 246, 0.2)';
-    
-    if (tabName === 'Cli') cliInput.focus();
   };
 
   tabOpenShell.onclick = () => switchTab('OpenShell');

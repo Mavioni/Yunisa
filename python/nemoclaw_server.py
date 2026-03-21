@@ -247,7 +247,14 @@ def execute_task():
         screenshot.save(buffered, format="PNG")
 
         obs = {"screenshot": buffered.getvalue()}
-        info, action = agent.predict(instruction=instruction, observation=obs)
+        try:
+            info, action = agent.predict(instruction=instruction, observation=obs)
+        except Exception as fmt_err:
+            # BitNet often can't produce structured Agent-S JSON — fall back gracefully
+            return jsonify({
+                'result': f'[Text-Only Mode] Agent processed your request but could not format a structured response. '
+                          f'Raw output: {str(fmt_err)[:500]}'
+            })
 
         return jsonify({
             'result': f'Agent planned {len(action)} action(s). Info: {str(json.dumps(info, default=str))[:500]}'
