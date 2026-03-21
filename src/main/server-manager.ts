@@ -129,8 +129,19 @@ export class ServerManager {
   private waitForHealth(timeoutMs: number): Promise<boolean> {
     const startTime = Date.now();
     return new Promise((resolve) => {
+      let isResolved = false;
+
       const check = () => {
+        if (isResolved) return;
+        // Fast-fail if the server process crashed before timeout
+        if (this.status === 'error' && !this.process) {
+          isResolved = true;
+          resolve(false);
+          return;
+        }
+
         if (Date.now() - startTime > timeoutMs) {
+          isResolved = true;
           resolve(false);
           return;
         }
@@ -138,6 +149,7 @@ export class ServerManager {
         const req = http.get(`http://127.0.0.1:${this.port}/health`, (res) => {
           res.resume(); // drain the response body
           if (res.statusCode === 200) {
+            isResolved = true;
             resolve(true);
           } else {
             // Server is up but not ready yet (e.g. 503 while loading model) — retry
@@ -145,13 +157,21 @@ export class ServerManager {
           }
         });
 
+        let errorHandled = false;
+        
         req.on('error', () => {
-          setTimeout(check, 500);
+          if (!errorHandled) {
+            errorHandled = true;
+            setTimeout(check, 500);
+          }
         });
 
         req.setTimeout(2000, () => {
-          req.destroy();
-          setTimeout(check, 500);
+          if (!errorHandled) {
+            errorHandled = true;
+            req.destroy();
+            setTimeout(check, 500);
+          }
         });
       };
 
