@@ -198,7 +198,7 @@ def execute_task():
         import pyautogui
         import io
         from gui_agents.s3.agents.agent_s import AgentS3
-        from gui_agents.s3.agents.grounding import OSWorldACI
+        from gui_agents.s1.aci.WindowsOSACI import WindowsACI
 
         engine_params = {
             "engine_type": "openai",
@@ -207,29 +207,8 @@ def execute_task():
             "api_key": "sk-local",
         }
 
-        # Create a lightweight desktop environment stub for OSWorldACI
-        class DesktopEnv:
-            """Minimal env shim for native Windows desktop Agent-S execution."""
-            def __init__(self):
-                self.width = pyautogui.size()[0]
-                self.height = pyautogui.size()[1]
-            def screenshot(self):
-                return pyautogui.screenshot()
-            def execute(self, action):
-                pass  # Actions are dispatched via pyautogui directly
-            def reset(self):
-                pass
-
-        env = DesktopEnv()
-
-        grounding_agent = OSWorldACI(
-            env,
-            platform="windows",
-            engine_params_for_generation=engine_params,
-            engine_params_for_grounding=engine_params,
-            width=env.width,
-            height=env.height,
-        )
+        # WindowsACI is the native Windows grounding agent
+        grounding_agent = WindowsACI(top_app_only=True, ocr=False)
 
         agent = AgentS3(
             engine_params,
