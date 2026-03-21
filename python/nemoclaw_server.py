@@ -207,12 +207,28 @@ def execute_task():
             "api_key": "sk-local",
         }
 
+        # Create a lightweight desktop environment stub for OSWorldACI
+        class DesktopEnv:
+            """Minimal env shim for native Windows desktop Agent-S execution."""
+            def __init__(self):
+                self.width = pyautogui.size()[0]
+                self.height = pyautogui.size()[1]
+            def screenshot(self):
+                return pyautogui.screenshot()
+            def execute(self, action):
+                pass  # Actions are dispatched via pyautogui directly
+            def reset(self):
+                pass
+
+        env = DesktopEnv()
+
         grounding_agent = OSWorldACI(
+            env,
             platform="windows",
             engine_params_for_generation=engine_params,
             engine_params_for_grounding=engine_params,
-            width=1920,
-            height=1080,
+            width=env.width,
+            height=env.height,
         )
 
         agent = AgentS3(
