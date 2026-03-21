@@ -70,6 +70,38 @@ export async function initSettings() {
     return select;
   };
 
+  // 0. App Navigation & Interface
+  const navCard = createCard('Application Interface & Navigation', 'Control global layout geometry, themes, and workspace data.');
+  navCard.style.borderLeftColor = '#9c27b0';
+  navCard.appendChild(createSelect([
+    { value: 'dark', text: 'Obsidian Glass (Dark Default)' },
+    { value: 'light', text: 'Luminous (Light Edition)' }
+  ], 'theme'));
+  const themeSelect = navCard.querySelector('select');
+  themeSelect.addEventListener('change', (e) => {
+    document.body.setAttribute('data-theme', e.target.value);
+  });
+  
+  const clearChatsBtn = document.createElement('button');
+  clearChatsBtn.className = 'btn btn-danger';
+  clearChatsBtn.style.cssText = 'font-size: 0.85rem; margin-top: 1rem;';
+  clearChatsBtn.textContent = 'Clear All Conversations';
+  clearChatsBtn.addEventListener('click', async () => {
+    if (confirm('Are you absolutely sure you want to permanently delete all Chat conversations?')) {
+      clearChatsBtn.disabled = true;
+      clearChatsBtn.textContent = 'Clearing...';
+      try {
+        await window.yunisa.conversations.deleteAll();
+        clearChatsBtn.textContent = 'Conversations Cleared ✓';
+      } catch (err) {
+        clearChatsBtn.textContent = 'Error Clearing Data';
+      }
+      setTimeout(() => { clearChatsBtn.textContent = 'Clear All Conversations'; clearChatsBtn.disabled = false; }, 3000);
+    }
+  });
+  navCard.appendChild(clearChatsBtn);
+  container.appendChild(navCard);
+
   // 1. Hardware Monitor [System 01 DTIA]
   const sysCard = createCard('System 01 [DTIA] Hardware Monitor', 'Real-time telemetry of the Dialectical Ternary Inference Architecture.');
   sysCard.style.borderLeftColor = '#4caf50';
@@ -85,6 +117,7 @@ export async function initSettings() {
         </div>
     </div>
   `;
+  sysCard.appendChild(createToggle('Enable DTIA (Dialectical Ternary Inference Architecture Pipeline)', 'enableDtia'));
   container.appendChild(sysCard);
 
   // 2. Hardware Allocation
@@ -135,6 +168,7 @@ export async function initSettings() {
   const clawCard = createCard('NemoClaw Ecosystem Sandbox', 'Configure network permissions for the NemoClaw Agent container.');
   clawCard.style.borderLeftColor = '#ffc107';
   clawCard.appendChild(createToggle('Enable Online Mode (Allow NemoClaw agents unrestricted live internet access)', 'nemoclawOnlineMode'));
+  clawCard.appendChild(createToggle('Use Docker Container Boundary (Isolates execution. Native runs on host machine).', 'nemoclawUseDocker'));
   container.appendChild(clawCard);
 
   // 8. Experimential Architecture

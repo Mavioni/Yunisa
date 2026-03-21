@@ -116,6 +116,10 @@ export class ConversationStore {
     this.db.prepare('DELETE FROM conversations WHERE id = ?').run(id);
   }
 
+  deleteAll(): void {
+    this.db.prepare('DELETE FROM conversations').run();
+  }
+
   close(): void {
     this.db.close();
   }

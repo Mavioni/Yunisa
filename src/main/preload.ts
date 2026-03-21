@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('yunisa', {
     updateTitle: (id: string, title: string) =>
       ipcRenderer.invoke('conversations:update-title', id, title),
     delete: (id: string) => ipcRenderer.invoke('conversations:delete', id),
+    deleteAll: () => ipcRenderer.invoke('conversations:delete-all'),
     getMessages: (convId: string) => ipcRenderer.invoke('conversations:get-messages', convId),
   },
 

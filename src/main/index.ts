@@ -158,6 +158,7 @@ function registerIpcHandlers(): void {
   ipcMain.handle('conversations:update-title', (_, id: string, title: string) =>
     conversationStore.updateTitle(id, title));
   ipcMain.handle('conversations:delete', (_, id: string) => conversationStore.delete(id));
+  ipcMain.handle('conversations:delete-all', () => conversationStore.deleteAll());
   ipcMain.handle('conversations:get-messages', (_, convId: string) => conversationStore.getMessages(convId));
 
   // App

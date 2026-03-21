@@ -83,11 +83,14 @@ async function boot() {
     }
   });
 
-  // Pre-flight: hide VLM if not enabled
+  // Pre-flight setup
   const config = await window.yunisa.config.get();
   const vlmBtn = document.getElementById('nav-vlm');
   if (vlmBtn) {
     vlmBtn.classList.toggle('hidden', !config.enableVlmStudio);
+  }
+  if (config.theme) {
+    document.body.setAttribute('data-theme', config.theme);
   }
 
   // Auto-updater notifications
