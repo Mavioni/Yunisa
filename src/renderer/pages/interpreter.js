@@ -103,10 +103,6 @@ export function initInterpreter() {
     }
   });
 
-  // Navigate to interpreter
-  const interpBtn = document.getElementById('interpreter-btn');
-  if (interpBtn) interpBtn.addEventListener('click', () => showScreen('interpreter'));
-
   // Chunk handler
   window.yunisa.interpreter.onChunk(handleChunk);
 }

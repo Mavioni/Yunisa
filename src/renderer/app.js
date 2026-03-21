@@ -17,9 +17,45 @@ const screens = {
   vlm: document.getElementById('vlm-screen'),
 };
 
+// Map nav button IDs to screen names
+const NAV_MAP = {
+  'nav-chat': 'chat',
+  'nav-interpreter': 'interpreter',
+  'nav-nemoclaw': 'nemoclaw',
+  'nav-models': 'models',
+  'nav-vlm': 'vlm',
+  'nav-settings': 'settings',
+};
+
+// Screens that show the conversation panel
+const CHAT_SCREENS = new Set(['chat']);
+
+let currentScreen = 'loading';
+
 export function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name]?.classList.add('active');
+  currentScreen = name;
+
+  // Update icon rail active state
+  document.querySelectorAll('.rail-btn').forEach(btn => btn.classList.remove('active'));
+  const activeNav = Object.entries(NAV_MAP).find(([, v]) => v === name);
+  if (activeNav) {
+    document.getElementById(activeNav[0])?.classList.add('active');
+  }
+
+  // Show/hide conversation panel
+  const convPanel = document.getElementById('conv-panel');
+  if (convPanel) {
+    if (CHAT_SCREENS.has(name)) {
+      convPanel.classList.remove('collapsed');
+    } else {
+      convPanel.classList.add('collapsed');
+    }
+  }
+
+  // For non-chat screens shown inside chat-screen, handle differently
+  // Non-chat screens are separate full-width divs
 }
 
 export function setLoadingStatus(text) {
@@ -29,7 +65,7 @@ export function setLoadingStatus(text) {
 async function boot() {
   showScreen('loading');
 
-  // Initialize page modules
+  // Initialize all page modules
   initWelcome();
   initModels();
   initSettings();
@@ -38,14 +74,22 @@ async function boot() {
   initNemoclaw();
   initVlm();
 
-  // Pre-flight UI bindings
+  // Wire icon rail navigation
+  Object.entries(NAV_MAP).forEach(([btnId, screenName]) => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => showScreen(screenName));
+    }
+  });
+
+  // Pre-flight: hide VLM if not enabled
   const config = await window.yunisa.config.get();
-  const vlmBtn = document.getElementById('vlm-btn');
+  const vlmBtn = document.getElementById('nav-vlm');
   if (vlmBtn) {
-    vlmBtn.style.display = config.enableVlmStudio ? 'block' : 'none';
+    vlmBtn.style.display = config.enableVlmStudio ? 'flex' : 'none';
   }
 
-  // Setup auto-updater notifications
+  // Auto-updater notifications
   window.yunisa.updater.onUpdateAvailable((info) => {
     if (confirm(`YUNISA v${info.version} is available. Download now?`)) {
       window.yunisa.updater.downloadUpdate();
@@ -57,7 +101,7 @@ async function boot() {
     }
   });
 
-  // Handle tray "Restart Server" request
+  // Tray restart
   window.yunisa.onServerRestartRequested(async () => {
     showScreen('loading');
     setLoadingStatus('Restarting AI engine...');
@@ -65,30 +109,19 @@ async function boot() {
     const active = await window.yunisa.models.getActive();
     if (active) {
       const result = await window.yunisa.server.start(active.path);
-      if (result.status === 'ready') {
-        showScreen('chat');
-        return;
-      }
+      if (result.status === 'ready') { showScreen('chat'); return; }
     }
     setLoadingStatus('Failed to restart server.');
   });
 
-  // Check if any model is installed
+  // Boot sequence
   try {
     const hasModel = await window.yunisa.models.hasAny();
+    if (!hasModel) { showScreen('welcome'); return; }
 
-    if (!hasModel) {
-      showScreen('welcome');
-      return;
-    }
-
-    // Start server with active model
     setLoadingStatus('Starting AI engine...');
     const active = await window.yunisa.models.getActive();
-    if (!active) {
-      showScreen('welcome');
-      return;
-    }
+    if (!active) { showScreen('welcome'); return; }
 
     const result = await window.yunisa.server.start(active.path);
     if (result.status === 'ready') {
@@ -98,7 +131,7 @@ async function boot() {
     }
   } catch (err) {
     console.error('Boot error:', err);
-    setLoadingStatus('Error: ' + (err.message || 'Failed to initialize. Please restart YUNISA.'));
+    setLoadingStatus('Error: ' + (err.message || 'Failed to initialize.'));
   }
 }
 

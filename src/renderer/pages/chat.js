@@ -39,30 +39,6 @@ export function initChat() {
   const newChatBtn = document.getElementById("new-chat-btn");
   if (newChatBtn) newChatBtn.addEventListener("click", startNewChat);
 
-  // Sidebar toggle
-  const toggleBtn = document.getElementById("toggle-sidebar");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-  }
-
-  // Navigation buttons
-  const modelsBtn = document.getElementById("models-btn");
-  if (modelsBtn) modelsBtn.addEventListener("click", () => showScreen("models"));
-
-  const settingsBtn = document.getElementById("settings-btn");
-  if (settingsBtn) settingsBtn.addEventListener("click", () => showScreen("settings"));
-
-  const interpBtn = document.getElementById("interpreter-btn");
-  if (interpBtn) interpBtn.addEventListener("click", () => showScreen("interpreter"));
-
-  const nemoclawBtn = document.getElementById("nemoclaw-btn");
-  if (nemoclawBtn) nemoclawBtn.addEventListener("click", () => showScreen("nemoclaw"));
-
-  const vlmBtn = document.getElementById("vlm-btn");
-  if (vlmBtn) vlmBtn.addEventListener("click", () => showScreen("vlm"));
-
   // Fetch the server port once
   window.yunisa.server.port().then((port) => {
     if (port) serverPort = port;

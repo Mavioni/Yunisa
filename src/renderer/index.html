@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; connect-src http://127.0.0.1:* https://huggingface.co https://*.huggingface.co https://cdn.jsdelivr.net; frame-src 'self' http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:;">
+    content="default-src 'self'; connect-src http://127.0.0.1:* https://huggingface.co https://*.huggingface.co https://cdn.jsdelivr.net; frame-src 'self' http://127.0.0.1:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com;">
   <title>YUNISA</title>
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
   <div id="app">
+    <!-- Loading -->
     <div id="loading-screen" class="screen active">
       <div class="loading-container">
         <img src="styles/logo.png" alt="YUNISA" class="logo-img">
@@ -19,26 +20,31 @@
       </div>
     </div>
 
-    <div id="welcome-screen" class="screen">
-    </div>
+    <!-- Welcome Wizard -->
+    <div id="welcome-screen" class="screen"></div>
 
+    <!-- Chat (icon rail + conv panel + main) -->
     <div id="chat-screen" class="screen">
-      <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
+      <div class="icon-rail">
+        <img src="styles/logo.png" alt="Y" class="rail-logo">
+        <button id="nav-chat" class="rail-btn active" title="Chat">💬</button>
+        <button id="nav-interpreter" class="rail-btn" title="Interpreter">⌨️</button>
+        <button id="nav-nemoclaw" class="rail-btn green" title="NemoClaw">🤖</button>
+        <button id="nav-models" class="rail-btn" title="Models">📦</button>
+        <button id="nav-vlm" class="rail-btn yellow" title="VLM Studio">⚡</button>
+        <div class="rail-spacer"></div>
+        <button id="nav-settings" class="rail-btn" title="Settings">⚙️</button>
+      </div>
+
+      <div id="conv-panel" class="conv-panel">
+        <div class="conv-panel-header">
           <button id="new-chat-btn" class="btn btn-primary">+ New Chat</button>
         </div>
         <div id="conversation-list" class="conversation-list"></div>
-        <div class="sidebar-footer">
-          <button id="vlm-btn" class="btn btn-ghost" style="color: #ff9900; border-left: 2px solid #ff9900; font-weight: bold;">VLM Studio</button>
-          <button id="nemoclaw-btn" class="btn btn-ghost" style="color: #00ff00; border-left: 2px solid #00ff00; font-weight: bold;">NVIDIA NemoClaw</button>
-          <button id="interpreter-btn" class="btn btn-ghost">Interpreter</button>
-          <button id="models-btn" class="btn btn-ghost">Models</button>
-          <button id="settings-btn" class="btn btn-ghost">Settings</button>
-        </div>
       </div>
+
       <div class="chat-main">
         <div id="chat-header" class="chat-header">
-          <button id="toggle-sidebar" class="btn btn-icon">&#9776;</button>
           <span id="chat-title">New Chat</span>
           <span id="model-badge" class="badge"></span>
         </div>
@@ -54,20 +60,12 @@
       </div>
     </div>
 
-    <div id="nemoclaw-screen" class="screen">
-    </div>
-
-    <div id="vlm-screen" class="screen">
-    </div>
-
-    <div id="interpreter-screen" class="screen">
-    </div>
-
-    <div id="models-screen" class="screen">
-    </div>
-
-    <div id="settings-screen" class="screen">
-    </div>
+    <!-- Full-width screens -->
+    <div id="nemoclaw-screen" class="screen"></div>
+    <div id="vlm-screen" class="screen"></div>
+    <div id="interpreter-screen" class="screen"></div>
+    <div id="models-screen" class="screen"></div>
+    <div id="settings-screen" class="screen"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

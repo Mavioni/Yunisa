@@ -139,12 +139,4 @@ export function initNemoclaw() {
       }
     } catch {}
   })();
-
-  // ── Sidebar button binding ──────────────────────────────────────
-  const btn = document.getElementById('nemoclaw-btn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      showScreen('nemoclaw');
-    });
-  }
 }
