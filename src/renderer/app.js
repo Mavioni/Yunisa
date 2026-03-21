@@ -87,7 +87,7 @@ async function boot() {
   const config = await window.yunisa.config.get();
   const vlmBtn = document.getElementById('nav-vlm');
   if (vlmBtn) {
-    vlmBtn.style.display = config.enableVlmStudio ? 'flex' : 'none';
+    vlmBtn.classList.toggle('hidden', !config.enableVlmStudio);
   }
 
   // Auto-updater notifications

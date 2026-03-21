@@ -144,7 +144,7 @@ export async function initSettings() {
   const checkbox = devToggle.querySelector('input');
   checkbox.addEventListener('change', (e) => {
     const btn = document.getElementById('nav-vlm');
-    if (btn) btn.style.display = e.target.checked ? 'flex' : 'none';
+    if (btn) btn.classList.toggle('hidden', !e.target.checked);
   });
   
   devCard.appendChild(devToggle);

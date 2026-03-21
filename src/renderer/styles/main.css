@@ -71,7 +71,7 @@ body::before {
 
 /* ═══════════════ SCREENS ═══════════════ */
 .screen { display: none; height: 100%; flex: 1; }
-.screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s var(--transition); }
+.screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s var(--transition); min-height: 0; }
 .hidden { display: none !important; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -124,7 +124,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 .icon-rail {
   width: 64px; background: var(--bg-panel); border-right: 1px solid var(--border);
   display: flex; flex-direction: column; align-items: center; padding: 1.25rem 0; gap: 0.5rem;
-  flex-shrink: 0; z-index: 10; backdrop-filter: var(--blur);
+  flex-shrink: 0; z-index: 10; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
 .icon-rail .rail-logo {
   width: 32px; height: 32px; border-radius: 10px; margin-bottom: 1.5rem;
@@ -174,7 +174,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 /* ═══════════════ CONVERSATION PANEL ═══════════════ */
 .conv-panel {
   width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; flex-shrink: 0; backdrop-filter: var(--blur);
+  display: flex; flex-direction: column; flex-shrink: 0; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
   transition: width var(--transition), opacity var(--transition); overflow: hidden;
 }
 .conv-panel.collapsed { width: 0; border-right: none; }
@@ -200,10 +200,10 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 .conv-delete-btn:hover { opacity: 1 !important; color: var(--red); transform: scale(1.1); }
 
 /* ═══════════════ CHAT LAYOUT ═══════════════ */
-.chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .chat-header {
   padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem;
-  background: transparent; backdrop-filter: var(--blur); z-index: 5;
+  background: transparent; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); z-index: 5;
 }
 #chat-title { font-family: var(--font-display); font-weight: 500; flex: 1; font-size: 0.95rem; color: var(--text-primary); letter-spacing: 0.01em; }
 .badge {
@@ -282,7 +282,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 #user-input, #interp-input {
   flex: 1; background: var(--bg-input); border: 1px solid var(--border-active); border-radius: var(--radius);
   color: var(--text-primary); padding: 0.85rem 1.25rem; font-size: 0.9rem; resize: none; max-height: 200px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all var(--transition); backdrop-filter: var(--blur); font-family: var(--font-body);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all var(--transition); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); font-family: var(--font-body);
 }
 #user-input:focus, #interp-input:focus { border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 4px rgba(255,255,255,0.02); outline: none; }
 #user-input::placeholder, #interp-input::placeholder { color: var(--text-tertiary); }
@@ -454,7 +454,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 }
 .settings-toggle {
   display: flex; align-items: center; gap: 0.75rem;
-  color: var(--text-primary); cursor: pointer; user-select: none; font-size: 0.95rem;
+  color: var(--text-primary); cursor: pointer; -webkit-user-select: none; user-select: none; font-size: 0.95rem;
 }
 .settings-toggle input[type="checkbox"] {
   width: 16px; height: 16px; accent-color: #f44336; cursor: pointer;
@@ -516,7 +516,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 .sandbox-header {
   height: 55px; background: rgba(5, 5, 5, 0.7); display: flex; align-items: center;
   padding: 0 1.5rem; border-bottom: 1px solid var(--border); gap: 1rem;
-  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
 }
 .sandbox-title-group {
   display: flex; align-items: center; gap: 0.5rem; margin-right: 2rem;
@@ -530,7 +530,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
   text-align: center; color: var(--text-tertiary); z-index: 2; pointer-events: auto;
   width: 100%; max-width: 400px; background: var(--bg-card); padding: 3rem;
   border-radius: var(--radius-lg); border: 1px solid var(--border-light);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); backdrop-filter: var(--blur);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
 }
 .sandbox-trt-panel {
   width: 100%; height: 100%; display: none; align-items: center;

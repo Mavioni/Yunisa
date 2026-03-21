@@ -194,7 +194,11 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
             def call_llama(prompt_override: str, stream_prefix: str | None = None,
                            stream_suffix: str | None = None) -> str:
                 payload = req_data.copy()
-                payload['messages'] = messages[:-1] + [{"role": "user", "content": prompt_override}]
+                # Only keep the system prompt for DTIA passes — the DTIA prompts
+                # are self-contained (they embed the query + previous stages), so
+                # full conversation history is redundant and overflows the context.
+                system_msgs = [m for m in messages if m.get('role') == 'system']
+                payload['messages'] = system_msgs + [{"role": "user", "content": prompt_override}]
                 payload['stream'] = True
 
                 req = urllib.request.Request(
@@ -231,14 +235,29 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
 
             original_query = messages[-1].get('content', '') if messages else ""
 
+            # Pre-flight: verify llama-server is reachable before starting DTIA
+            try:
+                urllib.request.urlopen(f"{llama_base}/health", timeout=5)
+            except Exception as health_err:
+                print(f"[MIZU] Llama-server health check failed: {health_err}")
+                emit_chunk(f"**Engine unavailable** — the inference server is not responding. It may have crashed after the previous request. Please restart the application.")
+                try:
+                    self.wfile.write(b"data: [DONE]\n\n")
+                    self.wfile.flush()
+                except BrokenPipeError:
+                    pass
+                return
+
             try:
                 # DTIA Pass 1: Thesis
                 thesis_prompt = f"Provide a direct, affirmative answer to the following query based on prevailing knowledge. Query: {original_query}"
                 thesis = call_llama(thesis_prompt, stream_prefix="<thesis>\n", stream_suffix="\n</thesis>\n\n")
+                print(f"[MIZU] Thesis: {len(thesis)} chars")
 
                 # DTIA Pass 2: Antithesis
                 anti_prompt = f"Given the query: '{original_query}' and the prevailing thesis: '{thesis}', provide the strongest counter-argument. What is the thesis missing? Be rigorous."
                 antithesis = call_llama(anti_prompt, stream_prefix="<antithesis>\n", stream_suffix="\n</antithesis>\n\n")
+                print(f"[MIZU] Antithesis: {len(antithesis)} chars")
 
                 # DTIA Pass 3: Synthesis
                 syn_prompt = (
@@ -248,7 +267,11 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                     f"Synthesize these opposing views into a higher-order resolution. "
                     f"Conclude with a single sentence titled 'Dialectical Residue:' stating the remaining unresolved tension."
                 )
-                call_llama(syn_prompt, stream_prefix="<synthesis>\n", stream_suffix="\n</synthesis>\n")
+                synthesis = call_llama(syn_prompt, stream_prefix="<synthesis>\n", stream_suffix="\n</synthesis>\n")
+                print(f"[MIZU] Synthesis: {len(synthesis)} chars")
+
+                if not thesis and not antithesis and not synthesis:
+                    emit_chunk("\n**[Engine returned empty response]** — the model may have run out of context. Try a shorter message or restart the engine.")
             except BrokenPipeError:
                 print("[MIZU] Client disconnected during DTIA pipeline.")
 

@@ -11,7 +11,8 @@ export class LlamaEngineAdapter implements IEngineAdapter {
   constructor(getConfig: () => any = () => ({})) { this.getConfig = getConfig; }
 
   async start(modelPath: string, port: number, binariesDir: string): Promise<ChildProcess> {
-    const serverExe = path.join(binariesDir, 'llama-server.exe');
+    const exeName = process.platform === 'win32' ? 'llama-server.exe' : 'llama-server';
+    const serverExe = path.join(binariesDir, exeName);
     const cfg = this.getConfig();
     const ctxSize = cfg.contextSize || '16384';
     const threads = cfg.cpuThreads && cfg.cpuThreads !== 'auto' && cfg.cpuThreads !== 'max' ? cfg.cpuThreads : undefined;

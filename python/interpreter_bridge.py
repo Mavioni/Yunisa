@@ -9,6 +9,7 @@ import traceback
 import io
 import time
 import os
+import threading
 
 try:
     # Inject agent-s_repo into Python path so gui_agents can be imported
@@ -25,6 +26,7 @@ except ImportError:
 # Configuration (set by 'configure' command)
 port = 8080
 model = "bitnet"
+_abort_event = threading.Event()
 max_loops = 15
 
 def emit(obj: dict):
@@ -32,6 +34,7 @@ def emit(obj: dict):
     sys.stdout.flush()
 
 def handle_message(instruction: str, session_id: str):
+    _abort_event.clear()
     if not HAVE_AGENT_S:
         emit({
             "type": "error",
@@ -89,6 +92,9 @@ def handle_message(instruction: str, session_id: str):
         agent.reset()
 
         for step in range(max_loops):
+            if _abort_event.is_set():
+                emit({"type": "text_delta", "content": "\n*[Aborted by user]*", "session_id": session_id})
+                break
             emit({
                 "type": "text_delta",
                 "content": f"\n\n--- Step {step + 1}/{max_loops} ---\nTaking screenshot...",
@@ -219,6 +225,9 @@ def main():
                     "content": f"{e}\n{traceback.format_exc()}",
                     "session_id": session_id,
                 })
+        elif cmd_type == "abort":
+            _abort_event.set()
+            emit({"type": "aborted", "session_id": cmd.get("session_id", "default")})
         elif cmd_type == "ping":
             emit({"type": "pong"})
 

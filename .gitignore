@@ -4,3 +4,4 @@ release/
 *.log
 *.exe
 *.blockmap
+.gitnexus

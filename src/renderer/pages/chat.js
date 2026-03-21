@@ -4,6 +4,7 @@ let currentConversationId = null;
 let abortController = null;
 let serverPort = 8080;
 let activePersona = 'default';
+let configuredContextSize = 2048;
 
 const messagesEl = () => document.getElementById("messages");
 const inputEl = () => document.getElementById("user-input");
@@ -51,9 +52,10 @@ export function initChat() {
     }
   });
 
-  // Load persona from config
+  // Load persona and context size from config
   window.yunisa.config.get().then(cfg => {
     if (cfg && cfg.psaiCore) activePersona = cfg.psaiCore;
+    if (cfg && cfg.contextSize) configuredContextSize = parseInt(cfg.contextSize, 10) || 2048;
   });
 
   loadConversationList();
@@ -193,8 +195,9 @@ async function sendMessage() {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let streamDone = false;
 
-    while (true) {
+    while (!streamDone) {
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -207,7 +210,10 @@ async function sendMessage() {
         if (!trimmed || !trimmed.startsWith("data: ")) continue;
 
         const data = trimmed.slice(6);
-        if (data === "[DONE]") break;
+        if (data === "[DONE]") {
+          streamDone = true;
+          break;
+        }
 
         try {
           const parsed = JSON.parse(data);
@@ -221,6 +227,11 @@ async function sendMessage() {
           // Skip malformed JSON chunks
         }
       }
+    }
+
+    // Guard: if the model returned zero tokens, show a diagnostic
+    if (!fullResponse.trim()) {
+      renderMarkdown(assistantEl, "**No response received.** The AI engine may be overloaded or restarting. Try again in a moment.");
     }
   } catch (err) {
     if (err.name === "AbortError") {
@@ -297,7 +308,9 @@ function buildApiMessages(messages) {
   };
   const systemPrompt = PERSONAS[activePersona] || PERSONAS.default;
 
-  const maxChars = 6000;
+  // Reserve ~40% of context for history, 60% for DTIA prompts + generation
+  // Rough heuristic: 1 token ≈ 4 chars
+  const maxChars = Math.max(800, Math.floor(configuredContextSize * 4 * 0.4));
   let totalChars = 0;
   const result = [];
   let truncated = false;

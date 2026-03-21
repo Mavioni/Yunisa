@@ -87,16 +87,16 @@ def _run_file(code: str, ext: str, cmd_prefix: list[str], cwd: str) -> dict:
             timeout=TIMEOUT,
             cwd=cwd,
         )
-        return {
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "exit_code": result.returncode,
-        }
     finally:
         try:
             os.unlink(tmp_path)
         except OSError:
             pass
+    return {
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "exit_code": result.returncode,
+    }
 
 
 def _run_shell(code: str, cwd: str, shell_cmd: list[str]) -> dict:

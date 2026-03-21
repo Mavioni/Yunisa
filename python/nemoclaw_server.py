@@ -179,7 +179,7 @@ LLM_PORT = 8080  # Yunisa's local inference port
 
 @app.route('/')
 def dashboard():
-    return render_template_string(DASHBOARD_HTML, port=args.port, llm_port=LLM_PORT)
+    return render_template_string(DASHBOARD_HTML, port=app.config.get('PORT', 3000), llm_port=app.config.get('LLM_PORT', LLM_PORT))
 
 @app.route('/health')
 def health():
@@ -252,14 +252,14 @@ def execute_task():
         except Exception as fmt_err:
             # BitNet often can't produce structured Agent-S JSON — fall back gracefully
             err_text = str(fmt_err)
-            truncated_err = err_text[:500] if len(err_text) > 500 else err_text
+            truncated_err = err_text[:500] if len(err_text) > 500 else err_text  # type: ignore[index]
             return jsonify({
                 'result': f'[Text-Only Mode] Agent processed your request but could not format a structured response. '
                           f'Raw output: {truncated_err}'
             })
 
         info_text = json.dumps(info, default=str)
-        truncated_info = info_text[:500] if len(info_text) > 500 else info_text
+        truncated_info = info_text[:500] if len(info_text) > 500 else info_text  # type: ignore[index]
         return jsonify({
             'result': f'Agent planned {len(action)} action(s). Info: {truncated_info}'
         })
@@ -281,8 +281,9 @@ if __name__ == '__main__':
     LLM_PORT = args.llm_port
     LLM_HOST = args.llm_host
 
-    # Export to app context if needed, though route uses locals nicely
     app.config['LLM_HOST'] = LLM_HOST
+    app.config['LLM_PORT'] = LLM_PORT
+    app.config['PORT'] = args.port
 
     print(f"[NemoClaw] OpenShell Sandbox booting on http://0.0.0.0:{args.port}")
     print(f"[NemoClaw] LLM Engine bound to http://{LLM_HOST}:{LLM_PORT}/v1")

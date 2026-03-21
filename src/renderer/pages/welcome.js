@@ -398,6 +398,10 @@ export function initWelcome() {
     setLoadingStatus('Starting AI engine...');
     try {
       const active = await window.yunisa.models.getActive();
+      if (!active) {
+        setLoadingStatus('No model found. Please download one first.');
+        return;
+      }
       const result = await window.yunisa.server.start(active.path);
       if (result.status === 'ready') {
         showScreen('chat');
