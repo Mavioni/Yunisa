@@ -273,13 +273,13 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                 print(f"[MIZU] Thesis: {len(thesis)} chars")
 
                 # DTIA Pass 2: Antithesis (truncate thesis to fit context)
-                thesis_short = thesis[:MAX_PASS_CHARS] + ('...' if len(thesis) > MAX_PASS_CHARS else '')
+                thesis_short = thesis[:MAX_PASS_CHARS] + ('...' if len(thesis) > MAX_PASS_CHARS else '')  # type: ignore[index]
                 anti_prompt = f"Given the query: '{original_query}' and the prevailing thesis: '{thesis_short}', provide the strongest counter-argument. What is the thesis missing? Be rigorous."
                 antithesis = call_llama(anti_prompt, stream_prefix="<antithesis>\n", stream_suffix="\n</antithesis>\n\n")
                 print(f"[MIZU] Antithesis: {len(antithesis)} chars")
 
                 # DTIA Pass 3: Synthesis (truncate both to fit context)
-                anti_short = antithesis[:MAX_PASS_CHARS] + ('...' if len(antithesis) > MAX_PASS_CHARS else '')
+                anti_short = antithesis[:MAX_PASS_CHARS] + ('...' if len(antithesis) > MAX_PASS_CHARS else '')  # type: ignore[index]
                 syn_prompt = (
                     f"Query: '{original_query}'. \n"
                     f"Thesis: '{thesis_short}'. \n"
