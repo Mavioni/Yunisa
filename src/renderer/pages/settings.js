@@ -101,6 +101,7 @@ export async function initSettings() {
     {value: '8', text: '8 Threads (Balanced)'},
     {value: 'max', text: 'Max Threads (Aggressive)'}
   ], 'cpuThreads'));
+  allocCard.appendChild(createToggle('Unlimited Context (send full conversation history without token truncation)', 'unlimitedContext'));
   container.appendChild(allocCard);
 
   // 3. System 08 [P.S.AI] Personas

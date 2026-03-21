@@ -5,6 +5,7 @@ let abortController = null;
 let serverPort = 8080;
 let activePersona = 'default';
 let configuredContextSize = 2048;
+let unlimitedContext = true;
 
 const messagesEl = () => document.getElementById("messages");
 const inputEl = () => document.getElementById("user-input");
@@ -52,10 +53,12 @@ export function initChat() {
     }
   });
 
-  // Load persona and context size from config
+  // Load persona, context size, and unlimited context from config
   window.yunisa.config.get().then(cfg => {
     if (cfg && cfg.psaiCore) activePersona = cfg.psaiCore;
     if (cfg && cfg.contextSize) configuredContextSize = parseInt(cfg.contextSize, 10) || 2048;
+    // Default to true if not explicitly set to false
+    unlimitedContext = cfg && cfg.unlimitedContext === false ? false : true;
   });
 
   loadConversationList();
@@ -308,9 +311,8 @@ function buildApiMessages(messages) {
   };
   const systemPrompt = PERSONAS[activePersona] || PERSONAS.default;
 
-  // Reserve ~40% of context for history, 60% for DTIA prompts + generation
-  // Rough heuristic: 1 token ≈ 4 chars
-  const maxChars = Math.max(800, Math.floor(configuredContextSize * 4 * 0.4));
+  // If unlimited context is enabled, send everything; otherwise cap by context size
+  const maxChars = unlimitedContext ? Infinity : Math.max(800, Math.floor(configuredContextSize * 4 * 0.4));
   let totalChars = 0;
   const result = [];
   let truncated = false;
