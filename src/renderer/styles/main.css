@@ -30,9 +30,9 @@
   --yellow: rgba(255, 220, 150, 0.9);
   --yellow-soft: rgba(255, 220, 150, 0.08);
   
-  --border: rgba(120, 200, 220, 0.12);
-  --border-light: rgba(120, 200, 220, 0.18);
-  --border-active: rgba(120, 200, 220, 0.3);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-light: rgba(255, 255, 255, 0.15);
+  --border-active: rgba(255, 255, 255, 0.25);
   
   --radius: 14px;
   --radius-sm: 8px;
@@ -40,7 +40,7 @@
   
   --blur: blur(40px);
   --glass: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(120, 200, 220, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.12);
   --transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --font-display: 'Outfit', -apple-system, sans-serif;
@@ -117,9 +117,9 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
   font-size: 0.85rem; font-weight: 500; letter-spacing: 0.02em;
   transition: all var(--transition); border: 1px solid transparent;
 }
-.btn-primary { background: var(--blue); color: #fff; box-shadow: 0 4px 16px var(--blue-glow); }
-.btn-primary:hover { background: var(--blue-hover); box-shadow: 0 6px 24px var(--blue-glow); transform: scale(1.02); }
-.btn-primary:disabled { opacity: 0.3; cursor: default; transform: none; box-shadow: none; }
+.btn-primary { background: rgba(255, 255, 255, 0.12); color: #fff; border: 1px solid rgba(120, 200, 220, 0.25); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+.btn-primary:hover { background: rgba(255, 255, 255, 0.18); border-color: rgba(120, 200, 220, 0.4); transform: scale(1.02); }
+.btn-primary:disabled { opacity: 0.3; cursor: default; transform: none; }
 .btn-ghost { color: var(--text-secondary); border: 1px solid var(--border); background: rgba(255, 255, 255, 0.02); }
 .btn-ghost:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-active); }
 .btn-danger { background: var(--red); color: #fff; box-shadow: 0 4px 16px var(--red-soft); }
