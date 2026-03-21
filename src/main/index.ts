@@ -95,9 +95,15 @@ function createWindow(): void {
     mainWindow?.show();
   });
 
-  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+  mainWindow.webContents.on('console-message', (event, detailsOrLevel: any, message?: string, line?: number, sourceId?: string) => {
     const logPath = path.join(getDataDir(), 'renderer_errors.log');
-    fs.appendFileSync(logPath, `[Renderer] ${message} (${sourceId}:${line})\n`);
+    
+    // Handle both old and new signatures gracefully
+    if (typeof detailsOrLevel === 'object' && detailsOrLevel !== null) {
+      fs.appendFileSync(logPath, `[Renderer] ${detailsOrLevel.message} (${detailsOrLevel.sourceId}:${detailsOrLevel.line})\n`);
+    } else {
+      fs.appendFileSync(logPath, `[Renderer] ${message} (${sourceId}:${line})\n`);
+    }
   });
 
   mainWindow.on('close', () => {
@@ -273,7 +279,21 @@ function registerIpcHandlers(): void {
   });
 }
 
-app.on('ready', initialize);
+// Hardening Chromium GPU cache & Single Instance Lock to prevent Access Denied 0x5 on reboot.
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+  app.on('ready', initialize);
+}
 
 app.on('window-all-closed', () => {
   app.quit();
