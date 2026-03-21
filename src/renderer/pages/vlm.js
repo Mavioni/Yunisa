@@ -4,7 +4,6 @@ export function initVlm() {
   const container = document.getElementById('vlm-screen');
   container.innerHTML = '';
   
-  container.style.display = 'flex';
   container.style.flexDirection = 'column';
   container.style.height = '100%';
   container.style.background = 'var(--bg-void, #06080c)';
