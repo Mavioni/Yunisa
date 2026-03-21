@@ -1,4 +1,4 @@
-import { spawn, execSync, ChildProcess } from 'child_process';
+import { spawn, execFileSync, ChildProcess } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
@@ -17,7 +17,7 @@ export class LlamaEngineAdapter implements IEngineAdapter {
     const threads = cfg.cpuThreads && cfg.cpuThreads !== 'auto' && cfg.cpuThreads !== 'max' ? cfg.cpuThreads : undefined;
     let gpuArgs: string[] = [];
     try {
-      execSync('nvidia-smi', { stdio: 'ignore' });
+      execFileSync('nvidia-smi', { stdio: 'ignore' });
       console.log('[engine-adapter] NVIDIA RTX Acceleration Auto-Enabled for Llama.cpp');
       gpuArgs = ['--n-gpu-layers', '99'];
     } catch (e) {
@@ -60,7 +60,17 @@ export class MizuEngineAdapter implements IEngineAdapter {
   async start(modelPath: string, port: number, binariesDir: string): Promise<ChildProcess> {
     console.log('[engine-adapter] Routing to DTIA MIZU Pipeline...');
     const pythonScript = path.join(binariesDir, '..', '..', 'python', 'mizu_server.py');
-    return spawn('python', [pythonScript, '--model', modelPath, '--port', String(port), '--binaries', binariesDir], {
+    const cfg = this.getConfig();
+    const ctxSize = cfg.contextSize || '16384';
+    const threads = cfg.cpuThreads && cfg.cpuThreads !== 'auto' && cfg.cpuThreads !== 'max' ? cfg.cpuThreads : 'auto';
+    return spawn('python', [
+      pythonScript,
+      '--model', modelPath,
+      '--port', String(port),
+      '--binaries', binariesDir,
+      '--ctx-size', ctxSize,
+      '--threads', threads,
+    ], {
       cwd: path.dirname(pythonScript),
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
