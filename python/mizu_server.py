@@ -80,11 +80,13 @@ class MizuServer:
             return False
 
         # Wait for health with better diagnostics
+        proc = self.llama_proc
+        assert proc is not None  # guaranteed by successful Popen above
         for attempt in range(60):
             # Check if process died early
-            if self.llama_proc.poll() is not None:
-                stderr_out = self.llama_proc.stderr.read().decode('utf-8', errors='replace') if self.llama_proc.stderr else ''
-                print(f"[MIZU] Llama server exited prematurely (code {self.llama_proc.returncode})")
+            if proc.poll() is not None:
+                stderr_out = proc.stderr.read().decode('utf-8', errors='replace') if proc.stderr else ''
+                print(f"[MIZU] Llama server exited prematurely (code {proc.returncode})")
                 if stderr_out:
                     print(f"[MIZU] stderr: {stderr_out[:1000]}")
                 return False
@@ -101,13 +103,14 @@ class MizuServer:
         return False
 
     def stop_llama(self) -> None:
-        if self.llama_proc:
+        proc = self.llama_proc
+        if proc is not None:
             try:
-                self.llama_proc.terminate()
-                self.llama_proc.wait(timeout=5)
+                proc.terminate()
+                proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                self.llama_proc.kill()
-                self.llama_proc.wait()
+                proc.kill()
+                proc.wait()
             except Exception:
                 pass
             self.llama_proc = None
@@ -117,7 +120,7 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
     llama_base = f"http://127.0.0.1:{mizu_server.llama_port}"
 
     class Handler(BaseHTTPRequestHandler):
-        def log_message(self, format_str: str, *args: object) -> None:
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
             """Suppress default logging noise."""
             pass
 
@@ -202,18 +205,18 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                 if stream_prefix:
                     emit_chunk(stream_prefix)
 
-                full_content = ""
+                parts: list[str] = []
                 try:
                     with urllib.request.urlopen(req, timeout=120) as response:
-                        for line in response:
-                            line = line.decode('utf-8').strip()
-                            if line.startswith("data: ") and line != "data: [DONE]":
+                        for raw_line in response:
+                            text_line = raw_line.decode('utf-8').strip()
+                            if text_line.startswith("data: ") and text_line != "data: [DONE]":
                                 try:
-                                    data = json.loads(line[6:])
-                                    content = data['choices'][0]['delta'].get('content', '')
-                                    if content:
-                                        full_content += content
-                                        emit_chunk(content)
+                                    data = json.loads(text_line[6:])
+                                    delta = str(data['choices'][0]['delta'].get('content', ''))
+                                    if delta:
+                                        parts.append(delta)
+                                        emit_chunk(delta)
                                 except (json.JSONDecodeError, KeyError, IndexError):
                                     continue
                 except Exception as e:
@@ -223,7 +226,7 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                 if stream_suffix:
                     emit_chunk(stream_suffix)
 
-                return full_content
+                return ''.join(parts)
 
             original_query = messages[-1].get('content', '') if messages else ""
 
