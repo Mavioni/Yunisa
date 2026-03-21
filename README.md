@@ -55,6 +55,23 @@ _Your Intelligence. Your Machine. Your Rules._
 ---
 
 <div align="center">
+  <h2>New Architecture & Subsystems</h2>
+</div>
+
+### 🐾 NemoClaw OpenShell Sandbox
+YUNISA now integrates a dual-engine architecture capable of running a simulated proxy **Agent-S (AirLLM 70B)** workflow entirely decoupled from the main BitNet Chat interface. Featuring instantaneous Agent boot routines, strict Docker boundary limits (`nemoclawUseDocker`), and full hardware orchestration toggles.
+
+### 🌓 Obsidian Glass & Luminous Themes
+A comprehensively upgraded UI/UX pipeline rendering ultra-premium **Glassmorphism**. Seamlessly swap between the dark *Obsidian Glass* layout or the sleek *Luminous* light mode directly through the intuitive Hardware Telemetry settings.
+
+### 🔬 VLM Research Studio & DTIA Pipeline
+Leverage the newly implemented **Dialectical Ternary Inference Architecture (DTIA)** hardware constraint pipelines and the bleeding-edge **VLM Research Studio** for native python model fine-tuning loops right from the frontend interface.
+
+<br>
+
+---
+
+<div align="center">
   <h2>Ignition Sequence</h2>
 </div>
 
@@ -83,19 +100,28 @@ That’s it. Start exploring. No accounts. No tracking. Pure local intelligence.
 flowchart TD
     UI(🖥️ YUNISA.exe Desktop Application)
     SERVER(🧠 llama-server.exe)
+    AIRLLM(⚡ airllm_server.py Proxy)
     DB(💾 SQLite Database)
-    MODEL(📦 BitNet b1.58 Model)
+    BITNET(📦 BitNet b1.58 Model)
+    AGENT(🐾 NemoClaw Sandbox)
+    VLM(🔬 VLM Studio)
     OS((Windows CPU))
 
-    UI <==> |127.0.0.1:8080| SERVER
-    SERVER <==> |Inference Engine| MODEL
-    UI ==> |Saves Chat History| DB
+    UI <==> |Chat Pipeline| SERVER
+    SERVER <==> |1-Bit Inference| BITNET
+    UI <==> |System 02 Pipeline| AIRLLM
+    AIRLLM <==> |Agent-S Mocks| AGENT
+    UI ==> |Saves History| DB
+    UI ==> |Python Pipes| VLM
     SERVER <--> |Executes Math| OS
 
     style UI fill:#16213e,stroke:#e94560,stroke-width:2px,color:#fff
     style SERVER fill:#0f3460,stroke:#00a1ff,stroke-width:2px,color:#fff
+    style AIRLLM fill:#5c2a9d,stroke:#a64dff,stroke-width:2px,color:#fff
     style DB fill:#1a1a2e,stroke:#ffb400,stroke-width:2px,color:#fff
-    style MODEL fill:#1a1a2e,stroke:#00ff00,stroke-width:2px,color:#fff
+    style BITNET fill:#1a1a2e,stroke:#00ff00,stroke-width:2px,color:#fff
+    style AGENT fill:#2d3748,stroke:#f59e0b,stroke-width:2px,color:#fff
+    style VLM fill:#78350f,stroke:#fbbf24,stroke-width:2px,color:#fff
     style OS fill:#222,stroke:#555,color:#fff
 ```
 
