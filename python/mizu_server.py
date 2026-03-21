@@ -269,13 +269,13 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
             try:
                 # DTIA Pass 1: Thesis
                 thesis_prompt = f"Provide a direct, affirmative answer to the following query based on prevailing knowledge. Query: {original_query}"
-                thesis = call_llama(thesis_prompt, stream_prefix="**THESIS**\n\n", stream_suffix="\n\n---\n\n")
+                thesis = call_llama(thesis_prompt, stream_prefix="<thesis>\n", stream_suffix="\n</thesis>\n\n")
                 print(f"[MIZU] Thesis: {len(thesis)} chars")
 
                 # DTIA Pass 2: Antithesis (truncate thesis to fit context)
                 thesis_short = thesis[:MAX_PASS_CHARS] + ('...' if len(thesis) > MAX_PASS_CHARS else '')  # type: ignore[index]
                 anti_prompt = f"Given the query: '{original_query}' and the prevailing thesis: '{thesis_short}', provide the strongest counter-argument. What is the thesis missing? Be rigorous."
-                antithesis = call_llama(anti_prompt, stream_prefix="**ANTITHESIS**\n\n", stream_suffix="\n\n---\n\n")
+                antithesis = call_llama(anti_prompt, stream_prefix="<antithesis>\n", stream_suffix="\n</antithesis>\n\n")
                 print(f"[MIZU] Antithesis: {len(antithesis)} chars")
 
                 # DTIA Pass 3: Synthesis (truncate both to fit context)
@@ -287,7 +287,7 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                     f"Synthesize these opposing views into a higher-order resolution. "
                     f"Conclude with a single sentence titled 'Dialectical Residue:' stating the remaining unresolved tension."
                 )
-                synthesis = call_llama(syn_prompt, stream_prefix="**SYNTHESIS**\n\n", stream_suffix="\n")
+                synthesis = call_llama(syn_prompt, stream_prefix="<synthesis>\n", stream_suffix="\n</synthesis>\n")
                 print(f"[MIZU] Synthesis: {len(synthesis)} chars")
                 if not thesis and not antithesis and not synthesis:
                     emit_chunk("\n**[Engine returned empty response]** — the model may have run out of context. Try a shorter message or restart the engine.")

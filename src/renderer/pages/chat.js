@@ -29,6 +29,7 @@ export function initChat() {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 150) + "px";
     send.disabled = !input.value.trim();
+    scrollToBottom();
   });
 
   input.addEventListener("keydown", (e) => {
@@ -311,8 +312,11 @@ function buildApiMessages(messages) {
   };
   const systemPrompt = PERSONAS[activePersona] || PERSONAS.default;
 
-  // If unlimited context is enabled, send everything; otherwise cap by context size
-  const maxChars = unlimitedContext ? Infinity : Math.max(800, Math.floor(configuredContextSize * 4 * 0.4));
+  // If unlimited context is enabled, allow more history but STRICTLY CAP at 75% to leave room for generation.
+  // If we send Infinity, the model hits its token limit instantly and the response is cut off.
+  const maxChars = unlimitedContext 
+    ? Math.floor(configuredContextSize * 4 * 0.75)
+    : Math.max(800, Math.floor(configuredContextSize * 4 * 0.4));
   let totalChars = 0;
   const result = [];
   let truncated = false;
@@ -425,9 +429,18 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-function scrollToBottom() {
+function scrollToBottom(force = false) {
   const container = messagesEl();
-  if (container) {
+  
+  if (force) {
+    container.scrollTop = container.scrollHeight;
+    return;
+  }
+
+  // Only auto-scroll if the user is already within 150px of the bottom.
+  // This prevents the chat from violently snapping down if they scrolled up to read.
+  const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+  if (isNearBottom) {
     container.scrollTop = container.scrollHeight;
   }
 }
