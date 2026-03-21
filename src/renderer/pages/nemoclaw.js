@@ -17,9 +17,9 @@ export function initNemoclaw() {
   titleGroup.innerHTML = '<span style="color:var(--green); font-size: 1.2rem;">⟐</span><span style="font-family: var(--font-display); font-weight: 500; font-size: 1rem; letter-spacing: 0.1em; color: #fff;">SANDBOX</span>';
   header.appendChild(titleGroup);
 
-  const createTabBtn = (text, icon, active = false) => {
+  const createTabBtn = (text, iconFile, active = false) => {
     const btn = document.createElement('button');
-    btn.innerHTML = `<span style="margin-right:0.4rem;">${icon}</span> ${text}`;
+    btn.innerHTML = `<img src="assets/icons/${iconFile}" class="tab-icon"> ${text}`;
     btn.style.cssText = `
       background: transparent; border: none; font-family: var(--font-display); font-size: 0.82rem; font-weight: 500;
       color: ${active ? 'var(--blue)' : 'var(--text-secondary)'}; padding: 0.5rem 1rem; border-radius: 6px;
@@ -32,9 +32,9 @@ export function initNemoclaw() {
     return btn;
   };
 
-  const tabOpenShell = createTabBtn('OPENSHELL', '🌐', true);
-  const tabCli = createTabBtn('ROOT TERMINAL', '💻', false);
-  const tabTrt = createTabBtn('NVIDIA TRT', '⚙️', false);
+  const tabOpenShell = createTabBtn('OPENSHELL', 'tab_openshell.png', true);
+  const tabCli = createTabBtn('ROOT TERMINAL', 'tab_terminal.png', false);
+  const tabTrt = createTabBtn('NVIDIA TRT', 'tab_nvidia.png', false);
 
   header.appendChild(tabOpenShell);
   header.appendChild(tabCli);

@@ -368,3 +368,22 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 
 /* ═══════════════ SELECTION ═══════════════ */
 ::selection { background: rgba(59, 130, 246, 0.4); color: #fff; }
+
+/* ═══════════════ CUSTOM ASSET TILES ═══════════════ */
+.custom-icon {
+  width: 24px; height: 24px; border-radius: 6px; object-fit: contain;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5); transition: all 0.3s var(--transition);
+  filter: saturate(0.8) brightness(0.9);
+}
+.rail-btn:hover .custom-icon {
+  filter: saturate(1.2) brightness(1.1) drop-shadow(0 0 8px rgba(255,255,255,0.2));
+  transform: scale(1.1);
+}
+.rail-btn.active .custom-icon {
+  filter: saturate(1.5) brightness(1.2) drop-shadow(0 0 12px rgba(59, 130, 246, 0.4));
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+.tab-icon {
+  width: 18px; height: 18px; border-radius: 4px; margin-right: 0.5rem;
+  vertical-align: middle; transition: all 0.2s; object-fit: contain;
+}
