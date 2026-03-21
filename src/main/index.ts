@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, net } from 'electron';
+import { ChildProcess } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { ServerManager } from './server-manager';
@@ -14,6 +15,7 @@ let serverManager: ServerManager;
 let conversationStore: ConversationStore;
 let modelManager: ModelManager;
 let interpreterManager: InterpreterManager;
+let nemoclawProcess: ChildProcess | null = null;
 
 function getResourcePath(relativePath: string): string {
   if (app.isPackaged) {
@@ -164,6 +166,44 @@ function registerIpcHandlers(): void {
     interpreterManager.abort(sessionId);
   });
 
+  // NemoClaw OpenShell Sandbox
+  ipcMain.handle('nemoclaw:start', async () => {
+    if (nemoclawProcess) return { status: 'already_running', port: 3000 };
+    const { spawn } = require('child_process');
+    const scriptPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'app', 'python', 'nemoclaw_server.py')
+      : path.join(__dirname, '..', '..', 'python', 'nemoclaw_server.py');
+    const llmPort = serverManager.getPort();
+    const proc = spawn('python', [scriptPath, '--port', '3000', '--llm-port', String(llmPort)], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    proc.on('exit', () => { nemoclawProcess = null; });
+    proc.stderr?.on('data', (d: Buffer) => console.error('[nemoclaw]', d.toString()));
+    nemoclawProcess = proc;
+    // Wait briefly for Flask to boot
+    await new Promise(r => setTimeout(r, 2000));
+    return { status: 'started', port: 3000 };
+  });
+  ipcMain.handle('nemoclaw:stop', () => {
+    if (nemoclawProcess) {
+      const pid = nemoclawProcess.pid;
+      if (pid) {
+        try {
+          if (process.platform === 'win32') {
+            require('child_process').execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' });
+          } else {
+            process.kill(pid, 'SIGTERM');
+          }
+        } catch {}
+      }
+      nemoclawProcess = null;
+    }
+    return { status: 'stopped' };
+  });
+  ipcMain.handle('nemoclaw:status', () => {
+    return { running: nemoclawProcess !== null };
+  });
+
   // Updater
   ipcMain.handle('updater:download', () => {
     const { autoUpdater } = require('electron-updater');
@@ -186,6 +226,18 @@ app.on('before-quit', () => {
   serverManager?.stop();
   interpreterManager?.stop();
   conversationStore?.close();
+  // Terminate NemoClaw sandbox
+  if (nemoclawProcess && nemoclawProcess.pid) {
+    const ncPid = nemoclawProcess.pid;
+    try {
+      if (process.platform === 'win32') {
+        require('child_process').execSync(`taskkill /PID ${ncPid} /T /F`, { stdio: 'ignore' });
+      } else {
+        process.kill(ncPid, 'SIGTERM');
+      }
+    } catch {}
+    nemoclawProcess = null;
+  }
 });
 
 app.on('activate', () => {

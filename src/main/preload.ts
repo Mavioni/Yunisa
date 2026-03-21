@@ -67,6 +67,12 @@ contextBridge.exposeInMainWorld('yunisa', {
     installUpdate: () => ipcRenderer.invoke('updater:install'),
   },
 
+  nemoclaw: {
+    start: () => ipcRenderer.invoke('nemoclaw:start'),
+    stop: () => ipcRenderer.invoke('nemoclaw:stop'),
+    status: () => ipcRenderer.invoke('nemoclaw:status'),
+  },
+
   onServerRestartRequested: (callback: () => void) => {
     ipcRenderer.on('server:restart-requested', () => callback());
   },
