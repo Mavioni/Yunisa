@@ -143,15 +143,18 @@ async function sendMessage() {
     await startNewChat();
   }
 
+  // Lock the conversation ID for this specific message stream to prevent bleed if user switches chats
+  const activeConversationId = currentConversationId;
+
   input.value = "";
   input.style.height = "auto";
 
   // Save user message to DB and display it
-  await window.yunisa.conversations.addMessage(currentConversationId, "user", text);
+  await window.yunisa.conversations.addMessage(activeConversationId, "user", text);
   appendMessage("user", text);
 
   // Get all messages for context
-  const allMessages = await window.yunisa.conversations.getMessages(currentConversationId);
+  const allMessages = await window.yunisa.conversations.getMessages(activeConversationId);
   const apiMessages = buildApiMessages(allMessages);
 
   // Show stop button, hide send button
@@ -266,9 +269,13 @@ async function sendMessage() {
     stopBtn().style.display = "none";
   }
 
-  // Save assistant response to DB
+  // Save assistant response to DB only if conversation wasn't deleted mid-stream
   if (fullResponse) {
-    await window.yunisa.conversations.addMessage(currentConversationId, "assistant", fullResponse);
+    try {
+      await window.yunisa.conversations.addMessage(activeConversationId, "assistant", fullResponse);
+    } catch (dbErr) {
+      console.warn("Could not save assistant message: conversation was likely deleted or dropped.", dbErr);
+    }
   }
 
   // Refresh conversation list (title may have changed on first message)
@@ -366,14 +373,16 @@ function appendMessage(role, content) {
 
 function replaceTrtTags(html) {
   let result = html;
-  result = result.replace(/<thesis>/g, '<div class="trt-block trt-thesis"><div class="trt-badge">+1 THESIS</div><div class="trt-content">');
-  result = result.replace(/<\/thesis>/g, '</div></div>');
   
-  result = result.replace(/<antithesis>/g, '<div class="trt-block trt-antithesis"><div class="trt-badge">-1 ANTITHESIS</div><div class="trt-content">');
-  result = result.replace(/<\/antithesis>/g, '</div></div>');
+  // Handle both raw and escaped semantic tags (case-insensitive) to prevent parser dropouts
+  result = result.replace(/&lt;thesis&gt;|<thesis>/gi, '<div class="trt-block trt-thesis"><div class="trt-badge">+1 THESIS</div><div class="trt-content">');
+  result = result.replace(/&lt;\/thesis&gt;|<\/thesis>/gi, '</div></div>');
   
-  result = result.replace(/<synthesis>/g, '<div class="trt-block trt-synthesis"><div class="trt-badge">0 SYNTHESIS</div><div class="trt-content">');
-  result = result.replace(/<\/synthesis>/g, '</div></div>');
+  result = result.replace(/&lt;antithesis&gt;|<antithesis>/gi, '<div class="trt-block trt-antithesis"><div class="trt-badge">-1 ANTITHESIS</div><div class="trt-content">');
+  result = result.replace(/&lt;\/antithesis&gt;|<\/antithesis>/gi, '</div></div>');
+  
+  result = result.replace(/&lt;synthesis&gt;|<synthesis>/gi, '<div class="trt-block trt-synthesis"><div class="trt-badge">0 SYNTHESIS</div><div class="trt-content">');
+  result = result.replace(/&lt;\/synthesis&gt;|<\/synthesis>/gi, '</div></div>');
   
   return result;
 }
