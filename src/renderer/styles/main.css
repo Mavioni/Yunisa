@@ -294,7 +294,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 /* ═══════════════ DTIA TRT BADGES (PREMIUM) ═══════════════ */
 .trt-block {
   margin: 1rem 0; border-radius: var(--radius); background: transparent;
-  border: 1px solid var(--border-light); overflow: hidden; animation: slideUp 0.4s var(--transition);
+  border: 1px solid var(--border-light); overflow: hidden;
   position: relative; box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
 }
 @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }

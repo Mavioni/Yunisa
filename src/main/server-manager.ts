@@ -77,7 +77,11 @@ export class ServerManager {
     });
 
     this.process.stderr?.on('data', (data: Buffer) => {
-      console.error('[llama-server]', data.toString());
+      console.error('[llama-server stderr]', data.toString());
+    });
+
+    this.process.stdout?.on('data', (data: Buffer) => {
+      console.log('[llama-server stdout]', data.toString());
     });
 
     const healthy = await this.waitForHealth(30000);

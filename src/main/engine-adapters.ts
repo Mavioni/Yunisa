@@ -65,6 +65,7 @@ export class MizuEngineAdapter implements IEngineAdapter {
     const ctxSize = cfg.contextSize || '16384';
     const threads = cfg.cpuThreads && cfg.cpuThreads !== 'auto' && cfg.cpuThreads !== 'max' ? cfg.cpuThreads : 'auto';
     return spawn('python', [
+      '-u',
       pythonScript,
       '--model', modelPath,
       '--port', String(port),
