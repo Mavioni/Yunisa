@@ -33,11 +33,9 @@ export function initNemoclaw() {
   };
 
   const tabOpenShell = createTabBtn('OPENSHELL', 'tab_openshell.png', true);
-  const tabCli = createTabBtn('ROOT TERMINAL', 'tab_terminal.png', false);
   const tabTrt = createTabBtn('NVIDIA TRT', 'tab_nvidia.png', false);
 
   header.appendChild(tabOpenShell);
-  header.appendChild(tabCli);
   header.appendChild(tabTrt);
   
   const spacer = document.createElement('div');
@@ -154,54 +152,9 @@ export function initNemoclaw() {
   contentArea.appendChild(panelOpenShell);
 
   // ── Tab 2: Root Terminal ────────────────────────────────────────
-  const panelCli = document.createElement('div');
-  panelCli.style.cssText = 'width: 100%; height: 100%; display: none; flex-direction: column; background: #050505; color: #d4d4d8; font-family: var(--font-mono); padding: 1.5rem;';
+  // [CRITICAL SECURITY FIX]: UI layer completely stripped to align with backend RCE patch. 
+  // Native terminal emulation must use node-pty + xterm.js in the future.
   
-  const cliOutput = document.createElement('div');
-  cliOutput.style.cssText = 'flex: 1; overflow-y: auto; padding-bottom: 1rem; white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6; word-break: break-all;';
-  cliOutput.innerHTML = `<span style="color:var(--green)">YUNISA OpenShell Security Bridge v1.0 [Administrator Privilege Active]</span>\nType commands to interact with the host system.\n\n`;
-  panelCli.appendChild(cliOutput);
-  
-  const cliInputWrapper = document.createElement('div');
-  cliInputWrapper.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-light); padding-top: 1rem;';
-  
-  const cliPrompt = document.createElement('span');
-  cliPrompt.textContent = 'PS Administrator> ';
-  cliPrompt.style.color = 'var(--blue)';
-  cliInputWrapper.appendChild(cliPrompt);
-  
-  const cliInput = document.createElement('input');
-  cliInput.type = 'text';
-  cliInput.style.cssText = 'flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 0.85rem; outline: none;';
-  
-  cliInput.onkeydown = async (e) => {
-    if (e.key === 'Enter') {
-      const cmd = cliInput.value;
-      cliInput.value = '';
-      if (!cmd.trim()) return;
-      
-      const cmdHtml = `<span style="color:var(--blue)">PS Administrator></span> ${cmd}\n`;
-      cliOutput.innerHTML += cmdHtml;
-      cliOutput.scrollTop = cliOutput.scrollHeight;
-      
-      try {
-        const result = await window.yunisa.terminal.execute(cmd);
-        if (result.stdout) cliOutput.textContent += result.stdout;
-        if (result.stderr) cliOutput.innerHTML += `<span style="color:var(--red)">${result.stderr}</span>\n`;
-        if (result.error) cliOutput.innerHTML += `<span style="color:var(--red)">[FAULT]: ${result.error}</span>\n`;
-        // ensure a final newline to separate prompts
-        if (result.stdout && !result.stdout.endsWith('\n')) cliOutput.textContent += '\n';
-      } catch (err) {
-        cliOutput.innerHTML += `<span style="color:var(--red)">[IPC ERROR]: ${err.message}</span>\n`;
-      }
-      cliOutput.scrollTop = cliOutput.scrollHeight;
-    }
-  };
-  
-  cliInputWrapper.appendChild(cliInput);
-  panelCli.appendChild(cliInputWrapper);
-  
-  contentArea.appendChild(panelCli);
 
   // ── Tab 3: NVIDIA TRT ──────────────────────────────────────────
   const panelTrt = document.createElement('div');
@@ -214,8 +167,8 @@ export function initNemoclaw() {
   contentArea.appendChild(panelTrt);
 
   // ── Tab Logic ──────────────────────────────────────────────────
-  const panels = { OpenShell: panelOpenShell, Cli: panelCli, Trt: panelTrt };
-  const tabs = { OpenShell: tabOpenShell, Cli: tabCli, Trt: tabTrt };
+  const panels = { OpenShell: panelOpenShell, Trt: panelTrt };
+  const tabs = { OpenShell: tabOpenShell, Trt: tabTrt };
 
   const switchTab = (tabName) => {
     Object.values(panels).forEach(p => p.style.display = 'none');
@@ -237,7 +190,6 @@ export function initNemoclaw() {
   };
 
   tabOpenShell.onclick = () => switchTab('OpenShell');
-  tabCli.onclick = () => switchTab('Cli');
   tabTrt.onclick = () => switchTab('Trt');
 
   // Check if OpenShell is already running

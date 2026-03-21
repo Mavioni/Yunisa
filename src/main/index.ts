@@ -180,13 +180,8 @@ function registerIpcHandlers(): void {
   ipcMain.handle('config:set', (_, key: string, value: any) => setConfig(key, value));
 
   // Terminal Sandbox
-  ipcMain.handle('terminal:execute', async (_, cmd: string) => {
-    return new Promise((resolve) => {
-      require('child_process').exec(`powershell.exe -Command "${cmd.replace(/"/g, '\\"')}"`, (error: any, stdout: string, stderr: string) => {
-        resolve({ stdout, stderr, error: error?.message });
-      });
-    });
-  });
+  // [CRITICAL SECURITY FIX]: Removed terminal:execute RCE vulnerability.
+  // Direct execution of renderer IPC strings via child_process.exec() is strictly prohibited.
 
   // Interpreter
   ipcMain.handle('interpreter:start', async () => {

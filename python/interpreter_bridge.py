@@ -157,7 +157,19 @@ def handle_message(instruction: str, session_id: str):
             })
             
             try:
-                exec(code[0])
+                # [CRITICAL SECURITY FIX]: Tightly sandbox Python execution so the LLM cannot run 
+                # host-level RCE commands like os.system or subprocess.Popen.
+                safe_builtins = {
+                    "print": print, "range": range, "int": int, "float": float, 
+                    "str": str, "list": list, "dict": dict, "len": len, 
+                    "bool": bool, "enumerate": enumerate, "zip": zip
+                }
+                safe_globals = {
+                    "__builtins__": safe_builtins,
+                    "pyautogui": pyautogui,
+                    "time": time
+                }
+                exec(code[0], safe_globals)
                 time.sleep(1.0)
             except Exception as e:
                 emit({
