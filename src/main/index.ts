@@ -44,6 +44,7 @@ const DEFAULT_CONFIG: Record<string, any> = {
   nemoclawOnlineMode: false,
   nemoclawUseDocker: false,   // Native-first for instant boot
   enableVlmStudio: false,
+  enableDtia: true,
 };
 
 function getConfig(): any {
@@ -178,6 +179,15 @@ function registerIpcHandlers(): void {
   ipcMain.handle('config:get', () => getConfig());
   ipcMain.handle('config:set', (_, key: string, value: any) => setConfig(key, value));
 
+  // Terminal Sandbox
+  ipcMain.handle('terminal:execute', async (_, cmd: string) => {
+    return new Promise((resolve) => {
+      require('child_process').exec(`powershell.exe -Command "${cmd.replace(/"/g, '\\"')}"`, (error: any, stdout: string, stderr: string) => {
+        resolve({ stdout, stderr, error: error?.message });
+      });
+    });
+  });
+
   // Interpreter
   ipcMain.handle('interpreter:start', async () => {
     const port = serverManager.getPort();
@@ -220,7 +230,8 @@ function registerIpcHandlers(): void {
     // Use unbuffered python (-u) so prints stream immediately to the UI
     vlmProcess = require('child_process').spawn('python', ['-u', scriptPath], {
       cwd: path.dirname(scriptPath),
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true
     });
 
     const sendLog = (d: Buffer) => {

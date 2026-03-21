@@ -364,10 +364,25 @@ function appendMessage(role, content) {
   return body;
 }
 
+function replaceTrtTags(html) {
+  let result = html;
+  result = result.replace(/<thesis>/g, '<div class="trt-block trt-thesis"><div class="trt-badge">+1 THESIS</div><div class="trt-content">');
+  result = result.replace(/<\/thesis>/g, '</div></div>');
+  
+  result = result.replace(/<antithesis>/g, '<div class="trt-block trt-antithesis"><div class="trt-badge">-1 ANTITHESIS</div><div class="trt-content">');
+  result = result.replace(/<\/antithesis>/g, '</div></div>');
+  
+  result = result.replace(/<synthesis>/g, '<div class="trt-block trt-synthesis"><div class="trt-badge">0 SYNTHESIS</div><div class="trt-content">');
+  result = result.replace(/<\/synthesis>/g, '</div></div>');
+  
+  return result;
+}
+
 function renderMarkdown(el, text) {
+  let html = "";
   // Use marked.js if available, else fall back to simple renderer
   if (window.marked) {
-    el.innerHTML = window.marked.parse(text);
+    html = window.marked.parse(text);
   } else {
     let safe = escapeHtml(text);
     safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
@@ -375,8 +390,9 @@ function renderMarkdown(el, text) {
     safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
     safe = safe.replace(/\n/g, '<br>');
-    el.innerHTML = safe;
+    html = safe;
   }
+  el.innerHTML = replaceTrtTags(html);
 }
 
 function escapeHtml(text) {

@@ -34,7 +34,7 @@ const CHAT_SCREENS = new Set(['chat']);
 let currentScreen = 'loading';
 
 export function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   screens[name]?.classList.add('active');
   currentScreen = name;
 

@@ -48,6 +48,22 @@ export class AirLLMEngineAdapter implements IEngineAdapter {
     return spawn('python', [pythonScript, '--model', targetModel, '--port', String(port)], {
       cwd: path.join(binariesDir, '..', '..', 'python'),
       stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
+  }
+}
+
+export class MizuEngineAdapter implements IEngineAdapter {
+  private getConfig: () => any;
+  constructor(getConfig: () => any = () => ({})) { this.getConfig = getConfig; }
+
+  async start(modelPath: string, port: number, binariesDir: string): Promise<ChildProcess> {
+    console.log('[engine-adapter] Routing to DTIA MIZU Pipeline...');
+    const pythonScript = path.join(binariesDir, '..', '..', 'python', 'mizu_server.py');
+    return spawn('python', [pythonScript, '--model', modelPath, '--port', String(port), '--binaries', binariesDir], {
+      cwd: path.dirname(pythonScript),
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
     });
   }
 }
@@ -57,6 +73,11 @@ export class EngineFactory {
     if (modelPath.includes('airllm')) {
       return new AirLLMEngineAdapter();
     }
+    const cfg = getConfig();
+    if (cfg.enableDtia) {
+      return new MizuEngineAdapter(getConfig);
+    }
     return new LlamaEngineAdapter(getConfig);
   }
 }
+

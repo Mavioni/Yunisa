@@ -45,6 +45,10 @@ contextBridge.exposeInMainWorld('yunisa', {
     },
   },
 
+  terminal: {
+    execute: (cmd: string) => ipcRenderer.invoke('terminal:execute', cmd),
+  },
+
   app: {
     getDataDir: () => ipcRenderer.invoke('app:get-data-dir'),
     checkInternet: () => ipcRenderer.invoke('app:check-internet'),

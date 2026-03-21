@@ -1,0 +1,217 @@
+DTIA × CoRax × Yunisa
+The Unified Framework for Sovereign Ternary Intelligence
+Massimo Mavioni
+Founder & CEO, Yunis AI / Eclipse Ventures
+March 2026
+Yunis AI Press
+Table of Contents
+Part I: Dialectical Ternary Inference Architecture (DTIA)
+“Theory that cannot be built remains philosophy. Theory that compiles becomes infrastructure.”
+— Massimo Mavioni
+1.1 The Ternary Substrate
+Classical logic operates on a binary substrate: true or false, one or zero. This framework is computationally useful but cognitively impoverished. It forces every assessment into a reductive dichotomy that erases nuance, dismisses uncertainty, and blinds the operator to emergent possibilities that exist in the space between extremes.
+DTIA operates on a ternary substrate: {-1, 0, +1}. These are not merely three values. They represent a complete dialectical engine:
+Thesis (+1) — The affirmative position. The current doctrine, the prevailing strategy, the established model. What you believe to be true based on available evidence and reasoning. A working hypothesis held with conviction but never with certainty.
+Antithesis (-1) — The negation. The counter-argument, the adversary’s perspective, the stress-test of assumptions. Not opposition for its own sake but the disciplined practice of constructing the strongest possible case against your own position. The operator who cannot articulate why they might be wrong has not thought deeply enough.
+Synthesis (0) — The transcendent integration. Not a compromise—a compromise splits the difference and satisfies no one. Synthesis generates a new understanding that preserves the essential truth of both thesis and antithesis while resolving their contradiction at a higher level of resolution. The zero state is not emptiness. It is the generative void from which new operational doctrine emerges.
+1.2 The Dialectical Inference Pipeline
+DTIA processes every input through a mandatory dialectical cycle: thesis generation (produce an initial response or analysis, coded +1), antithesis generation (produce a systematic critique or counter-analysis, coded -1), and synthesis resolution (integrate the valid elements of both into a higher-order response, coded 0). This is not a metaphor for “think twice”; it is a formal computational pipeline in which three distinct inference passes produce three distinct outputs that are then combined through a ternary resolution function.
+Standard language model inference produces a single response conditioned on a prompt. DTIA produces three responses—thesis, antithesis, synthesis—and surfaces the disagreements between the first two as explicit objects of analysis before the third pass resolves them. This makes the system’s reasoning transparent: the user can inspect not only the final answer but the tension it resolved and the perspectives it integrated. Disagreement is not a failure mode but a feature.
+1.3 Dialectical Residue
+Every synthesis generates a new unresolved tension—this is the dialectical residue. It is the engine of the next cycle, not a failure. The residue is the single most important unresolved tension that survives even the synthesis. It is where the actual intelligence lives. The synthesis is not the endpoint. The residue is.
+This principle has a direct engineering consequence: every DTIA response terminates with an explicit residue statement—a one-line identification of what remains unresolved. This prevents false closure, forces intellectual honesty, and provides the seed for recursive deepening when the user requests it.
+1.4 The Ternary Assessment Protocol
+For every critical decision, the operator constructs a ternary assessment:
+1. State the thesis: What does the evidence suggest? What is the prevailing assessment? What do you believe to be true?
+2. Construct the antithesis: What is the strongest counter-argument? What evidence contradicts your thesis? What would your adversary say? What are you missing?
+3. Drive toward synthesis: What new understanding emerges from the tension between thesis and antithesis? What operational doctrine resolves the contradiction without destroying the essential truth of either position?
+This protocol is not slow. With practice, it becomes an automatic cognitive reflex—a mental muscle that fires before every significant action.
+1.5 DTIA as Neural Architecture: BitNet b1.58
+The alignment between DTIA and modern neural network research is not metaphorical. Microsoft Research’s BitNet b1.58 constrains every weight in a neural network to exactly {-1, 0, +1}—balanced ternary at the parameter level. log₂(3) ≈ 1.58 bits per weight. Three states. The same three states that form the foundational primitive of the entire Yunis AI stack.
+BitNet trains natively into the ternary shape. The model learns to express intelligence through the constraint of three states, not despite it. This is reverse-destruction applied to neural networks. Post-hoc quantization forces a fit; native ternary training adapts representations to the constraint from the first gradient update.
+Part II: MIZU — The Six-Layer Sovereign Architecture
+“Water does not resist. Water flows. When you plunge your hand into it, all you feel is a caress.”
+— Margaret Atwood
+2.1 Overview
+MIZU (Japanese: water) is a six-layer architectural framework in which each layer implements a ternary design principle. It is not a system prompt. It is the inference orchestration architecture that wraps the ternary model in dialectical reasoning. The six-layer pipeline becomes the API’s processing backbone.
+2.2 The Six-Layer Inference Pipeline
+Not every query requires all six layers. Simple factual questions short-circuit at layer 3 (Reconnaissance returns a direct answer, no dialectical processing needed). Complex analytical queries traverse the full pipeline. The Reception layer classifies query complexity and routes accordingly.
+2.3 MIZU as Architectural Framework (Six Domains)
+Beyond the inference pipeline, MIZU defines six architectural layers from hardware to interface:
+Foundation — Local-first compute infrastructure. CPU-only inference via bitnet.cpp. No cloud GPU dependency.
+Knowledge — Graph-based knowledge representation using Kùzu. Nodes carry ternary truth values: confirmed (+1), refuted (-1), uncertain (0).
+Inference — DTIA-powered reasoning. Three-pass dialectical cycle for every complex query.
+Memory — Persistent context with ternary confidence scores. Balanced ternary rather than simple probabilities, representing affirmative confidence, negative confidence (active disbelief), and genuine uncertainty as distinct states.
+Agency — Multi-agent coordination with ternary consensus voting: agree (+1), disagree (-1), abstain (0)—where abstention is a meaningful signal, not a missing data point.
+Interface — The Katana Test UX layer: intuitive for novices, deep for experts.
+2.4 TRT State Rendering
+The Ternary Reasoning Triad (TRT) maps each response to a dialectical state:
+Thesis (+1): The initial claim or answer, grounded in retrieved knowledge.
+Antithesis (-1): The opposing perspective, counter-evidence, or limitation.
+Synthesis (0): The resolved position that incorporates both. Zero as balance point.
+The API response includes TRT state metadata, allowing the frontend to render the dialectical process visually—users see the ternary reasoning process, not just the output.
+Part III: CoRax — The Post-ASI Constitutional Model
+“The contested category changes the dynamics of AI governance fundamentally.”
+— Post-ASI Constitution
+3.1 Ternary Governance Calculus
+CoRax (Constitution of Radical Axioms) is an operational model for AI governance built on ternary principles. Derived from the 99-page Post-ASI Constitution, it introduces a three-valued governance calculus where existing AI safety frameworks use binary classifications—safe/unsafe, aligned/misaligned, permitted/forbidden:
+Permitted (+1) — Actions whose ethical status is clear and affirmative. Proceed.
+Prohibited (-1) — Actions whose ethical status is clear and negative. Block.
+Contested (0) — Actions whose ethical status is genuinely ambiguous, context-dependent, or subject to legitimate disagreement. Route to higher scrutiny.
+The contested category is not a failure of classification but a feature of honest governance. In a binary system, every ambiguous case must be forced into permitted or prohibited, creating systematic over-restriction (if the default is prohibit) or systematic under-restriction (if the default is permit). In a ternary system, ambiguous cases are flagged as contested and routed to a different processing pathway—one that involves higher scrutiny, human oversight, or dialectical deliberation—without contaminating the clear cases with false precision.
+3.2 Sovereign Agentic Swarm Architecture
+CoRax defines a multi-agent architecture where each agent operates under constitutional constraints:
+3.2.1 Agent Roles
+3.2.2 Consensus Protocol
+Agent consensus uses ternary voting. Each agent evaluates a proposed action or conclusion:
+Agree (+1): Evidence supports the position.
+Disagree (-1): Evidence contradicts the position.
+Abstain (0): Insufficient evidence to determine. Abstention is a meaningful signal—not a missing data point.
+Resolution requires synthesis, not majority vote. A 3:2 split does not produce an answer—it produces a dialectical tension that the SYNTHESIS agent must resolve. Unanimous agreement is treated with suspicion (groupthink detection). The healthiest state is productive disagreement that drives toward synthesis.
+3.2.3 Constitutional Constraints
+Every agent operates within constitutional boundaries derived from the Post-ASI Constitution:
+Epistemic Honesty (VERITAS): Confidence levels must be explicit. HIGH / MODERATE / LOW / UNVERIFIED. No false certainty.
+Sovereignty Preservation: No agent may create dependencies on external centralized services. Local-first data handling. Zero cloud state leakage.
+Dialectical Integrity: No agent may suppress the antithesis. The strongest counter-argument must be presented at full strength. Weak arguments are epistemically useless.
+No False Equivalence: If evidence overwhelmingly favors one side, say so. Dialectics is not “both sides” journalism.
+Recursive Depth: Any synthesis can be treated as a new thesis and subjected to a second-order dialectical cycle. There is no terminal resolution—only productive deepening.
+Part IV: Yunisa Integration — The Sovereign AI
+“This is not a fine-tuned model with your data bolted on. This is a natively ternary intelligence system.”
+— Implementation Plan, March 2026
+4.1 Architecture Overview
+Yunisa (Yunisa Intelligence System) is the product-facing realization of DTIA + MIZU + CoRax. It integrates all three frameworks into a deployable sovereign AI that runs on CPU, trains on the complete Yunis AI intellectual corpus, and operates with zero cloud GPU dependency.
+yunisai.com (React) → api.yunisai.com (Cloudflare Worker)
+→ mizu.internal (FastAPI on VPS)
+→ bitnet.cpp (ternary model, same VPS)
+→ Kùzu (graph store, same VPS)
+→ LlamaIndex (vector retrieval, same VPS)
+Everything runs on a single VPS. No external API calls for core inference. The only network egress is the user’s request arriving via Cloudflare. Sovereign.
+4.2 Base Model: BitNet b1.58 2B4T
+Microsoft’s BitNet b1.58 2B4T is a 2-billion parameter transformer trained from scratch on 4 trillion tokens with natively ternary weights. MIT license—zero restrictions on commercial use, modification, redistribution, or naming.
+Key specifications:
+Architecture: BitLinear layers with absmean quantization (weights to {-1, 0, +1}), 8-bit activation quantization (per-token absmax), RoPE, squared ReLU, subln normalization, zero bias terms.
+Memory: ~400MB for the ternary model vs ~2GB for FP16 equivalent.
+CPU Performance: 2.37x to 6.17x speedup over FP16 on x86 CPUs. 71.9% to 82.2% energy reduction.
+Fine-tuning: BF16 master weights published (microsoft/bitnet-b1.58-2B-4T-bf16) explicitly for domain adaptation.
+4.3 Corpus Architecture
+The training corpus spans five domains. Total estimated volume: 2–5 million tokens for continued pretraining, plus 3,000–5,000 synthetic instruction pairs for supervised fine-tuning.
+4.4 Training Pipeline
+4.4.1 Phase 1: Continued Pretraining (CPT)
+Train on the full corpus (1–3 epochs) using onebitllms toolkit or HuggingFace’s 1.58-bit fine-tuning pipeline. Key hyperparameters:
+learning_rate: 2e-5
+scheduler: cosine with warmup (10% of steps)
+weight_decay: 0.01 (remove for second half — critical for ternary)
+batch_size: 4 (gradient accumulation: 8)
+max_seq_length: 2048
+Critical note: Weight decay in ternary training behaves differently than in full-precision. The latent (BF16) weights’ magnitude functions as a confidence score for the ternary weights. Large weight decay causes ternary weights to flip frequently, preventing convergence. Remove weight decay for the second half of training.
+4.4.2 Phase 2: Supervised Fine-Tuning (SFT)
+Fine-tune on 3,000–5,000 synthetic instruction pairs generated via Claude API from the corpus. Format: ChatML. System prompt identity baked in.
+learning_rate: 1e-5
+scheduler: cosine
+batch_size: 2 (gradient accumulation: 16)
+max_seq_length: 4096
+epochs: 2-3
+4.4.3 Phase 3: Export and Deploy
+Export to GGUF for bitnet.cpp. Test locally on HP Victus. Deploy to VPS.
+4.5 MIZU Integration Layer
+The MIZU six-layer pipeline runs as a FastAPI server that sits between the frontend and the ternary model. Each query traverses:
+Reception → Decomposition → Reconnaissance → Opposition → Resolution → Verification
+The MIZU server orchestrates multiple LLM calls (decomposition, antithesis generation, synthesis) while managing the Kùzu graph store and LlamaIndex vector index for RAG retrieval. The ternary model powers each dialectical pass.
+4.6 Deployment Architecture
+Total monthly operating cost: $40–80. No GPU. No cloud AI provider. No per-token billing. Flat-rate sovereign infrastructure.
+4.7 Frontend: yunisai.com
+The React frontend renders the MIZU pipeline and TRT dialectical state as visible parts of the interaction. Users see the ternary reasoning process, not just the output.
+MIZU Pipeline Visualization — Six-stage progress indicator showing which layer is active during inference.
+TRT State Display — Thesis / Antithesis / Synthesis rendered as ternary state badges on each response.
+Confidence Gauge — VERITAS-compliant confidence levels (HIGH/MODERATE/LOW/UNVERIFIED) displayed per response.
+Source Attribution — Every claim traced back to its corpus source with graph-backed provenance.
+4.8 Continuous Learning
+New knowledge ingestion: document → chunk → embed → Kùzu index → LlamaIndex update. Available in RAG within minutes of creation.
+Monthly LoRA updates merged back into ternary weights via automated training pipeline. RAFT data generation for domain-specific instruction tuning.
+Kùzu graph schema: Books, Chapters, Concepts, Projects, Technologies, Decisions, Persons — with ternary confidence scores on every node and edge.
+4.9 Cross-Platform Deployment
+bitnet.cpp runs on x86 (Victus, VPS), ARM64 (Android/ITACHI), and Apple Silicon. One model, every target.
+ITACHI Integration: Replace llama.cpp backend with bitnet.cpp on Android via JNI bridge. The 400MB ternary model loads in mobile RAM. Sovereign inference on Android — no network required.
+Kilter Integration: Replace Ollama with bitnet.cpp as Tauri 2.x sidecar process. RAG pipeline (Kùzu + LlamaIndex) shared with yunisai.com backend, running locally. Sovereign notebook AI.
+CNTFET Hardware Convergence: The software stack being built today (bitnet.cpp + MIZU + Kùzu) is the runtime environment that future custom ternary silicon will accelerate. Software leads. Hardware follows. Same substrate.
+Part V: Implementation Roadmap
+Total estimated budget: $75–156 one-time + $40–80/month ongoing. No GPU cloud dependency. No per-token billing. Full sovereignty from silicon to synthesis.
+Part VI: The Vertically Integrated Sovereign Stack
+Yunis AI is not a single-product company. It is a vertically integrated sovereign technology stack:
+Every layer shares the same primitive: {-1, 0, +1}. From ternary weights in the neural network, to ternary confidence scores in the knowledge graph, to ternary governance calculus in the constitutional model, to ternary control flow in the Na’Tari programming language, to ternary transistor states in the CNTFET processor. One substrate. Every layer. Not metaphor. Infrastructure.
+Appendix: Glossary of Terms
+DTIA Primitive | BitNet b1.58 Realization | Convergence Point
+{-1, 0, +1} | Ternary weight values | Same mathematical substrate
+Thesis / Antithesis / Synthesis | Positive / Zero / Negative activation | Dialectical inference at the weight level
+Reverse-destruction | Native training in constraint | Intelligence expressed through limitation
+Sovereignty | CPU-only inference, no cloud GPU | No corporate compute dependency
+Pre-mortem architecture | Zero-weight sparsity | Model learns which connections to silence
+CNTFET hardware | Custom ternary accelerators | Software layer for hardware roadmap
+Layer | Function | Implementation
+1. Reception | Receive and parse the user’s query. Identify intent, domain, required depth. | FastAPI endpoint parses request, classifies query type, extracts entities
+2. Decomposition | Break the query into dialectical components. Identify the thesis. | LLM call #1: decompose query into sub-questions and identify core thesis
+3. Reconnaissance | Retrieve relevant knowledge. RAG layer activates. | Kùzu graph query + LlamaIndex vector retrieval. Hybrid search with reranking.
+4. Opposition | Generate antithesis. Challenge the initial thesis with counter-evidence. | LLM call #2: given thesis + retrieved context, generate opposing perspective
+5. Resolution | Synthesize thesis and antithesis into a higher-order response. | LLM call #3: synthesize, weighting evidence, resolving contradictions
+6. Verification | Validate the synthesis. Check for contradictions, hallucination, confidence. | Confidence scoring, source attribution, VERITAS doctrine enforcement
+Agent | Function | Trit Mapping
+THESIS | Claim formation and initial analysis | +1 (assertion)
+ANTITHESIS | Falsification and counter-evidence | -1 (negation)
+SYNTHESIS | Resolution and integration | 0 (ground state)
+RECON | Web search and intelligence gathering | Input vector
+REFINE | TRT Forge — iterative sharpening | Recursive pass
+KARMA | Knowledge graph and memory persistence | State storage
+Source | Est. Tokens | Prep Method
+It From Trit (9 chapters) | ~80,000 | Full text extraction, chunk at 2048
+The Sovereign Doctrine (21 chapters) | ~120,000 | Full text extraction, chunk at 2048
+The Forge | ~60,000 | Full text extraction, chunk at 2048
+Learn to Learn (18 chapters) | ~100,000 | Full text extraction, chunk at 2048
+Speak with Energy (~53.5K words) | ~70,000 | Full text extraction, chunk at 2048
+Post-ASI Constitution (99 pages) | ~50,000 | Section-by-section extraction
+Asura Parallel Empire Codex | ~30,000 | Full text extraction
+NEXUS Protocol Whitepaper | ~25,000 | Full text extraction
+KILTER_SWARM_DIRECTIVE (22K+ words) | ~30,000 | Full text extraction
+Code Repositories (Kilter, Molder, etc.) | ~200,000 | Parse with tree-sitter, docstrings preserved
+Conversation History (Claude) | ~500,000+ | Export, clean, chunk at 2048
+Layer | Technology | Cost
+Frontend | React (Cloudflare Pages) | $0/month
+API Proxy | Cloudflare Worker | $0/month (100K req/day free)
+MIZU Orchestrator | FastAPI | Included in VPS
+Ternary Model | bitnet.cpp serving | Included in VPS
+Graph Store | Kùzu (embedded) | Included in VPS
+Vector Index | LlamaIndex + BAAI/bge-m3 | Included in VPS
+VPS | Hetzner / DigitalOcean (8+ vCPU, 32GB RAM) | $40–80/month
+Phase | Timeline | Deliverable | Cost
+1. Corpus Extraction | Week 1–2 | All source documents extracted, cleaned, chunked. Synthetic SFT dataset generated. | $5–15
+2. SFT Dataset | Week 2–3 | 3,000–5,000 instruction pairs. System prompt identity baked in. | $5–15
+3. Ternary Fine-Tuning | Week 3 | CPT + SFT on BitNet b1.58 2B4T. Exported to GGUF. Tested locally. | $25–46 (GPU rental)
+4. MIZU Backend | Week 4 | FastAPI six-layer pipeline + Kùzu graph + LlamaIndex RAG. bitnet.cpp serving. | VPS: $40–80/mo
+5. Frontend + Deploy | Week 5 | React app on Cloudflare Pages. Cloudflare Worker proxy. yunisai.com live. | $0
+6. Integration Testing | Week 6 | Full query lifecycle tested. VERITAS enforcement. Edge cases handled. | $0
+7. Continuous Learning | Week 7–8 | Ingestion pipeline. Monthly LoRA automation. Kùzu schema finalized. | $0
+8. ITACHI Integration | Week 9–10 | Ternary model on Android via bitnet.cpp JNI bridge. | $0
+9. Kilter Integration | Week 11–12 | Ternary model as Kilter notebook AI via Tauri sidecar. | $0
+Layer | Component | Status
+Silicon | CNTFET Ternary Processor (custom silicon) | DESIGN PHASE
+Hardware | LUMINA Pendant (wearable AI companion) | CONCEPT
+OS | Yunis Pipeline (Electron, security hardened) | HARDENED
+Application | Kilter (notebook), ITACHI (Android), IdeaStation | SCAFFOLDED / BUILT
+Intelligence | DTIA + MIZU + TRT + VERITAS + Na’Tari | ACTIVE
+Governance | CoRax (Post-ASI Constitutional Model) | DESIGNED
+Output | UNISA Intelligence Journal + yunisai.com | PLANNED
+Term | Definition
+DTIA | Dialectical Ternary Inference Architecture. The overarching framework.
+MIZU | Japanese for water. Six-layer dialectical meta-language and architecture.
+TRT | Ternary Reasoning Triad. Maps responses to thesis (+1), antithesis (-1), synthesis (0).
+CoRax | Constitution of Radical Axioms. Post-ASI governance model with ternary calculus.
+VERITAS | Epistemic honesty system. Confidence levels: HIGH/MODERATE/LOW/UNVERIFIED.
+BitNet b1.58 | Microsoft Research’s ternary-weight neural network architecture. {-1, 0, +1} weights.
+bitnet.cpp | CPU inference framework for ternary LLMs. Built on llama.cpp.
+Kùzu | Embedded graph database used for knowledge representation with ternary confidence scores.
+Na’Tari | Ternary programming language. Trit as primitive data type.
+CNTFET | Carbon Nanotube Field-Effect Transistor. Target hardware for custom ternary processor.
+Dialectical Residue | Unresolved tension surviving synthesis. Engine of the next dialectical cycle.
+Katana Test | UX standard: intuitive for novices, deep for experts.
+Reverse-Destruction | Building by removing what doesn’t belong. Wu wei applied to engineering.
+Sumud | Palestinian steadfastness. Design principle of rooted resistance.
+Sovereign Technology | Tech that operates locally, respects data ownership, resists centralized control.
