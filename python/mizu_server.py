@@ -9,6 +9,7 @@ import signal
 import platform
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
+import typing
 
 
 def find_free_port(start_port: int) -> int:
@@ -38,6 +39,7 @@ class MizuServer:
         self.cpu_threads = cpu_threads
         self.llama_port = find_free_port(self.mizu_port + 1)
         self.llama_proc: subprocess.Popen | None = None
+        self.llama_log: typing.Any = None
 
     def start_llama(self) -> bool:
         # Cross-platform binary resolution
@@ -68,11 +70,13 @@ class MizuServer:
             cmd += ["--threads", self.cpu_threads]
 
         print(f"[MIZU] Starting Llama Server on port {self.llama_port}...")
+        log_path = os.path.join(self.binaries_dir, "llama_server.log")
         try:
+            self.llama_log = open(log_path, "w", encoding="utf-8")
             self.llama_proc = subprocess.Popen(
                 cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=self.llama_log,
+                stderr=subprocess.STDOUT,
                 cwd=self.binaries_dir,
             )
         except OSError as e:
@@ -85,11 +89,15 @@ class MizuServer:
         for attempt in range(60):
             # Check if process died early
             if proc.poll() is not None:
-                stderr_pipe = proc.stderr
-                stderr_out = stderr_pipe.read().decode('utf-8', errors='replace') if stderr_pipe is not None else ''
                 print(f"[MIZU] Llama server exited prematurely (code {proc.returncode})")
-                if stderr_out:
-                    print(f"[MIZU] stderr: {stderr_out[:1000]}")
+                try:
+                    with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                        lines = f.readlines()
+                        stderr_out = "".join(lines[-20:])
+                        if stderr_out:
+                            print(f"[MIZU] Last logs: \n{stderr_out}")
+                except Exception:
+                    pass
                 return False
 
             try:
@@ -116,7 +124,12 @@ class MizuServer:
                 pass
             self.llama_proc = None
 
-
+        if self.llama_log is not None:
+            try:
+                self.llama_log.close()
+            except Exception:
+                pass
+            self.llama_log = None
 def run_mizu_proxy(mizu_server: MizuServer) -> None:
     llama_base = f"http://127.0.0.1:{mizu_server.llama_port}"
 
@@ -175,9 +188,10 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
             self.send_response(200)
             self.send_header('Content-Type', 'text/event-stream')
             self.send_header('Cache-Control', 'no-cache')
-            self.send_header('Connection', 'keep-alive')
+            self.send_header('Connection', 'close')
             self._send_cors_headers()
             self.end_headers()
+            self.close_connection = True
 
             def emit_chunk(content: str) -> None:
                 chunk = {

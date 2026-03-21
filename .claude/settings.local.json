@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(claude mcp:*)",
+      "Bash(npx gitnexus:*)"
+    ]
+  }
+}

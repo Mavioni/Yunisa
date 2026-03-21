@@ -206,9 +206,8 @@ function registerIpcHandlers(): void {
 
   // NemoClaw OpenShell Sandbox
   ipcMain.handle('nemoclaw:start', async () => {
-    const llmPort = serverManager.getPort();
     const cfg = getConfig();
-    return await nemoclawOrchestrator.start(llmPort, cfg.nemoclawUseDocker || false);
+    return await nemoclawOrchestrator.start(cfg.nemoclawUseDocker || false);
   });
   ipcMain.handle('nemoclaw:stop', () => {
     nemoclawOrchestrator.stop();
