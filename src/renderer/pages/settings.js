@@ -150,8 +150,8 @@ export async function initSettings() {
   const devToggle = createToggle('Initialize VLM Matrix Studio (WARNING: Requires Extreme Hardware > 80GB VRAM)', 'enableVlmStudio');
   const checkbox = devToggle.querySelector('input');
   checkbox.addEventListener('change', (e) => {
-    const btn = document.getElementById('vlm-btn');
-    if (btn) btn.style.display = e.target.checked ? 'block' : 'none';
+    const btn = document.getElementById('nav-vlm');
+    if (btn) btn.style.display = e.target.checked ? 'flex' : 'none';
   });
   
   devCard.appendChild(devToggle);
