@@ -195,11 +195,11 @@ def main():
         if not line:
             continue
         try:
-            cmd = json.loads(line)
-            # Guard against deeply nested JSON payloads
+            # Guard against oversized payloads BEFORE parsing
             if len(line) > 100000:
                 emit({"type": "error", "content": "Input too large", "session_id": "system"})
                 continue
+            cmd = json.loads(line)
         except json.JSONDecodeError:
             continue
 
