@@ -235,12 +235,30 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
 
             original_query = messages[-1].get('content', '') if messages else ""
 
-            # Pre-flight: verify llama-server is reachable before starting DTIA
-            try:
-                urllib.request.urlopen(f"{llama_base}/health", timeout=5)
-            except Exception as health_err:
-                print(f"[MIZU] Llama-server health check failed: {health_err}")
-                emit_chunk(f"**Engine unavailable** — the inference server is not responding. It may have crashed after the previous request. Please restart the application.")
+            # Max chars from previous DTIA passes to embed in subsequent prompts.
+            # 2048 tokens ≈ 8192 chars; system prompt + DTIA template ≈ 500 chars;
+            # leave room for generation → keep each embedded pass under 1500 chars.
+            MAX_PASS_CHARS = 1500
+
+            # Pre-flight: verify llama-server is reachable; auto-restart if dead
+            def ensure_llama_alive() -> bool:
+                try:
+                    urllib.request.urlopen(f"{llama_base}/health", timeout=5)
+                    return True
+                except Exception as health_err:
+                    print(f"[MIZU] Health check failed: {health_err}. Attempting auto-restart...")
+                    emit_chunk("\n*Reconnecting to engine...*\n")
+                    mizu_server.stop_llama()
+                    time.sleep(1)
+                    if mizu_server.start_llama():
+                        print("[MIZU] Llama-server restarted successfully.")
+                        return True
+                    else:
+                        print("[MIZU] Llama-server restart failed.")
+                        emit_chunk("**Engine unavailable** — could not restart the inference server. Please restart YUNISA.")
+                        return False
+
+            if not ensure_llama_alive():
                 try:
                     self.wfile.write(b"data: [DONE]\n\n")
                     self.wfile.flush()
@@ -254,22 +272,23 @@ def run_mizu_proxy(mizu_server: MizuServer) -> None:
                 thesis = call_llama(thesis_prompt, stream_prefix="<thesis>\n", stream_suffix="\n</thesis>\n\n")
                 print(f"[MIZU] Thesis: {len(thesis)} chars")
 
-                # DTIA Pass 2: Antithesis
-                anti_prompt = f"Given the query: '{original_query}' and the prevailing thesis: '{thesis}', provide the strongest counter-argument. What is the thesis missing? Be rigorous."
+                # DTIA Pass 2: Antithesis (truncate thesis to fit context)
+                thesis_short = thesis[:MAX_PASS_CHARS] + ('...' if len(thesis) > MAX_PASS_CHARS else '')
+                anti_prompt = f"Given the query: '{original_query}' and the prevailing thesis: '{thesis_short}', provide the strongest counter-argument. What is the thesis missing? Be rigorous."
                 antithesis = call_llama(anti_prompt, stream_prefix="<antithesis>\n", stream_suffix="\n</antithesis>\n\n")
                 print(f"[MIZU] Antithesis: {len(antithesis)} chars")
 
-                # DTIA Pass 3: Synthesis
+                # DTIA Pass 3: Synthesis (truncate both to fit context)
+                anti_short = antithesis[:MAX_PASS_CHARS] + ('...' if len(antithesis) > MAX_PASS_CHARS else '')
                 syn_prompt = (
                     f"Query: '{original_query}'. \n"
-                    f"Thesis: '{thesis}'. \n"
-                    f"Antithesis: '{antithesis}'. \n"
+                    f"Thesis: '{thesis_short}'. \n"
+                    f"Antithesis: '{anti_short}'. \n"
                     f"Synthesize these opposing views into a higher-order resolution. "
                     f"Conclude with a single sentence titled 'Dialectical Residue:' stating the remaining unresolved tension."
                 )
                 synthesis = call_llama(syn_prompt, stream_prefix="<synthesis>\n", stream_suffix="\n</synthesis>\n")
                 print(f"[MIZU] Synthesis: {len(synthesis)} chars")
-
                 if not thesis and not antithesis and not synthesis:
                     emit_chunk("\n**[Engine returned empty response]** — the model may have run out of context. Try a shorter message or restart the engine.")
             except BrokenPipeError:
