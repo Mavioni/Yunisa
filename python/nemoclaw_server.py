@@ -10,7 +10,7 @@ import os
 import json
 import argparse
 import threading
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string  # type: ignore[import-untyped]
 
 # ── HTML Dashboard Template ──────────────────────────────────────────
 DASHBOARD_HTML = """
@@ -200,12 +200,12 @@ def execute_task():
 
     # Attempt to use Agent-S for autonomous task execution
     try:
-        import pyautogui
+        import pyautogui  # type: ignore[import-untyped]
         import io
-        from PIL import Image
-        from gui_agents.s3.agents.agent_s import AgentS3
-        from gui_agents.s3.agents.grounding import OSWorldACI
-        from gui_agents.s3.utils.local_env import LocalEnv
+        from PIL import Image  # type: ignore[import-untyped]
+        from gui_agents.s3.agents.agent_s import AgentS3  # type: ignore[import-untyped]
+        from gui_agents.s3.agents.grounding import OSWorldACI  # type: ignore[import-untyped]
+        from gui_agents.s3.utils.local_env import LocalEnv  # type: ignore[import-untyped]
 
         base_url = f"http://127.0.0.1:{LLM_PORT}/v1"
         engine_params = {
@@ -251,13 +251,17 @@ def execute_task():
             info, action = agent.predict(instruction=instruction, observation=obs)
         except Exception as fmt_err:
             # BitNet often can't produce structured Agent-S JSON — fall back gracefully
+            err_text = str(fmt_err)
+            truncated_err = err_text[:500] if len(err_text) > 500 else err_text
             return jsonify({
                 'result': f'[Text-Only Mode] Agent processed your request but could not format a structured response. '
-                          f'Raw output: {str(fmt_err)[:500]}'
+                          f'Raw output: {truncated_err}'
             })
 
+        info_text = json.dumps(info, default=str)
+        truncated_info = info_text[:500] if len(info_text) > 500 else info_text
         return jsonify({
-            'result': f'Agent planned {len(action)} action(s). Info: {str(json.dumps(info, default=str))[:500]}'
+            'result': f'Agent planned {len(action)} action(s). Info: {truncated_info}'
         })
     except ImportError as e:
         return jsonify({

@@ -85,7 +85,8 @@ class MizuServer:
         for attempt in range(60):
             # Check if process died early
             if proc.poll() is not None:
-                stderr_out = proc.stderr.read().decode('utf-8', errors='replace') if proc.stderr else ''
+                stderr_pipe = proc.stderr
+                stderr_out = stderr_pipe.read().decode('utf-8', errors='replace') if stderr_pipe is not None else ''
                 print(f"[MIZU] Llama server exited prematurely (code {proc.returncode})")
                 if stderr_out:
                     print(f"[MIZU] stderr: {stderr_out[:1000]}")

@@ -12,20 +12,20 @@ import time
 import tempfile
 
 try:
-    import pyautogui
+    import pyautogui  # type: ignore[import-untyped]
     pyautogui.PAUSE = 0.3
     pyautogui.FAILSAFE = True  # move mouse to corner to abort
 except ImportError:
     pyautogui = None
 
 try:
-    from PIL import Image, ImageGrab
+    from PIL import Image, ImageGrab  # type: ignore[import-untyped]
 except ImportError:
     Image = None
     ImageGrab = None
 
 try:
-    import pytesseract
+    import pytesseract  # type: ignore[import-untyped]
 except ImportError:
     pytesseract = None
 

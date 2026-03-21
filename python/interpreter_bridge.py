@@ -13,11 +13,11 @@ import os
 try:
     # Inject agent-s_repo into Python path so gui_agents can be imported
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent-s_repo'))
-    import pyautogui
-    from PIL import Image
-    from gui_agents.s3.agents.agent_s import AgentS3
-    from gui_agents.s3.agents.grounding import OSWorldACI
-    from gui_agents.s3.utils.local_env import LocalEnv
+    import pyautogui  # type: ignore[import-untyped]
+    from PIL import Image  # type: ignore[import-untyped]
+    from gui_agents.s3.agents.agent_s import AgentS3  # type: ignore[import-untyped]
+    from gui_agents.s3.agents.grounding import OSWorldACI  # type: ignore[import-untyped]
+    from gui_agents.s3.utils.local_env import LocalEnv  # type: ignore[import-untyped]
     HAVE_AGENT_S = True
 except ImportError:
     HAVE_AGENT_S = False
@@ -110,9 +110,10 @@ def handle_message(instruction: str, session_id: str):
             })
 
             # Block while calling AgentS3
-            info, code = agent.predict(instruction=instruction, observation=obs)
+            info, raw_code = agent.predict(instruction=instruction, observation=obs)
+            code: list = list(raw_code) if raw_code else []
 
-            if not code or len(code) == 0:
+            if not code:
                 emit({
                     "type": "text_delta",
                     "content": "\n⚠️ Agent produced no executable action.",
