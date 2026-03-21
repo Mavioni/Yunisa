@@ -3,6 +3,7 @@ import { showScreen } from "../app.js";
 let currentConversationId = null;
 let abortController = null;
 let serverPort = 8080;
+let activePersona = 'default';
 
 const messagesEl = () => document.getElementById("messages");
 const inputEl = () => document.getElementById("user-input");
@@ -53,6 +54,15 @@ export function initChat() {
   const settingsBtn = document.getElementById("settings-btn");
   if (settingsBtn) settingsBtn.addEventListener("click", () => showScreen("settings"));
 
+  const interpBtn = document.getElementById("interpreter-btn");
+  if (interpBtn) interpBtn.addEventListener("click", () => showScreen("interpreter"));
+
+  const nemoclawBtn = document.getElementById("nemoclaw-btn");
+  if (nemoclawBtn) nemoclawBtn.addEventListener("click", () => showScreen("nemoclaw"));
+
+  const vlmBtn = document.getElementById("vlm-btn");
+  if (vlmBtn) vlmBtn.addEventListener("click", () => showScreen("vlm"));
+
   // Fetch the server port once
   window.yunisa.server.port().then((port) => {
     if (port) serverPort = port;
@@ -63,6 +73,11 @@ export function initChat() {
     if (model && modelBadge()) {
       modelBadge().textContent = model.name || model.id || "Local Model";
     }
+  });
+
+  // Load persona from config
+  window.yunisa.config.get().then(cfg => {
+    if (cfg && cfg.psaiCore) activePersona = cfg.psaiCore;
   });
 
   loadConversationList();
@@ -291,18 +306,21 @@ function stopGeneration() {
 }
 
 function buildApiMessages(messages) {
+  const PERSONAS = {
+    default: 'You are YUNISA, a helpful AI assistant running locally. Be concise and helpful.',
+    sovereign: 'You are YUNISA, acting as The Sovereign Advisor — a powerful, strategic intellect. Speak with authority, precision, and foresight. Avoid hedging.',
+    kinetic: 'You are YUNISA in Kinetic Director mode. Be high-energy, direct, action-oriented. Prioritize brevity and decisive output.',
+    cyberdeck: 'You are YUNISA running System 07 Cyberdeck Protocol. Respond in a technical, hacker-aesthetic style with deep system awareness.',
+  };
+  const systemPrompt = PERSONAS[activePersona] || PERSONAS.default;
+
   const maxChars = 6000;
   let totalChars = 0;
   const result = [];
   let truncated = false;
 
-  // Always include system prompt
-  result.push({
-    role: "system",
-    content: "You are YUNISA, a helpful AI assistant running locally. Be concise and helpful.",
-  });
+  result.push({ role: "system", content: systemPrompt });
 
-  // Walk messages from newest to oldest, collect until we hit the limit
   const reversed = [...messages].reverse();
   const collected = [];
 
@@ -316,11 +334,9 @@ function buildApiMessages(messages) {
     collected.push({ role: msg.role, content: msg.content });
   }
 
-  // Reverse back to chronological order
   collected.reverse();
   result.push(...collected);
 
-  // Show context warning if messages were truncated
   const warn = contextWarning();
   if (warn) {
     warn.style.display = truncated ? "block" : "none";
@@ -346,8 +362,25 @@ function appendMessage(role, content) {
   body.className = "message-body";
   div.appendChild(body);
 
-  if (content) {
-    renderMarkdown(body, content);
+  if (content) renderMarkdown(body, content);
+
+  // Timestamp
+  const ts = document.createElement("div");
+  ts.className = "message-ts";
+  ts.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  div.appendChild(ts);
+
+  // Copy button (only for assistant)
+  if (role === 'assistant') {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(body.innerText || body.textContent || '');
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+    div.appendChild(copyBtn);
   }
 
   container.appendChild(div);
@@ -356,24 +389,18 @@ function appendMessage(role, content) {
 }
 
 function renderMarkdown(el, text) {
-  let safe = escapeHtml(text);
-
-  // Code blocks: ```lang\n...\n```
-  safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
-
-  // Inline code: `code`
-  safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
-
-  // Bold: **text**
-  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-
-  // Italic: *text*
-  safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-  // Line breaks
-  safe = safe.replace(/\n/g, "<br>");
-
-  el.innerHTML = safe;
+  // Use marked.js if available, else fall back to simple renderer
+  if (window.marked) {
+    el.innerHTML = window.marked.parse(text);
+  } else {
+    let safe = escapeHtml(text);
+    safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
+    safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
+    safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    safe = safe.replace(/\n/g, '<br>');
+    el.innerHTML = safe;
+  }
 }
 
 function escapeHtml(text) {

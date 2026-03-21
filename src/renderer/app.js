@@ -38,6 +38,13 @@ async function boot() {
   initNemoclaw();
   initVlm();
 
+  // Pre-flight UI bindings
+  const config = await window.yunisa.config.get();
+  const vlmBtn = document.getElementById('vlm-btn');
+  if (vlmBtn) {
+    vlmBtn.style.display = config.enableVlmStudio ? 'block' : 'none';
+  }
+
   // Setup auto-updater notifications
   window.yunisa.updater.onUpdateAvailable((info) => {
     if (confirm(`YUNISA v${info.version} is available. Download now?`)) {

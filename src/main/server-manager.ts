@@ -17,10 +17,12 @@ export class ServerManager {
   private restartCount: number = 0;
   private maxRestarts: number = 3;
   private restartCooldown: number = 5000;
+  private getConfig: () => any;
 
-  constructor(binariesDir: string, dataDir: string) {
+  constructor(binariesDir: string, dataDir: string, getConfig: () => any = () => ({})) {
     this.binariesDir = binariesDir;
     this.dataDir = dataDir;
+    this.getConfig = getConfig;
   }
 
   getStatus(): ServerStatus {
@@ -46,7 +48,7 @@ export class ServerManager {
 
     // YUNISA DUAL-ENGINE ARCHITECTURE routing
     try {
-      const engine = EngineFactory.create(modelPath);
+      const engine = EngineFactory.create(modelPath, this.getConfig);
       this.process = await engine.start(modelPath, this.port, this.binariesDir);
       this.lastModelPath = modelPath;
     } catch (err) {

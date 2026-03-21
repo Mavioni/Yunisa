@@ -220,15 +220,49 @@ body::before {
 }
 .sidebar-footer {
   padding: 0.5rem;
+  padding-bottom: 0.75rem;
   border-top: var(--glass-border);
   display: flex;
+  flex-direction: column;
   gap: 0.35rem;
 }
 .sidebar-footer .btn {
-  flex: 1;
-  font-size: 0.72rem;
-  padding: 0.45rem 0.3rem;
-  text-align: center;
+  width: 100%;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.sidebar-footer .btn.nav-active {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+/* Copy button on message hover */
+.message { position: relative; }
+.copy-btn {
+  opacity: 0;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.65rem;
+  border-radius: 6px;
+  background: var(--bg-glass-strong);
+  color: var(--text-secondary);
+  border: var(--glass-border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.message:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { background: var(--accent-soft); color: var(--text-primary); }
+.message-ts {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+  text-align: right;
 }
 
 /* ═══════════════ Chat ═══════════════ */

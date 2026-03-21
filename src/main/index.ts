@@ -91,7 +91,7 @@ async function initialize(): Promise<void> {
 
   conversationStore = new ConversationStore(dataDir);
   modelManager = new ModelManager(dataDir);
-  serverManager = new ServerManager(binariesDir, dataDir);
+  serverManager = new ServerManager(binariesDir, dataDir, getConfig);
   interpreterManager = new InterpreterManager(appRoot);
   nemoclawOrchestrator = new NemoclawOrchestrator(pythonDir);
 

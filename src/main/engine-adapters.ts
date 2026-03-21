@@ -7,27 +7,31 @@ export interface IEngineAdapter {
 }
 
 export class LlamaEngineAdapter implements IEngineAdapter {
+  private getConfig: () => any;
+  constructor(getConfig: () => any = () => ({})) { this.getConfig = getConfig; }
+
   async start(modelPath: string, port: number, binariesDir: string): Promise<ChildProcess> {
     const serverExe = path.join(binariesDir, 'llama-server.exe');
+    const cfg = this.getConfig();
+    const ctxSize = cfg.contextSize || '16384';
+    const threads = cfg.cpuThreads && cfg.cpuThreads !== 'auto' && cfg.cpuThreads !== 'max' ? cfg.cpuThreads : undefined;
     let gpuArgs: string[] = [];
     try {
       execSync('nvidia-smi', { stdio: 'ignore' });
       console.log('[engine-adapter] NVIDIA RTX Acceleration Auto-Enabled for Llama.cpp');
-      gpuArgs = ['--n-gpu-layers', '99']; // Offload all layers to cuBLAS
+      gpuArgs = ['--n-gpu-layers', '99'];
     } catch (e) {
       console.log('[engine-adapter] No NVIDIA GPU detected. Running pure CPU inference.');
     }
-
+    const threadArgs = threads ? ['--threads', threads] : [];
     return spawn(serverExe, [
       '--model', modelPath,
-      '--ctx-size', '16384',
+      '--ctx-size', ctxSize,
       '--port', String(port),
       '--host', '127.0.0.1',
+      ...threadArgs,
       ...gpuArgs
-    ], {
-      cwd: binariesDir,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    ], { cwd: binariesDir, stdio: ['ignore', 'pipe', 'pipe'] });
   }
 }
 
@@ -49,11 +53,10 @@ export class AirLLMEngineAdapter implements IEngineAdapter {
 }
 
 export class EngineFactory {
-  static create(modelPath: string): IEngineAdapter {
+  static create(modelPath: string, getConfig: () => any = () => ({})): IEngineAdapter {
     if (modelPath.includes('airllm')) {
       return new AirLLMEngineAdapter();
     }
-    // Future plugins like TensorRT-LLM, vLLM, or MLX will naturally append here
-    return new LlamaEngineAdapter();
+    return new LlamaEngineAdapter(getConfig);
   }
 }

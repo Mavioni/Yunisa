@@ -143,6 +143,43 @@ export async function initSettings() {
   clawCard.appendChild(createToggle('Enable Online Mode (Allow NemoClaw agents unrestricted live internet access)', 'nemoclawOnlineMode'));
   container.appendChild(clawCard);
 
+  // 8. Experimential Architecture
+  const devCard = createCard('Developer Subsystems', 'Enable radical experimental architecture modes.');
+  devCard.style.borderLeftColor = '#a855f7';
+  
+  const devToggle = createToggle('Initialize VLM Matrix Studio (WARNING: Requires Extreme Hardware > 80GB VRAM)', 'enableVlmStudio');
+  const checkbox = devToggle.querySelector('input');
+  checkbox.addEventListener('change', (e) => {
+    const btn = document.getElementById('vlm-btn');
+    if (btn) btn.style.display = e.target.checked ? 'block' : 'none';
+  });
+  
+  devCard.appendChild(devToggle);
+  container.appendChild(devCard);
+
+  // 9. Engine Control
+  const engineCard = createCard('Inference Engine Control', 'Restart the local AI backend without restarting the full application.');
+  engineCard.style.borderLeftColor = '#e94560';
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'btn btn-danger';
+  restartBtn.style.cssText = 'font-size: 0.85rem; margin-top: 0.5rem;';
+  restartBtn.textContent = 'Restart Inference Engine';
+  restartBtn.addEventListener('click', async () => {
+    restartBtn.disabled = true;
+    restartBtn.textContent = 'Restarting...';
+    await window.yunisa.server.stop();
+    const active = await window.yunisa.models.getActive();
+    if (active) {
+      const result = await window.yunisa.server.start(active.path);
+      restartBtn.textContent = result.status === 'ready' ? 'Engine Restarted ✓' : 'Failed — Check Logs';
+    } else {
+      restartBtn.textContent = 'No Active Model';
+    }
+    setTimeout(() => { restartBtn.textContent = 'Restart Inference Engine'; restartBtn.disabled = false; }, 3000);
+  });
+  engineCard.appendChild(restartBtn);
+  container.appendChild(engineCard);
+
   screen.appendChild(container);
 
   backBtn.addEventListener('click', () => showScreen('chat'));
