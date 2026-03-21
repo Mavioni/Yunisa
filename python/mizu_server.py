@@ -6,9 +6,8 @@ import json
 import socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
-import urllib.error
 
-def find_free_port(start_port):
+def find_free_port(start_port: int) -> int:
     for port in range(start_port, start_port + 100):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if s.connect_ex(('127.0.0.1', port)) != 0:
@@ -16,14 +15,14 @@ def find_free_port(start_port):
     return start_port
 
 class MizuServer:
-    def __init__(self, model_path, mizu_port, binaries_dir):
+    def __init__(self, model_path: str, mizu_port: int, binaries_dir: str) -> None:
         self.model_path = model_path
         self.mizu_port = mizu_port
         self.binaries_dir = binaries_dir
         self.llama_port = find_free_port(self.mizu_port + 1)
         self.llama_proc = None
 
-    def start_llama(self):
+    def start_llama(self) -> bool:
         cmd = [
             f"{self.binaries_dir}/llama-server.exe",
             "--model", self.model_path,
@@ -41,7 +40,7 @@ class MizuServer:
                 urllib.request.urlopen(f"http://127.0.0.1:{self.llama_port}/health", timeout=1)
                 print("[MIZU] Llama server health OK.")
                 return True
-            except:
+            except Exception:
                 time.sleep(1)
         return False
 
@@ -50,7 +49,7 @@ class MizuServer:
             self.llama_proc.terminate()
             self.llama_proc.wait()
 
-def run_mizu_proxy(mizu_server):
+def run_mizu_proxy(mizu_server: MizuServer) -> None:
     llama_base = f"http://127.0.0.1:{mizu_server.llama_port}"
     
     class Handler(BaseHTTPRequestHandler):
