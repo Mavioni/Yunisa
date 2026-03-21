@@ -88,13 +88,6 @@ def handle_message(instruction: str, session_id: str):
         
         agent.reset()
 
-        scaled_width, scaled_height = 1920, 1080
-        
-        screen_width, screen_height = pyautogui.size()
-        scale_factor = min(2400 / screen_width, 2400 / screen_height, 1)
-        scaled_width = int(screen_width * scale_factor)
-        scaled_height = int(screen_height * scale_factor)
-
         for step in range(max_loops):
             emit({
                 "type": "text_delta",
@@ -107,8 +100,8 @@ def handle_message(instruction: str, session_id: str):
             screenshot = Image.new("RGB", (1, 1), color="black")
             buffered = io.BytesIO()
             screenshot.save(buffered, format="PNG")
-            
             obs = {"screenshot": buffered.getvalue()}
+            buffered.close()
 
             emit({
                 "type": "text_delta",
@@ -127,7 +120,9 @@ def handle_message(instruction: str, session_id: str):
                 })
                 break
 
-            if "done" in code[0].lower() or "fail" in code[0].lower():
+            action_str = str(code[0])
+
+            if "done" in action_str.lower() or "fail" in action_str.lower():
                 emit({
                     "type": "text_delta",
                     "content": "\n✅ Task completed or failed. Agent stopped.",
@@ -135,10 +130,10 @@ def handle_message(instruction: str, session_id: str):
                 })
                 break
                 
-            if "next" in code[0].lower():
+            if "next" in action_str.lower():
                 continue
 
-            if "wait" in code[0].lower():
+            if "wait" in action_str.lower():
                 emit({"type": "text_delta", "content": "\n⏳ Waiting...", "session_id": session_id})
                 time.sleep(5)
                 continue
@@ -146,7 +141,7 @@ def handle_message(instruction: str, session_id: str):
             emit({
                 "type": "code",
                 "language": "python",
-                "content": str(code[0]),
+                "content": action_str,
                 "session_id": session_id
             })
             
@@ -169,7 +164,7 @@ def handle_message(instruction: str, session_id: str):
                     "pyautogui": pyautogui,
                     "time": time
                 }
-                exec(code[0], safe_globals)
+                exec(action_str, safe_globals)
                 time.sleep(1.0)
             except Exception as e:
                 emit({
@@ -189,7 +184,7 @@ def handle_message(instruction: str, session_id: str):
 
 
 def main():
-    global port, model
+    global port, model, max_loops
     for line in sys.stdin:
         line = line.strip()
         if not line:
@@ -207,7 +202,8 @@ def main():
         if cmd_type == "configure":
             port = cmd.get("port", port)
             model = cmd.get("model", model)
-            emit({"type": "configured", "port": port, "model": model})
+            max_loops = cmd.get("max_loops", max_loops)
+            emit({"type": "configured", "port": port, "model": model, "max_loops": max_loops})
         elif cmd_type == "message":
             content = cmd.get("content", "")
             if len(content) > 50000:
