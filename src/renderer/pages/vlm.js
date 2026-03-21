@@ -114,31 +114,29 @@ export function initVlm() {
     trainBtn.style.display = 'block';
   };
 
-  // Listen to IPC stream and parse dict metrics dynamically
   window.yunisa.vlm.onLog((text) => {
-    text.split('\n').forEach(line => {
-      line = line.trim();
-      if (!line) return;
-      
-      // Parse HuggingFace dictionary logs
-      // Example: {'loss': 2.345, 'learning_rate': 0.0001, 'epoch': 0.5}
-      try {
-        const lossMatch = line.match(/'loss':\s*([\d.]+)/);
-        const lrMatch = line.match(/'learning_rate':\s*([\d.e-]+)/);
-        const epochMatch = line.match(/'epoch':\s*([\d.]+)/);
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (!line) continue;
+        
+        try {
+            const lossMatch = line.match(/'loss':\s*([\d.]+)/);
+            const lrMatch = line.match(/'learning_rate':\s*([\d.e-]+)/);
+            const epochMatch = line.match(/'epoch':\s*([\d.]+)/);
 
-        if (lossMatch) lossStat.valueObj.textContent = parseFloat(lossMatch[1]).toFixed(4);
-        if (lrMatch) lrStat.valueObj.textContent = parseFloat(lrMatch[1]).toExponential(2);
-        if (epochMatch) epochStat.valueObj.textContent = parseFloat(epochMatch[1]).toFixed(2);
-      } catch (e) {}
+            if (lossMatch) lossStat.valueObj.textContent = parseFloat(lossMatch[1]).toFixed(4);
+            if (lrMatch) lrStat.valueObj.textContent = parseFloat(lrMatch[1]).toExponential(2);
+            if (epochMatch) epochStat.valueObj.textContent = parseFloat(epochMatch[1]).toFixed(2);
+        } catch (e) {}
 
-      appendLine(line);
-      
-      if (line.includes('Training loop terminated')) {
-        isTraining = false;
-        stopBtn.style.display = 'none';
-        trainBtn.style.display = 'block';
-      }
-   });
+        appendLine(line);
+        
+        if (line.includes('Training loop terminated')) {
+            isTraining = false;
+            stopBtn.style.display = 'none';
+            trainBtn.style.display = 'block';
+        }
+    }
   });
 }

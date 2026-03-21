@@ -89,6 +89,11 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
+    mainWindow?.webContents.openDevTools(); // open devtools for user too
+  });
+
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    fs.appendFileSync('C:\\Users\\massi\\yunisa\\renderer_errors.log', `[Renderer] ${message} (${sourceId}:${line})\n`);
   });
 
   mainWindow.on('close', () => {

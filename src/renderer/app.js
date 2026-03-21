@@ -1,3 +1,4 @@
+console.log("[Renderer] Loading app.js modules...");
 import { initChat } from './pages/chat.js';
 import { initWelcome } from './pages/welcome.js';
 import { initModels } from './pages/models.js';
