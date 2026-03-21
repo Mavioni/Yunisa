@@ -196,6 +196,10 @@ def main():
             continue
         try:
             cmd = json.loads(line)
+            # Guard against deeply nested JSON payloads
+            if len(line) > 100000:
+                emit({"type": "error", "content": "Input too large", "session_id": "system"})
+                continue
         except json.JSONDecodeError:
             continue
 
@@ -206,6 +210,9 @@ def main():
             emit({"type": "configured", "port": port, "model": model})
         elif cmd_type == "message":
             content = cmd.get("content", "")
+            if len(content) > 50000:
+                emit({"type": "error", "content": "Message too long. Max 50000 chars.", "session_id": cmd.get("session_id", "default")})
+                continue
             session_id = cmd.get("session_id", "default")
             try:
                 handle_message(content, session_id)

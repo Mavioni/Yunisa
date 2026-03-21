@@ -17,8 +17,9 @@ contextBridge.exposeInMainWorld('yunisa', {
     setActive: (modelId: string) => ipcRenderer.invoke('models:set-active', modelId),
     hasAny: () => ipcRenderer.invoke('models:has-any'),
     onDownloadProgress: (callback: (progress: any) => void) => {
-      ipcRenderer.removeAllListeners('models:download-progress');
-      ipcRenderer.on('models:download-progress', (_, progress) => callback(progress));
+      const channel = 'models:download-progress';
+      ipcRenderer.removeAllListeners(channel);
+      ipcRenderer.on(channel, (_, progress) => callback(progress));
     },
   },
 
@@ -40,14 +41,13 @@ contextBridge.exposeInMainWorld('yunisa', {
       ipcRenderer.invoke('interpreter:send', content, sessionId),
     abort: (sessionId: string) => ipcRenderer.invoke('interpreter:abort', sessionId),
     onChunk: (callback: (chunk: any) => void) => {
-      ipcRenderer.removeAllListeners('interpreter:chunk');
-      ipcRenderer.on('interpreter:chunk', (_, chunk) => callback(chunk));
+      const channel = 'interpreter:chunk';
+      ipcRenderer.removeAllListeners(channel);
+      ipcRenderer.on(channel, (_, chunk) => callback(chunk));
     },
   },
 
-  terminal: {
-    execute: (cmd: string) => ipcRenderer.invoke('terminal:execute', cmd),
-  },
+  // terminal:execute has been permanently removed (RCE vulnerability)
 
   app: {
     getDataDir: () => ipcRenderer.invoke('app:get-data-dir'),

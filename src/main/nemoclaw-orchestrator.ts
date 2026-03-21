@@ -1,4 +1,4 @@
-import { spawn, ChildProcess, execSync } from 'child_process';
+import { spawn, ChildProcess, execFileSync } from 'child_process';
 import path from 'path';
 
 export class NemoclawOrchestrator {
@@ -18,7 +18,7 @@ export class NemoclawOrchestrator {
     }
 
     try {
-      execSync('docker --version', { stdio: 'ignore' });
+      execFileSync('docker', ['--version'], { stdio: 'ignore' });
     } catch {
       console.warn('[nemoclaw] Docker not found. Falling back to native host execution.');
       return this.startNative(llmPort);
@@ -49,6 +49,7 @@ export class NemoclawOrchestrator {
     ], { stdio: ['ignore', 'pipe', 'pipe'] });
 
     proc.on('exit', () => { this.process = null; });
+    proc.on('error', (err) => { console.error('[sandbox] spawn error:', err.message); this.process = null; });
     proc.stderr?.on('data', (d: Buffer) => console.log('[sandbox]', d.toString()));
     this.process = proc;
 
@@ -62,6 +63,7 @@ export class NemoclawOrchestrator {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     proc.on('exit', () => { this.process = null; });
+    proc.on('error', (err) => { console.error('[nemoclaw] spawn error:', err.message); this.process = null; });
     proc.stderr?.on('data', (d: Buffer) => console.error('[nemoclaw]', d.toString()));
     this.process = proc;
 
@@ -73,13 +75,13 @@ export class NemoclawOrchestrator {
     if (this.process) {
       try {
         console.log('[nemoclaw] Terminating Sandbox Container...');
-        execSync('docker stop nemoclaw_sandbox', { stdio: 'ignore' });
+        execFileSync('docker', ['stop', 'nemoclaw_sandbox'], { stdio: 'ignore' });
       } catch {
         // Fallback for native execution cleanup
         if (this.process.pid) {
           try {
             if (process.platform === 'win32') {
-              require('child_process').execSync(`taskkill /PID ${this.process.pid} /T /F`, { stdio: 'ignore' });
+              execFileSync('taskkill', ['/PID', String(this.process.pid), '/T', '/F'], { stdio: 'ignore' });
             } else {
               process.kill(this.process.pid, 'SIGTERM');
             }

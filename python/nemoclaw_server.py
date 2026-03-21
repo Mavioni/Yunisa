@@ -193,22 +193,45 @@ def execute_task():
     if not instruction:
         return jsonify({'error': 'No instruction provided.'}), 400
 
+    # Guard against oversized inputs that can crash the agent
+    MAX_INSTRUCTION_LEN = 10000
+    if len(instruction) > MAX_INSTRUCTION_LEN:
+        return jsonify({'error': f'Instruction too long ({len(instruction)} chars). Max {MAX_INSTRUCTION_LEN}.'}), 400
+
     # Attempt to use Agent-S for autonomous task execution
     try:
         import pyautogui
         import io
+        from PIL import Image
         from gui_agents.s3.agents.agent_s import AgentS3
-        from gui_agents.s1.aci.WindowsOSACI import WindowsACI
+        from gui_agents.s3.agents.grounding import OSWorldACI
+        from gui_agents.s3.utils.local_env import LocalEnv
 
+        base_url = f"http://127.0.0.1:{LLM_PORT}/v1"
         engine_params = {
             "engine_type": "openai",
             "model": "local-bitnet",
-            "base_url": f"http://127.0.0.1:{LLM_PORT}/v1",
+            "base_url": base_url,
             "api_key": "sk-local",
         }
+        engine_params_for_grounding = {
+            "engine_type": "openai",
+            "model": "local-bitnet",
+            "base_url": base_url,
+            "api_key": "empty",
+            "grounding_width": 1920,
+            "grounding_height": 1080,
+        }
 
-        # WindowsACI is the native Windows grounding agent
-        grounding_agent = WindowsACI(top_app_only=True, ocr=False)
+        local_env = LocalEnv()
+        grounding_agent = OSWorldACI(
+            env=local_env,
+            platform="windows",
+            engine_params_for_generation=engine_params,
+            engine_params_for_grounding=engine_params_for_grounding,
+            width=1920,
+            height=1080
+        )
 
         agent = AgentS3(
             engine_params,
@@ -218,7 +241,8 @@ def execute_task():
             enable_reflection=False,
         )
 
-        screenshot = pyautogui.screenshot()
+        # [SECURITY FIX]: BitNet b1.58 is text-only. Pass a 1x1 pixel so we don't crash the server.
+        screenshot = Image.new("RGB", (1, 1), color="black")
         buffered = io.BytesIO()
         screenshot.save(buffered, format="PNG")
 

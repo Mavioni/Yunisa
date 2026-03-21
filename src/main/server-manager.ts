@@ -1,4 +1,4 @@
-import { spawn, execSync, ChildProcess } from 'child_process';
+import { spawn, execFileSync, ChildProcess } from 'child_process';
 import path from 'path';
 import http from 'http';
 import fs from 'fs';
@@ -93,9 +93,8 @@ export class ServerManager {
       const pid = this.process.pid;
       if (pid) {
         try {
-          // Kill the entire process tree on Windows to avoid orphaned llama-server
           if (process.platform === 'win32') {
-            execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' });
+            execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
           } else {
             process.kill(pid, 'SIGTERM');
           }

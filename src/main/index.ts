@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, net } from 'electron';
-import { ChildProcess } from 'child_process';
+import { ChildProcess, execFileSync, spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { ServerManager } from './server-manager';
@@ -63,7 +63,10 @@ function getConfig(): any {
   return { ...DEFAULT_CONFIG };
 }
 
+const VALID_CONFIG_KEYS = new Set(Object.keys(DEFAULT_CONFIG));
+
 function setConfig(key: string, value: any): void {
+  if (!VALID_CONFIG_KEYS.has(key)) return; // reject unknown keys
   const configPath = getConfigPath();
   const config = getConfig();
   config[key] = value;
@@ -90,11 +93,12 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
-    mainWindow?.webContents.openDevTools(); // open devtools for user too
+    // mainWindow?.webContents.openDevTools(); // open devtools for user too
   });
 
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
-    fs.appendFileSync('C:\\Users\\massi\\yunisa\\renderer_errors.log', `[Renderer] ${message} (${sourceId}:${line})\n`);
+    const logPath = path.join(getDataDir(), 'renderer_errors.log');
+    fs.appendFileSync(logPath, `[Renderer] ${message} (${sourceId}:${line})\n`);
   });
 
   mainWindow.on('close', () => {
@@ -223,7 +227,7 @@ function registerIpcHandlers(): void {
       : path.join(__dirname, '..', '..', 'vlm_research', 'train_yunisa.py');
     
     // Use unbuffered python (-u) so prints stream immediately to the UI
-    vlmProcess = require('child_process').spawn('python', ['-u', scriptPath], {
+    vlmProcess = spawn('python', ['-u', scriptPath], {
       cwd: path.dirname(scriptPath),
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true
@@ -235,6 +239,10 @@ function registerIpcHandlers(): void {
     
     vlmProcess!.stdout?.on('data', sendLog);
     vlmProcess!.stderr?.on('data', sendLog);
+    vlmProcess!.on('error', (err) => {
+      mainWindow?.webContents.send('vlm:log', `\n[SYSTEM] Failed to start training: ${err.message}`);
+      vlmProcess = null;
+    });
     vlmProcess!.on('exit', () => {
       mainWindow?.webContents.send('vlm:log', '\n[SYSTEM] Training loop terminated.');
       vlmProcess = null;
@@ -245,10 +253,10 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('vlm:stop', () => {
     if (vlmProcess) {
-      if (process.platform === 'win32') {
-        try { require('child_process').execSync(`taskkill /PID ${vlmProcess.pid} /T /F`, { stdio: 'ignore' }); } catch {}
-      } else {
-        process.kill(vlmProcess.pid!, 'SIGTERM');
+      if (process.platform === 'win32' && vlmProcess.pid) {
+        try { execFileSync('taskkill', ['/PID', String(vlmProcess.pid), '/T', '/F'], { stdio: 'ignore' }); } catch {}
+      } else if (vlmProcess.pid) {
+        process.kill(vlmProcess.pid, 'SIGTERM');
       }
       vlmProcess = null;
     }
@@ -280,9 +288,9 @@ app.on('before-quit', () => {
   nemoclawOrchestrator?.stop();
   if (vlmProcess) {
     try {
-      if (process.platform === 'win32') {
-        require('child_process').execSync(`taskkill /PID ${vlmProcess.pid} /T /F`, { stdio: 'ignore' });
-      } else { process.kill(vlmProcess.pid!, 'SIGTERM'); }
+      if (process.platform === 'win32' && vlmProcess.pid) {
+        execFileSync('taskkill', ['/PID', String(vlmProcess.pid), '/T', '/F'], { stdio: 'ignore' });
+      } else if (vlmProcess.pid) { process.kill(vlmProcess.pid, 'SIGTERM'); }
     } catch {}
     vlmProcess = null;
   }
