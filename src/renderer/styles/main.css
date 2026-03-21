@@ -12,27 +12,27 @@
   --bg-glass-active: rgba(255, 255, 255, 0.1);
   --bg-glass-strong: rgba(255, 255, 255, 0.05);
   --bg-frosted: rgba(10, 10, 15, 0.75);
-  --text-primary: #f8fafc;
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-tertiary: rgba(255, 255, 255, 0.35);
-  /* Vibrant electric indigo accent */
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.35);
-  --accent-hover: #818cf8;
-  --accent-soft: rgba(99, 102, 241, 0.12);
-  /* Secondary accent */
-  --gold: #8b5cf6;
-  --gold-glow: rgba(139, 92, 246, 0.3);
-  --gold-soft: rgba(139, 92, 246, 0.12);
-  --border: rgba(255, 255, 255, 0.05);
-  --border-light: rgba(255, 255, 255, 0.09);
-  --msg-user: rgba(99, 102, 241, 0.12);
-  --msg-assistant: rgba(255, 255, 255, 0.03);
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.12);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.12);
-  --warning: #f59e0b;
+  --text-primary: #e8f4e8;
+  --text-secondary: rgba(180, 220, 255, 0.75);
+  --text-tertiary: rgba(160, 200, 240, 0.4);
+  /* Primary accent: Electric Blue */
+  --accent: #2196f3;
+  --accent-glow: rgba(33, 150, 243, 0.35);
+  --accent-hover: #64b5f6;
+  --accent-soft: rgba(33, 150, 243, 0.12);
+  /* Secondary accent: Signal Yellow */
+  --gold: #ffc107;
+  --gold-glow: rgba(255, 193, 7, 0.3);
+  --gold-soft: rgba(255, 193, 7, 0.12);
+  --border: rgba(100, 200, 255, 0.06);
+  --border-light: rgba(100, 200, 255, 0.12);
+  --msg-user: rgba(33, 150, 243, 0.1);
+  --msg-assistant: rgba(0, 255, 100, 0.03);
+  --success: #4caf50;
+  --success-soft: rgba(76, 175, 80, 0.12);
+  --danger: #f44336;
+  --danger-soft: rgba(244, 67, 54, 0.12);
+  --warning: #ffab00;
   --radius: 16px;
   --radius-sm: 12px;
   --radius-lg: 24px;

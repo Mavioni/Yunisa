@@ -35,10 +35,10 @@ export function initNemoclaw() {
     pointer-events: auto; width: 80%; max-width: 500px;
   `;
   fallback.innerHTML = `
-    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; border-radius: 50%; border: 2px solid #e94560; display: flex; align-items: center; justify-content: center;">
-      <span style="font-size: 2rem; color: #e94560;">⟐</span>
+    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; border-radius: 50%; border: 2px solid #f44336; display: flex; align-items: center; justify-content: center;">
+      <span style="font-size: 2rem; color: #f44336;">⟐</span>
     </div>
-    <h2 style="color: #e94560; margin-bottom: 0.5rem; letter-spacing: 2px;">OFFLINE NODE</h2>
+    <h2 style="color: #f44336; margin-bottom: 0.5rem; letter-spacing: 2px;">OFFLINE NODE</h2>
     <p style="margin-bottom: 1.5rem; line-height: 1.6; color: #555;">
       The NemoClaw OpenShell sandbox is not currently active.<br>
       Click below to initialize the agent dashboard.
@@ -61,19 +61,60 @@ export function initNemoclaw() {
 
   bootBtn.onclick = async () => {
     bootBtn.disabled = true;
-    bootBtn.textContent = 'Booting Sandbox...';
+    bootBtn.textContent = 'Initializing...';
     bootBtn.style.opacity = '0.6';
+
+    // Progress bar
+    const progWrap = document.createElement('div');
+    progWrap.style.cssText = 'width:100%; margin-top:1.5rem;';
+    const progBar = document.createElement('div');
+    progBar.style.cssText = 'height:4px; background:#1a1f2e; border-radius:2px; overflow:hidden;';
+    const progFill = document.createElement('div');
+    progFill.style.cssText = 'height:100%; width:0%; background:linear-gradient(90deg,#00ff41,#00cc33); transition:width 0.5s ease;';
+    progBar.appendChild(progFill);
+    progWrap.appendChild(progBar);
+    const statusText = document.createElement('p');
+    statusText.style.cssText = 'color:#00ff00; font-size:0.8rem; margin-top:0.5rem; font-family:monospace;';
+    statusText.textContent = '[1/5] Checking Docker daemon...';
+    progWrap.appendChild(statusText);
+    fallback.appendChild(progWrap);
+
+    // Animated boot stages
+    const stages = [
+      { pct: '15%', text: '[1/5] Checking Docker daemon...' },
+      { pct: '30%', text: '[2/5] Building sandbox image...' },
+      { pct: '50%', text: '[3/5] Provisioning virtual display...' },
+      { pct: '70%', text: '[4/5] Binding Agent-S modules...' },
+      { pct: '85%', text: '[5/5] Starting Flask server...' },
+    ];
+    let stageIdx = 0;
+    const stageInterval = setInterval(() => {
+      if (stageIdx < stages.length) {
+        progFill.style.width = stages[stageIdx].pct;
+        statusText.textContent = stages[stageIdx].text;
+        stageIdx++;
+      }
+    }, 1500);
 
     try {
       const result = await window.yunisa.nemoclaw.start();
-      if (result.status === 'started' || result.status === 'already_running') {
-        // Hide fallback, show iframe
-        fallback.style.display = 'none';
-        iframe.src = 'http://127.0.0.1:3000';
-        iframe.style.display = 'block';
+      clearInterval(stageInterval);
+      progFill.style.width = '100%';
+      statusText.textContent = '[OK] Sandbox online.';
+      if (result.status === 'started' || result.status === 'already_running' || result.status === 'started_native' || result.status === 'started_secure_container') {
+        setTimeout(() => {
+          fallback.style.display = 'none';
+          iframe.src = 'http://127.0.0.1:3000';
+          iframe.style.display = 'block';
+        }, 800);
       }
     } catch (err) {
-      bootBtn.textContent = 'Boot Failed — Retry';
+      clearInterval(stageInterval);
+      progFill.style.background = '#f44336';
+      progFill.style.width = '100%';
+      statusText.style.color = '#f44336';
+      statusText.textContent = '[FAIL] ' + (err.message || 'Boot failed');
+      bootBtn.textContent = 'Retry Boot';
       bootBtn.style.opacity = '1';
       bootBtn.disabled = false;
     }

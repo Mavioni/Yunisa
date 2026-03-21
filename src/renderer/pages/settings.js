@@ -13,7 +13,7 @@ export async function initSettings() {
   const header = document.createElement('div');
   header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 0.75rem;';
   const title = document.createElement('h2');
-  title.style.cssText = 'color: #e94560; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.25rem;';
+  title.style.cssText = 'color: #f44336; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.25rem;';
   title.textContent = 'Ecosystem Control Subsystem';
   header.appendChild(title);
   
@@ -26,7 +26,7 @@ export async function initSettings() {
   const createCard = (titleText, descText) => {
     const card = document.createElement('div');
     card.className = 'model-card';
-    card.style.cssText = 'margin-bottom: 0.75rem; padding: 1rem 1.25rem; border-left: 3px solid #00a1ff; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 0.5rem;';
+    card.style.cssText = 'margin-bottom: 0.75rem; padding: 1rem 1.25rem; border-left: 3px solid #2196f3; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 0.5rem;';
     const title = document.createElement('h3');
     title.style.cssText = 'margin: 0; color: #fff; font-size: 1.1rem;';
     title.textContent = titleText;
@@ -44,7 +44,7 @@ export async function initSettings() {
     input.style.cssText = 'width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid #333; border-radius: 4px; outline: none; transition: border 0.2s; box-sizing: border-box;';
     input.placeholder = placeholder;
     input.value = config[key] || '';
-    input.addEventListener('focus', () => input.style.borderColor = '#00a1ff');
+    input.addEventListener('focus', () => input.style.borderColor = '#2196f3');
     input.addEventListener('blur', () => input.style.borderColor = '#333');
     input.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.value));
     return input;
@@ -55,7 +55,7 @@ export async function initSettings() {
     label.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; color: #fff; cursor: pointer; user-select: none; font-size: 0.95rem;';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: #e94560; cursor: pointer;';
+    checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: #f44336; cursor: pointer;';
     checkbox.checked = config[key] || false;
     checkbox.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.checked));
     label.appendChild(checkbox);
@@ -88,7 +88,7 @@ export async function initSettings() {
         </div>
         <div>
             <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Inference Engine</span>
-            <div id="server-stats" style="color: #00a1ff; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">Checking...</div>
+            <div id="server-stats" style="color: #2196f3; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">Checking...</div>
         </div>
     </div>
   `;
