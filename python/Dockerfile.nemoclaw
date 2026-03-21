@@ -1,0 +1,25 @@
+FROM python:3.10-slim
+
+# Install system dependencies for virtual display (Xvfb) and PyAutoGUI GUI manipulation
+RUN apt-get update && apt-get install -y \
+    xvfb \
+    scrot \
+    x11-utils \
+    python3-tk \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all python components
+COPY . .
+
+# Expose port and configure virtual display environment
+ENV DISPLAY=:99
+EXPOSE 3000
+
+# Boot the virtual screen, then boot the NemoClaw server
+# Note: --llm-host allows passing host.docker.internal to reach Yunisa outside the sandbox
+CMD Xvfb :99 -screen 0 1920x1080x24 & sleep 2 && python nemoclaw_server.py --port 3000 --llm-host host.docker.internal --llm-port 8080

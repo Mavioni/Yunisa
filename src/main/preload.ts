@@ -73,6 +73,14 @@ contextBridge.exposeInMainWorld('yunisa', {
     status: () => ipcRenderer.invoke('nemoclaw:status'),
   },
 
+  vlm: {
+    train: () => ipcRenderer.invoke('vlm:train'),
+    stop: () => ipcRenderer.invoke('vlm:stop'),
+    onLog: (callback: (text: string) => void) => {
+      ipcRenderer.on('vlm:log', (_, text) => callback(text));
+    }
+  },
+
   onServerRestartRequested: (callback: () => void) => {
     ipcRenderer.on('server:restart-requested', () => callback());
   },

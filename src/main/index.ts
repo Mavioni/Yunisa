@@ -6,6 +6,7 @@ import { ServerManager } from './server-manager';
 import { ConversationStore } from './conversation-store';
 import { ModelManager } from './model-manager';
 import { InterpreterManager } from './interpreter-manager';
+import { NemoclawOrchestrator } from './nemoclaw-orchestrator';
 import { setupAutoUpdater } from './auto-updater';
 import { setupTray } from './tray';
 
@@ -15,7 +16,8 @@ let serverManager: ServerManager;
 let conversationStore: ConversationStore;
 let modelManager: ModelManager;
 let interpreterManager: InterpreterManager;
-let nemoclawProcess: ChildProcess | null = null;
+let nemoclawOrchestrator: NemoclawOrchestrator;
+let vlmProcess: ChildProcess | null = null;
 
 function getResourcePath(relativePath: string): string {
   if (app.isPackaged) {
@@ -85,10 +87,13 @@ async function initialize(): Promise<void> {
     ? path.join(process.resourcesPath, 'app')
     : path.join(__dirname, '..', '..');
 
+  const pythonDir = path.join(appRoot, 'python');
+
   conversationStore = new ConversationStore(dataDir);
   modelManager = new ModelManager(dataDir);
   serverManager = new ServerManager(binariesDir, dataDir);
   interpreterManager = new InterpreterManager(appRoot);
+  nemoclawOrchestrator = new NemoclawOrchestrator(pythonDir);
 
   registerIpcHandlers();
 
@@ -168,40 +173,54 @@ function registerIpcHandlers(): void {
 
   // NemoClaw OpenShell Sandbox
   ipcMain.handle('nemoclaw:start', async () => {
-    if (nemoclawProcess) return { status: 'already_running', port: 3000 };
-    const { spawn } = require('child_process');
-    const scriptPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'app', 'python', 'nemoclaw_server.py')
-      : path.join(__dirname, '..', '..', 'python', 'nemoclaw_server.py');
     const llmPort = serverManager.getPort();
-    const proc = spawn('python', [scriptPath, '--port', '3000', '--llm-port', String(llmPort)], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    proc.on('exit', () => { nemoclawProcess = null; });
-    proc.stderr?.on('data', (d: Buffer) => console.error('[nemoclaw]', d.toString()));
-    nemoclawProcess = proc;
-    // Wait briefly for Flask to boot
-    await new Promise(r => setTimeout(r, 2000));
-    return { status: 'started', port: 3000 };
+    return await nemoclawOrchestrator.start(llmPort);
   });
   ipcMain.handle('nemoclaw:stop', () => {
-    if (nemoclawProcess) {
-      const pid = nemoclawProcess.pid;
-      if (pid) {
-        try {
-          if (process.platform === 'win32') {
-            require('child_process').execSync(`taskkill /PID ${pid} /T /F`, { stdio: 'ignore' });
-          } else {
-            process.kill(pid, 'SIGTERM');
-          }
-        } catch {}
-      }
-      nemoclawProcess = null;
-    }
+    nemoclawOrchestrator.stop();
     return { status: 'stopped' };
   });
   ipcMain.handle('nemoclaw:status', () => {
-    return { running: nemoclawProcess !== null };
+    return nemoclawOrchestrator.getStatus();
+  });
+
+  // VLM Studio Pipeline
+  ipcMain.handle('vlm:train', async () => {
+    if (vlmProcess) return { status: 'already_running' };
+    const scriptPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'app', 'vlm_research', 'train_yunisa.py')
+      : path.join(__dirname, '..', '..', 'vlm_research', 'train_yunisa.py');
+    
+    // Use unbuffered python (-u) so prints stream immediately to the UI
+    vlmProcess = require('child_process').spawn('python', ['-u', scriptPath], {
+      cwd: path.dirname(scriptPath),
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    const sendLog = (d: Buffer) => {
+      mainWindow?.webContents.send('vlm:log', d.toString());
+    };
+    
+    vlmProcess!.stdout?.on('data', sendLog);
+    vlmProcess!.stderr?.on('data', sendLog);
+    vlmProcess!.on('exit', () => {
+      mainWindow?.webContents.send('vlm:log', '\n[SYSTEM] Training loop terminated.');
+      vlmProcess = null;
+    });
+
+    return { status: 'started' };
+  });
+
+  ipcMain.handle('vlm:stop', () => {
+    if (vlmProcess) {
+      if (process.platform === 'win32') {
+        try { require('child_process').execSync(`taskkill /PID ${vlmProcess.pid} /T /F`, { stdio: 'ignore' }); } catch {}
+      } else {
+        process.kill(vlmProcess.pid!, 'SIGTERM');
+      }
+      vlmProcess = null;
+    }
+    return { status: 'stopped' };
   });
 
   // Updater
@@ -226,17 +245,14 @@ app.on('before-quit', () => {
   serverManager?.stop();
   interpreterManager?.stop();
   conversationStore?.close();
-  // Terminate NemoClaw sandbox
-  if (nemoclawProcess && nemoclawProcess.pid) {
-    const ncPid = nemoclawProcess.pid;
+  nemoclawOrchestrator?.stop();
+  if (vlmProcess) {
     try {
       if (process.platform === 'win32') {
-        require('child_process').execSync(`taskkill /PID ${ncPid} /T /F`, { stdio: 'ignore' });
-      } else {
-        process.kill(ncPid, 'SIGTERM');
-      }
+        require('child_process').execSync(`taskkill /PID ${vlmProcess.pid} /T /F`, { stdio: 'ignore' });
+      } else { process.kill(vlmProcess.pid!, 'SIGTERM'); }
     } catch {}
-    nemoclawProcess = null;
+    vlmProcess = null;
   }
 });
 

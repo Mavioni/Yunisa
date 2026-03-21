@@ -4,6 +4,7 @@ import { initModels } from './pages/models.js';
 import { initSettings } from './pages/settings.js';
 import { initInterpreter } from './pages/interpreter.js';
 import { initNemoclaw } from './pages/nemoclaw.js';
+import { initVlm } from './pages/vlm.js';
 
 const screens = {
   loading: document.getElementById('loading-screen'),
@@ -13,6 +14,7 @@ const screens = {
   models: document.getElementById('models-screen'),
   settings: document.getElementById('settings-screen'),
   nemoclaw: document.getElementById('nemoclaw-screen'),
+  vlm: document.getElementById('vlm-screen'),
 };
 
 export function showScreen(name) {
@@ -34,6 +36,7 @@ async function boot() {
   initChat();
   initInterpreter();
   initNemoclaw();
+  initVlm();
 
   // Setup auto-updater notifications
   window.yunisa.updater.onUpdateAvailable((info) => {

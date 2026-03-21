@@ -245,10 +245,15 @@ def execute_task():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='NemoClaw OpenShell Sandbox Server')
     parser.add_argument('--port', type=int, default=3000)
+    parser.add_argument('--llm-host', type=str, default='127.0.0.1')
     parser.add_argument('--llm-port', type=int, default=8080)
     args = parser.parse_args()
     LLM_PORT = args.llm_port
+    LLM_HOST = args.llm_host
 
-    print(f"[NemoClaw] OpenShell Sandbox booting on http://127.0.0.1:{args.port}")
-    print(f"[NemoClaw] LLM Engine bound to http://127.0.0.1:{LLM_PORT}/v1")
-    app.run(host='127.0.0.1', port=args.port, debug=False)
+    # Export to app context if needed, though route uses locals nicely
+    app.config['LLM_HOST'] = LLM_HOST
+
+    print(f"[NemoClaw] OpenShell Sandbox booting on http://0.0.0.0:{args.port}")
+    print(f"[NemoClaw] LLM Engine bound to http://{LLM_HOST}:{LLM_PORT}/v1")
+    app.run(host='0.0.0.0', port=args.port, debug=False)
