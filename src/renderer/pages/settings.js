@@ -11,7 +11,7 @@ export async function initSettings() {
   container.style.cssText = 'width: 100%; max-width: 800px; margin: 0 auto; padding: 1.5rem; align-self: flex-start; overflow-y: auto; max-height: 100%;';
   
   const header = document.createElement('div');
-  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #333; padding-bottom: 0.75rem;';
+  header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light, rgba(80,130,200,0.15)); padding-bottom: 0.75rem;';
   const title = document.createElement('h2');
   title.style.cssText = 'color: #f44336; margin: 0; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.25rem;';
   title.textContent = 'Ecosystem Control Subsystem';
@@ -28,10 +28,10 @@ export async function initSettings() {
     card.className = 'model-card';
     card.style.cssText = 'margin-bottom: 0.75rem; padding: 1rem 1.25rem; border-left: 3px solid #2196f3; background: rgba(15, 52, 96, 0.1); display: flex; flex-direction: column; gap: 0.5rem;';
     const title = document.createElement('h3');
-    title.style.cssText = 'margin: 0; color: #fff; font-size: 1.1rem;';
+    title.style.cssText = 'margin: 0; color: var(--text-primary, #c8d8f0); font-size: 1.1rem;';
     title.textContent = titleText;
     const desc = document.createElement('p');
-    desc.style.cssText = 'margin: 0; color: #aaa; font-size: 0.9rem;';
+    desc.style.cssText = 'margin: 0; color: var(--text-secondary, rgba(160,190,230,0.7)); font-size: 0.9rem;';
     desc.textContent = descText;
     card.appendChild(title);
     card.appendChild(desc);
@@ -41,18 +41,18 @@ export async function initSettings() {
   const createInput = (placeholder, key) => {
     const input = document.createElement('input');
     input.type = 'password';
-    input.style.cssText = 'width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid #333; border-radius: 4px; outline: none; transition: border 0.2s; box-sizing: border-box;';
+    input.style.cssText = 'width: 100%; padding: 0.75rem; background: var(--bg-input, rgba(15,22,38,0.8)); color: var(--text-primary, #c8d8f0); border: 1px solid var(--border-light, rgba(80,130,200,0.15)); border-radius: 4px; outline: none; transition: border 0.2s; box-sizing: border-box;';
     input.placeholder = placeholder;
     input.value = config[key] || '';
     input.addEventListener('focus', () => input.style.borderColor = '#2196f3');
-    input.addEventListener('blur', () => input.style.borderColor = '#333');
+    input.addEventListener('blur', () => input.style.borderColor = 'var(--border-light)');
     input.addEventListener('change', (e) => window.yunisa.config.set(key, e.target.value));
     return input;
   };
 
   const createToggle = (labelStr, key) => {
     const label = document.createElement('label');
-    label.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; color: #fff; cursor: pointer; user-select: none; font-size: 0.95rem;';
+    label.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary, #c8d8f0); cursor: pointer; user-select: none; font-size: 0.95rem;';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: #f44336; cursor: pointer;';
@@ -65,7 +65,7 @@ export async function initSettings() {
 
   const createSelect = (optionsMap, key) => {
     const select = document.createElement('select');
-    select.style.cssText = 'width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid #333; border-radius: 4px; outline: none; cursor: pointer; box-sizing: border-box;';
+    select.style.cssText = 'width: 100%; padding: 0.75rem; background: var(--bg-input, rgba(15,22,38,0.8)); color: var(--text-primary, #c8d8f0); border: 1px solid var(--border-light, rgba(80,130,200,0.15)); border-radius: 4px; outline: none; cursor: pointer; box-sizing: border-box;';
     optionsMap.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.value;
@@ -79,15 +79,15 @@ export async function initSettings() {
 
   // 1. Hardware Monitor [System 01 DTIA]
   const sysCard = createCard('System 01 [DTIA] Hardware Monitor', 'Real-time telemetry of the Dialectical Ternary Inference Architecture.');
-  sysCard.style.borderLeftColor = '#00ff00';
+  sysCard.style.borderLeftColor = '#4caf50';
   sysCard.innerHTML += `
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; background: #0b0f19; padding: 1rem; border-radius: 6px;">
         <div>
-            <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Compute Core</span>
-            <div id="rtx-status" style="color: #00ff00; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">SECURE</div>
+            <span style="color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">Compute Core</span>
+            <div id="rtx-status" style="color: #4caf50; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">SECURE</div>
         </div>
         <div>
-            <span style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Inference Engine</span>
+            <span style="color: var(--text-tertiary); font-size: 0.8rem; text-transform: uppercase;">Inference Engine</span>
             <div id="server-stats" style="color: #2196f3; font-family: monospace; font-size: 1.1rem; margin-top: 0.25rem;">Checking...</div>
         </div>
     </div>
@@ -132,20 +132,20 @@ export async function initSettings() {
 
   // 6. External Orbits [NIM]
   const nimCard = createCard('NVIDIA Inference Microservices [NIM]', 'Secure bridge for offloading tensor operations beyond local hardware limits.');
-  nimCard.style.borderLeftColor = '#e94560';
+  nimCard.style.borderLeftColor = '#f44336';
   nimCard.appendChild(createInput('nvapi-xxxxxxxxxxxxxxxxxxxxxxxx', 'nvidiaApiKey'));
   nimCard.appendChild(createToggle('Airgap Mode: Prevent all outbound NIM/Internet telemetry automatically', 'airgapMode'));
   container.appendChild(nimCard);
 
   // 7. NemoClaw Sandbox Boundary
   const clawCard = createCard('NemoClaw Ecosystem Sandbox', 'Configure network permissions for the NemoClaw Agent container.');
-  clawCard.style.borderLeftColor = '#f59e0b';
+  clawCard.style.borderLeftColor = '#ffc107';
   clawCard.appendChild(createToggle('Enable Online Mode (Allow NemoClaw agents unrestricted live internet access)', 'nemoclawOnlineMode'));
   container.appendChild(clawCard);
 
   // 8. Experimential Architecture
   const devCard = createCard('Developer Subsystems', 'Enable radical experimental architecture modes.');
-  devCard.style.borderLeftColor = '#a855f7';
+  devCard.style.borderLeftColor = '#2196f3';
   
   const devToggle = createToggle('Initialize VLM Matrix Studio (WARNING: Requires Extreme Hardware > 80GB VRAM)', 'enableVlmStudio');
   const checkbox = devToggle.querySelector('input');
@@ -159,7 +159,7 @@ export async function initSettings() {
 
   // 9. Engine Control
   const engineCard = createCard('Inference Engine Control', 'Restart the local AI backend without restarting the full application.');
-  engineCard.style.borderLeftColor = '#e94560';
+  engineCard.style.borderLeftColor = '#f44336';
   const restartBtn = document.createElement('button');
   restartBtn.className = 'btn btn-danger';
   restartBtn.style.cssText = 'font-size: 0.85rem; margin-top: 0.5rem;';

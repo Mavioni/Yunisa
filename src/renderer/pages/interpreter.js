@@ -367,13 +367,17 @@ function appendMessage(role, content) {
 }
 
 function renderMarkdown(el, text) {
-  let safe = escapeHtml(text);
-  safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
-  safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
-  safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  safe = safe.replace(/\n/g, '<br>');
-  el.innerHTML = safe;
+  if (window.marked) {
+    el.innerHTML = window.marked.parse(text);
+  } else {
+    let safe = escapeHtml(text);
+    safe = safe.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
+    safe = safe.replace(/`([^`]+)`/g, '<code>$1</code>');
+    safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    safe = safe.replace(/\n/g, '<br>');
+    el.innerHTML = safe;
+  }
 }
 
 function escapeHtml(text) {

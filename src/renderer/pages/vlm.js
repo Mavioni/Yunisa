@@ -1,4 +1,4 @@
-import { showScreen } from '../app.js';
+// VLM Matrix Studio
 
 export function initVlm() {
   const container = document.getElementById('vlm-screen');
@@ -7,8 +7,8 @@ export function initVlm() {
   container.style.display = 'flex';
   container.style.flexDirection = 'column';
   container.style.height = '100%';
-  container.style.background = '#0d1117';
-  container.style.color = '#c9d1d9';
+  container.style.background = 'var(--bg-void, #06080c)';
+  container.style.color = 'var(--text-primary, #c8d8f0)';
   container.style.fontFamily = 'monospace';
 
   // ── Header ───────────────────────────────────────────────────────
@@ -30,7 +30,7 @@ export function initVlm() {
   
   const stopBtn = document.createElement('button');
   stopBtn.textContent = 'HALT';
-  stopBtn.style.cssText = 'background: transparent; color: #e94560; border: 1px solid #e94560; border-radius: 4px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; display: none;';
+  stopBtn.style.cssText = 'background: transparent; color: #f44336; border: 1px solid #f44336; border-radius: 4px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; display: none;';
   
   controls.appendChild(stopBtn);
   controls.appendChild(trainBtn);
@@ -117,16 +117,16 @@ export function initVlm() {
 
   // Listen to IPC stream and parse dict metrics dynamically
   window.yunisa.vlm.onLog((text) => {
-    text.split('\\n').forEach(line => {
+    text.split('\n').forEach(line => {
       line = line.trim();
       if (!line) return;
       
       // Parse HuggingFace dictionary logs
       // Example: {'loss': 2.345, 'learning_rate': 0.0001, 'epoch': 0.5}
       try {
-        const lossMatch = line.match(/'loss':\\s*([\\d.]+)/);
-        const lrMatch = line.match(/'learning_rate':\\s*([\\d.e-]+)/);
-        const epochMatch = line.match(/'epoch':\\s*([\\d.]+)/);
+        const lossMatch = line.match(/'loss':\s*([\d.]+)/);
+        const lrMatch = line.match(/'learning_rate':\s*([\d.e-]+)/);
+        const epochMatch = line.match(/'epoch':\s*([\d.]+)/);
 
         if (lossMatch) lossStat.valueObj.textContent = parseFloat(lossMatch[1]).toFixed(4);
         if (lrMatch) lrStat.valueObj.textContent = parseFloat(lrMatch[1]).toExponential(2);
@@ -140,10 +140,6 @@ export function initVlm() {
         stopBtn.style.display = 'none';
         trainBtn.style.display = 'block';
       }
-    });
+   });
   });
-
-  // Bind Sidebar
-  const btn = document.getElementById('vlm-btn');
-  if (btn) btn.addEventListener('click', () => showScreen('vlm'));
 }

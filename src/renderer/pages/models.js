@@ -26,8 +26,8 @@ export function initModels() {
   const filterInput = document.createElement('input');
   filterInput.type = 'text';
   filterInput.placeholder = 'Filter models...';
-  filterInput.style.cssText = 'width:100%; padding:0.65rem 1rem; background:var(--bg-glass); color:var(--text-primary); border:var(--glass-border); border-radius:var(--radius-sm); outline:none; font-size:0.85rem; box-sizing:border-box;';
-  filterInput.addEventListener('focus', () => filterInput.style.borderColor = 'var(--accent)');
+  filterInput.style.cssText = 'width:100%; padding:0.65rem 1rem; background:var(--bg-card); color:var(--text-primary); border:var(--border); border-radius:var(--radius-sm); outline:none; font-size:0.85rem; box-sizing:border-box;';
+  filterInput.addEventListener('focus', () => filterInput.style.borderColor = 'var(--blue)');
   filterInput.addEventListener('blur', () => filterInput.style.borderColor = '');
   container.appendChild(filterInput);
 
@@ -59,11 +59,11 @@ export function initModels() {
     listDiv.innerHTML = '';
 
     const TAG_MAP = {
-      'cpu': { label: 'CPU Optimized', color: '#10b981' },
-      'gpu': { label: 'RTX Required', color: '#f59e0b' },
-      'vision': { label: 'Vision', color: '#6366f1' },
-      'airllm': { label: 'AirLLM', color: '#a855f7' },
-      'code': { label: 'Code', color: '#0ea5e9' },
+      'cpu': { label: 'CPU Optimized', color: '#4caf50' },
+      'gpu': { label: 'RTX Required', color: '#ffc107' },
+      'vision': { label: 'Vision', color: '#2196f3' },
+      'airllm': { label: 'AirLLM', color: '#f44336' },
+      'code': { label: 'Code', color: '#2196f3' },
     };
 
     const getTags = (model) => {
@@ -91,7 +91,7 @@ export function initModels() {
 
       const card = document.createElement('div');
       card.className = 'model-card';
-      card.style.cssText = `padding:1.25rem; border-radius:var(--radius-sm); background:var(--bg-glass); border:1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}; ${isActive ? 'box-shadow:0 0 16px var(--accent-glow);' : ''}`;
+      card.style.cssText = `padding:1.25rem; border-radius:var(--radius-sm); background:var(--bg-card); border:1px solid ${isActive ? 'var(--blue)' : 'var(--border)'}; ${isActive ? 'box-shadow:0 0 16px var(--blue-glow);' : ''}`;
 
       // Name row
       const nameRow = document.createElement('div');
@@ -103,7 +103,7 @@ export function initModels() {
 
       if (isActive) {
         const badge = document.createElement('span');
-        badge.style.cssText = 'font-size:0.65rem; padding:0.2rem 0.5rem; background:var(--success); color:#fff; border-radius:999px; font-weight:600; letter-spacing:0.5px;';
+        badge.style.cssText = 'font-size:0.65rem; padding:0.2rem 0.5rem; background:var(--green); color:#fff; border-radius:999px; font-weight:600; letter-spacing:0.5px;';
         badge.textContent = 'Active';
         nameRow.appendChild(badge);
       }
@@ -134,7 +134,7 @@ export function initModels() {
       pBar.style.cssText = 'height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:0.3rem;';
       const fill = document.createElement('div');
       fill.id = `fill-${model.id}`;
-      fill.style.cssText = 'height:100%; width:0%; background:var(--accent); transition:width 0.3s;';
+      fill.style.cssText = 'height:100%; width:0%; background:var(--blue); transition:width 0.3s;';
       pBar.appendChild(fill);
       progressWrap.appendChild(pBar);
       const pText = document.createElement('p');

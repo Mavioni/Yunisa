@@ -10,16 +10,16 @@ export function initNemoclaw() {
 
   // ── Top Header Bar ──────────────────────────────────────────────
   const header = document.createElement('div');
-  header.style.cssText = 'height: 50px; background: #0f3460; display: flex; align-items: center; padding: 0 1rem; justify-content: space-between; border-bottom: 2px solid #00ff00;';
+  header.style.cssText = 'height: 50px; background: var(--bg-panel, rgba(10,16,26,0.85)); display: flex; align-items: center; padding: 0 1rem; justify-content: space-between; border-bottom: 2px solid #4caf50;';
   
   const title = document.createElement('h3');
-  title.style.cssText = 'color: #fff; margin: 0; font-family: monospace; font-size: 1rem;';
-  title.innerHTML = '<span style="color:#00ff00;">●</span> NVIDIA NEMOCLAW [OpenShell Sandbox]';
+  title.style.cssText = 'color: var(--text-primary, #c8d8f0); margin: 0; font-family: monospace; font-size: 1rem;';
+  title.innerHTML = '<span style="color:#4caf50;">●</span> NVIDIA NEMOCLAW [OpenShell Sandbox]';
   header.appendChild(title);
   
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-primary';
-  backBtn.style.cssText = 'padding: 0.25rem 0.75rem; background: transparent; border: 1px solid #00ff00; color: #00ff00;';
+  backBtn.style.cssText = 'padding: 0.25rem 0.75rem; background: transparent; border: 1px solid #4caf50; color: #4caf50;';
   backBtn.textContent = 'Disconnect & Return';
   backBtn.onclick = () => showScreen('chat');
   header.appendChild(backBtn);
@@ -49,15 +49,15 @@ export function initNemoclaw() {
   bootBtn.id = 'nemoclaw-boot-btn';
   bootBtn.textContent = '⟐  Initialize OpenShell Sandbox';
   bootBtn.style.cssText = `
-    background: linear-gradient(135deg, #00ff41 0%, #00cc33 100%);
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
     color: #0a0e17; border: none; border-radius: 8px;
     padding: 0.85rem 2.5rem; font-weight: 700; font-family: monospace;
     cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
     font-size: 0.9rem; transition: all 0.3s ease;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.2);
   `;
-  bootBtn.onmouseenter = () => { bootBtn.style.boxShadow = '0 0 35px rgba(0, 255, 65, 0.5)'; };
-  bootBtn.onmouseleave = () => { bootBtn.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.2)'; };
+  bootBtn.onmouseenter = () => { bootBtn.style.boxShadow = '0 0 35px rgba(76, 175, 80, 0.5)'; };
+  bootBtn.onmouseleave = () => { bootBtn.style.boxShadow = '0 0 20px rgba(76, 175, 80, 0.2)'; };
 
   bootBtn.onclick = async () => {
     bootBtn.disabled = true;
@@ -70,11 +70,11 @@ export function initNemoclaw() {
     const progBar = document.createElement('div');
     progBar.style.cssText = 'height:4px; background:#1a1f2e; border-radius:2px; overflow:hidden;';
     const progFill = document.createElement('div');
-    progFill.style.cssText = 'height:100%; width:0%; background:linear-gradient(90deg,#00ff41,#00cc33); transition:width 0.5s ease;';
+    progFill.style.cssText = 'height:100%; width:0%; background:linear-gradient(90deg,#4caf50,#388e3c); transition:width 0.5s ease;';
     progBar.appendChild(progFill);
     progWrap.appendChild(progBar);
     const statusText = document.createElement('p');
-    statusText.style.cssText = 'color:#00ff00; font-size:0.8rem; margin-top:0.5rem; font-family:monospace;';
+    statusText.style.cssText = 'color:#4caf50; font-size:0.8rem; margin-top:0.5rem; font-family:monospace;';
     statusText.textContent = '[1/5] Checking Docker daemon...';
     progWrap.appendChild(statusText);
     fallback.appendChild(progWrap);
