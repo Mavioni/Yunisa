@@ -9,8 +9,13 @@ export class NemoclawOrchestrator {
     this.pythonDir = pythonDir;
   }
 
-  async start(llmPort: number): Promise<{ status: string; port: number }> {
+  async start(llmPort: number, useDocker: boolean = false): Promise<{ status: string; port: number }> {
     if (this.process) return { status: 'already_running', port: 3000 };
+
+    if (!useDocker) {
+      console.log('[nemoclaw] Native mode (default). Booting Flask directly.');
+      return this.startNative(llmPort);
+    }
 
     try {
       execSync('docker --version', { stdio: 'ignore' });

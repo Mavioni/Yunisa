@@ -34,12 +34,32 @@ function getConfigPath(): string {
   return path.join(getDataDir(), 'config.json');
 }
 
+const DEFAULT_CONFIG: Record<string, any> = {
+  contextSize: '16384',
+  cpuThreads: 'auto',
+  psaiCore: 'default',
+  coraxLevel: 'guarded',
+  airgapMode: false,
+  nvidiaApiKey: '',
+  nemoclawOnlineMode: false,
+  nemoclawUseDocker: false,   // Native-first for instant boot
+  enableVlmStudio: false,
+};
+
 function getConfig(): any {
   const configPath = getConfigPath();
   if (fs.existsSync(configPath)) {
-    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    try {
+      const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return { ...DEFAULT_CONFIG, ...userConfig };
+    } catch {
+      return { ...DEFAULT_CONFIG };
+    }
   }
-  return {};
+  // First install — write defaults to disk
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
+  return { ...DEFAULT_CONFIG };
 }
 
 function setConfig(key: string, value: any): void {
@@ -174,7 +194,8 @@ function registerIpcHandlers(): void {
   // NemoClaw OpenShell Sandbox
   ipcMain.handle('nemoclaw:start', async () => {
     const llmPort = serverManager.getPort();
-    return await nemoclawOrchestrator.start(llmPort);
+    const cfg = getConfig();
+    return await nemoclawOrchestrator.start(llmPort, cfg.nemoclawUseDocker || false);
   });
   ipcMain.handle('nemoclaw:stop', () => {
     nemoclawOrchestrator.stop();
