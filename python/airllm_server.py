@@ -1,57 +1,94 @@
+"""AirLLM Layer-Wise Inference Server — 70B model proxy for YUNISA."""
+
 import sys
 import argparse
 import json
-from flask import Flask, request, jsonify, Response
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-# We lazily import airllm to avoid massive startup times on non-airllm boots
-app = Flask(__name__)
-model = None
-
-
-@app.after_request
-def add_cors_headers(response: Response) -> Response:
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = '*'
-    return response
+# Global model reference (set at boot)
+_model = None
 
 
-@app.route('/health', methods=['GET'])
-def health():
-    return "OK", 200
+class AirLLMHandler(BaseHTTPRequestHandler):
+    """HTTP handler for AirLLM inference requests."""
 
+    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+        """Suppress default request logging."""
+        pass
 
-@app.route('/v1/chat/completions', methods=['POST', 'OPTIONS'])
-def chat():
-    if request.method == 'OPTIONS':
-        return '', 200
+    def _send_cors_headers(self) -> None:
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
 
-    global model
-    data = request.json
-    if not data:
-        return jsonify({"error": "Invalid JSON body"}), 400
+    def _send_json(self, data: dict, status: int = 200) -> None:
+        body = json.dumps(data).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self._send_cors_headers()
+        self.end_headers()
+        self.wfile.write(body)
 
-    messages = data.get('messages', [])
+    def do_OPTIONS(self) -> None:
+        self.send_response(200)
+        self._send_cors_headers()
+        self.end_headers()
 
-    if not model:
-        return jsonify({
-            "choices": [{"message": {"role": "assistant", "content": "[AirLLM Engine Offline] The 70B block tensor failed to load layer zero into VRAM space."}}]
-        })
+    def do_GET(self) -> None:
+        if self.path == '/health':
+            self.send_response(200)
+            self._send_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'OK')
+        else:
+            self.send_response(404)
+            self.end_headers()
 
-    # Constructing deterministic prompt sequence for layer inference
-    prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+    def do_POST(self) -> None:
+        if self.path == '/v1/chat/completions':
+            self._handle_chat()
+        else:
+            self.send_response(404)
+            self.end_headers()
 
-    try:
-        # In a deep integration, we cache the tokenizer
-        # output = model.generate(input_text...)
-        # Dummy response to prove system loop
-        return jsonify({
-            "choices": [{"message": {"role": "assistant", "content": "[AirLLM Engine] Massive 70B layer-wise inferencing successful. (Stubbed Tensor Output)"}}]
-        })
-    except Exception as e:
-        return jsonify({
-            "choices": [{"message": {"role": "assistant", "content": f"[AirLLM Engine Error] {str(e)}"}}]
-        })
+    def _handle_chat(self) -> None:
+        content_len = int(self.headers.get('Content-Length', 0))
+        raw = self.rfile.read(content_len)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            self._send_json({"error": "Invalid JSON body"}, 400)
+            return
+
+        messages = data.get('messages', [])
+        if not messages:
+            self._send_json({"error": "No messages provided"}, 400)
+            return
+
+        if _model is None:
+            self._send_json({
+                "choices": [{"message": {"role": "assistant",
+                    "content": "[AirLLM Engine Offline] The 70B block tensor failed to load layer zero into VRAM space."}}]
+            })
+            return
+
+        # Constructing deterministic prompt sequence for layer inference
+        prompt = "\n".join([f"{m.get('role', 'user')}: {m.get('content', '')}" for m in messages])
+
+        try:
+            # In a deep integration, we cache the tokenizer
+            # output = _model.generate(input_text...)
+            # Dummy response to prove system loop
+            self._send_json({
+                "choices": [{"message": {"role": "assistant",
+                    "content": "[AirLLM Engine] Massive 70B layer-wise inferencing successful. (Stubbed Tensor Output)"}}]
+            })
+        except Exception as e:
+            self._send_json({
+                "choices": [{"message": {"role": "assistant",
+                    "content": f"[AirLLM Engine Error] {e}"}}]
+            })
 
 
 if __name__ == '__main__':
@@ -62,13 +99,20 @@ if __name__ == '__main__':
 
     print(f"[AirLLM-Bridge] Initializing layer-wise proxy for {args.model} on port {args.port}...")
     try:
-        from airllm import AutoModel
-        # This will trigger HuggingFace cache loading / downloading if needed natively
-        model = AutoModel.from_pretrained(args.model)
+        from airllm import AutoModel  # type: ignore[import-untyped]
+        # This will trigger HuggingFace cache loading / downloading if needed
+        _model = AutoModel.from_pretrained(args.model)
         print("[AirLLM-Bridge] Core VRAM tensor allocations secured.")
     except ImportError:
         print("[AirLLM-Bridge] CRITICAL: 'airllm' package not found. VRAM execution aborted.")
     except Exception as e:
         print(f"[AirLLM-Bridge] Deferred init due to HF network boundaries: {e}")
 
-    app.run(host='127.0.0.1', port=args.port)
+    httpd = HTTPServer(('127.0.0.1', args.port), AirLLMHandler)
+    print(f"[AirLLM-Bridge] Listening on http://127.0.0.1:{args.port}")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[AirLLM-Bridge] Shutting down.")
+    finally:
+        httpd.server_close()
