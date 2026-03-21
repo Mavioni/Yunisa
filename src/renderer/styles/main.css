@@ -53,11 +53,11 @@ body::before {
   z-index: 0;
 }
 
-#app { height: 100%; width: 100%; position: relative; z-index: 1; }
+#app { height: 100%; width: 100%; position: relative; z-index: 1; display: flex; flex-direction: row; }
 
 /* ═══════════════ SCREENS ═══════════════ */
-.screen { display: none; height: 100%; }
-.screen.active { display: flex; }
+.screen { display: none; height: 100%; flex: 1; }
+.screen.active { display: flex; flex-direction: column; }
 .hidden { display: none !important; }
 
 /* ═══════════════ LOADING ═══════════════ */
@@ -250,7 +250,6 @@ button {
 .conv-delete-btn:hover { opacity: 1; color: var(--red); }
 
 /* ═══════════════ CHAT LAYOUT ═══════════════ */
-#chat-screen { flex-direction: row; }
 .chat-main {
   flex: 1;
   display: flex;

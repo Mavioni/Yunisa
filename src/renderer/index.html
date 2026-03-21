@@ -23,49 +23,53 @@
     <!-- Welcome Wizard -->
     <div id="welcome-screen" class="screen"></div>
 
-    <!-- Chat (icon rail + conv panel + main) -->
-    <div id="chat-screen" class="screen">
-      <div class="icon-rail">
-        <img src="styles/logo.png" alt="Y" class="rail-logo">
-        <button id="nav-chat" class="rail-btn active" title="Chat">💬</button>
-        <button id="nav-interpreter" class="rail-btn" title="Interpreter">⌨️</button>
-        <button id="nav-nemoclaw" class="rail-btn green" title="NemoClaw">🤖</button>
-        <button id="nav-models" class="rail-btn" title="Models">📦</button>
-        <button id="nav-vlm" class="rail-btn yellow" title="VLM Studio">⚡</button>
-        <div class="rail-spacer"></div>
-        <button id="nav-settings" class="rail-btn" title="Settings">⚙️</button>
-      </div>
-
-      <div id="conv-panel" class="conv-panel">
-        <div class="conv-panel-header">
-          <button id="new-chat-btn" class="btn btn-primary">+ New Chat</button>
-        </div>
-        <div id="conversation-list" class="conversation-list"></div>
-      </div>
-
-      <div class="chat-main">
-        <div id="chat-header" class="chat-header">
-          <span id="chat-title">New Chat</span>
-          <span id="model-badge" class="badge"></span>
-        </div>
-        <div id="messages" class="messages"></div>
-        <div id="context-warning" class="context-warning hidden">
-          Older messages truncated to fit context window
-        </div>
-        <div class="input-area">
-          <textarea id="user-input" placeholder="Type a message..." rows="1"></textarea>
-          <button id="send-btn" class="btn btn-primary" disabled>Send</button>
-          <button id="stop-btn" class="btn btn-danger hidden">Stop</button>
-        </div>
-      </div>
+    <!-- Global Sidebar Layout -->
+    <div class="icon-rail">
+      <img src="styles/logo.png" alt="Y" class="rail-logo">
+      <button id="nav-chat" class="rail-btn active" title="Chat">💬</button>
+      <button id="nav-interpreter" class="rail-btn" title="Interpreter">⌨️</button>
+      <button id="nav-nemoclaw" class="rail-btn green" title="NemoClaw">🤖</button>
+      <button id="nav-models" class="rail-btn" title="Models">📦</button>
+      <button id="nav-vlm" class="rail-btn yellow" title="VLM Studio">⚡</button>
+      <div class="rail-spacer"></div>
+      <button id="nav-settings" class="rail-btn" title="Settings">⚙️</button>
     </div>
 
-    <!-- Full-width screens -->
-    <div id="nemoclaw-screen" class="screen"></div>
-    <div id="vlm-screen" class="screen"></div>
-    <div id="interpreter-screen" class="screen"></div>
-    <div id="models-screen" class="screen"></div>
-    <div id="settings-screen" class="screen"></div>
+    <div id="conv-panel" class="conv-panel">
+      <div class="conv-panel-header">
+        <button id="new-chat-btn" class="btn btn-primary">+ New Chat</button>
+      </div>
+      <div id="conversation-list" class="conversation-list"></div>
+    </div>
+
+    <!-- Main Screens Container -->
+    <div id="main-content" style="flex: 1; position: relative; overflow: hidden; display: flex;">
+      <!-- Chat Screen -->
+      <div id="chat-screen" class="screen full-width-screen active">
+        <div class="chat-main">
+          <div id="chat-header" class="chat-header">
+            <span id="chat-title">New Chat</span>
+            <span id="model-badge" class="badge"></span>
+          </div>
+          <div id="messages" class="messages"></div>
+          <div id="context-warning" class="context-warning hidden">
+            Older messages truncated to fit context window
+          </div>
+          <div class="input-area">
+            <textarea id="user-input" placeholder="Type a message..." rows="1"></textarea>
+            <button id="send-btn" class="btn btn-primary" disabled>Send</button>
+            <button id="stop-btn" class="btn btn-danger hidden">Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Screens -->
+      <div id="nemoclaw-screen" class="screen full-width-screen"></div>
+      <div id="vlm-screen" class="screen full-width-screen"></div>
+      <div id="interpreter-screen" class="screen full-width-screen"></div>
+      <div id="models-screen" class="screen full-width-screen"></div>
+      <div id="settings-screen" class="screen full-width-screen"></div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
