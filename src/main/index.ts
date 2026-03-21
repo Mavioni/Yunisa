@@ -195,8 +195,7 @@ function registerIpcHandlers(): void {
 
   // Interpreter
   ipcMain.handle('interpreter:start', async () => {
-    const port = serverManager.getPort();
-    await interpreterManager.start(port);
+    await interpreterManager.start();
     interpreterManager.onChunk((chunk) => {
       mainWindow?.webContents.send('interpreter:chunk', chunk);
     });

@@ -1,22 +1,29 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, execFileSync } from 'child_process';
 import path from 'path';
 import readline from 'readline';
 
 export class InterpreterManager {
   private process: ChildProcess | null = null;
+  private airllmProcess: ChildProcess | null = null;
   private scriptPath: string;
+  private pythonDir: string;
   private chunkCallback: ((chunk: any) => void) | null = null;
 
   constructor(appRoot: string) {
-    this.scriptPath = path.join(appRoot, 'python', 'interpreter_bridge.py');
+    this.pythonDir = path.join(appRoot, 'python');
+    this.scriptPath = path.join(this.pythonDir, 'interpreter_bridge.py');
   }
 
   isRunning(): boolean {
     return this.process !== null;
   }
 
-  async start(serverPort: number): Promise<void> {
+  async start(): Promise<void> {
     if (this.process) return;
+
+    // Boot dedicated AirLLM proxy bridge exclusively for Interpreter Agent-S
+    const airllmPort = 8086;
+    this.bootAirLLM(airllmPort);
 
     this.process = spawn('python', [this.scriptPath], {
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -46,8 +53,8 @@ export class InterpreterManager {
       });
     }
 
-    // Send configuration
-    this.send({ type: 'configure', port: serverPort });
+    // Send configuration decoupled from Chat engine
+    this.send({ type: 'configure', port: airllmPort });
 
     // Wait for confirmation
     await new Promise<void>((resolve) => {
@@ -83,12 +90,39 @@ export class InterpreterManager {
     }
   }
 
+  private bootAirLLM(port: number): void {
+    if (this.airllmProcess) return;
+    const airScript = path.join(this.pythonDir, 'airllm_server.py');
+    this.airllmProcess = spawn('python', [airScript, '--port', String(port)], {
+      cwd: this.pythonDir,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
+    this.airllmProcess.on('exit', () => { this.airllmProcess = null; });
+    this.airllmProcess.on('error', (err) => { console.error('[interpreter-airllm] spawn error:', err.message); this.airllmProcess = null; });
+  }
+
   stop(): void {
     if (this.process) {
       try {
-        this.process.kill();
+        if (process.platform === 'win32' && this.process.pid) {
+          execFileSync('taskkill', ['/PID', String(this.process.pid), '/T', '/F'], { stdio: 'ignore' });
+        } else if (this.process.pid) {
+          process.kill(this.process.pid, 'SIGTERM');
+        }
       } catch {}
       this.process = null;
+    }
+
+    if (this.airllmProcess) {
+      try {
+        if (process.platform === 'win32' && this.airllmProcess.pid) {
+          execFileSync('taskkill', ['/PID', String(this.airllmProcess.pid), '/T', '/F'], { stdio: 'ignore' });
+        } else if (this.airllmProcess.pid) {
+          process.kill(this.airllmProcess.pid, 'SIGTERM');
+        }
+      } catch {}
+      this.airllmProcess = null;
     }
   }
 }
