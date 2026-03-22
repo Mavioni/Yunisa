@@ -114,7 +114,6 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, default='meta-llama/Meta-Llama-3-70B-Instruct')
     args = parser.parse_args()
 
-    global _model_name
     _model_name = args.model
     
     print(f"[AirLLM-Bridge] Initializing layer-wise proxy for {args.model} on port {args.port}...")
