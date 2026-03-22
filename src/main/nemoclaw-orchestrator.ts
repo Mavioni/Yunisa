@@ -81,7 +81,7 @@ export class NemoclawOrchestrator {
     this.bootAirLLM(8085);
 
     const scriptPath = path.join(this.pythonDir, 'nemoclaw_server.py');
-    const proc = spawn('python', [scriptPath, '--port', '3000', '--llm-port', '8085'], {
+    const proc = spawn('python', [scriptPath, '--port', '3000', '--llm-port', '8086'], {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     proc.on('exit', () => { this.process = null; });

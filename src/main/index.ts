@@ -95,13 +95,18 @@ function createWindow(): void {
     mainWindow?.show();
   });
 
-  mainWindow.webContents.on('console-message', (event, detailsOrLevel: any, message?: string, line?: number, sourceId?: string) => {
+  mainWindow.webContents.on('console-message', (event, ...args: any[]) => {
     const logPath = path.join(getDataDir(), 'renderer_errors.log');
     
     // Handle both old and new signatures gracefully
-    if (typeof detailsOrLevel === 'object' && detailsOrLevel !== null) {
-      fs.appendFileSync(logPath, `[Renderer] ${detailsOrLevel.message} (${detailsOrLevel.sourceId}:${detailsOrLevel.line})\n`);
+    if (args.length > 0 && typeof args[0] === 'object' && args[0] !== null) {
+      const details = args[0];
+      fs.appendFileSync(logPath, `[Renderer] ${details.message} (${details.sourceId}:${details.line})\n`);
     } else {
+      const level = args[0];
+      const message = args[1];
+      const line = args[2];
+      const sourceId = args[3];
       fs.appendFileSync(logPath, `[Renderer] ${message} (${sourceId}:${line})\n`);
     }
   });

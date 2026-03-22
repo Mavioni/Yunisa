@@ -9,8 +9,10 @@ import sys
 import os
 import json
 import argparse
-import threading
 from flask import Flask, request, jsonify, render_template_string  # type: ignore[import-untyped]
+
+# Inject agent-s_repo into Python path so gui_agents can be imported
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent-s_repo'))
 
 # ── HTML Dashboard Template ──────────────────────────────────────────
 DASHBOARD_HTML = """
@@ -210,9 +212,9 @@ def execute_task():
         base_url = f"http://127.0.0.1:{LLM_PORT}/v1"
         engine_params = {
             "engine_type": "openai",
-            "model": "local-bitnet",
+            "model": "airllm",
             "base_url": base_url,
-            "api_key": "sk-local",
+            "api_key": "empty",
         }
         engine_params_for_grounding = {
             "engine_type": "openai",

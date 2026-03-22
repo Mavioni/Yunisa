@@ -62,8 +62,77 @@ export function initChat() {
     unlimitedContext = cfg && cfg.unlimitedContext === false ? false : true;
   });
 
+  // Register the global Agent-S chunk stream handler
+  window.yunisa.interpreter.onChunk(handleAgentChunk);
+
   loadConversationList();
 }
+
+let agentSessionId = null;
+let currentAgentTextEl = null;
+let currentAgentTextContent = "";
+let accumulatedAgentDbText = "";
+
+function handleAgentChunk(chunk) {
+  const messages = messagesEl();
+  if (!messages) return;
+
+  switch (chunk.type) {
+    case 'text_delta':
+      if (!currentAgentTextEl) {
+        currentAgentTextEl = appendMessage('assistant', '');
+        currentAgentTextContent = "";
+      }
+      currentAgentTextContent += chunk.content;
+      accumulatedAgentDbText += chunk.content;
+      renderMarkdown(currentAgentTextEl, currentAgentTextContent);
+      scrollToBottom();
+      break;
+
+    case 'code':
+      // Render the executed Python block natively
+      const codeBlock = document.createElement('div');
+      codeBlock.className = 'agent-thought-block';
+      
+      const pre = document.createElement('pre');
+      pre.className = 'agent-code-block';
+      const code = document.createElement('code');
+      code.textContent = chunk.content;
+      pre.appendChild(code);
+      codeBlock.appendChild(pre);
+
+      messages.appendChild(codeBlock);
+      scrollToBottom();
+
+      accumulatedAgentDbText += `\n\n\`\`\`${chunk.language}\n${chunk.content}\n\`\`\`\n\n`;
+
+      // Reset text accumulator for any subsequent chat replies
+      currentAgentTextEl = null;
+      currentAgentTextContent = "";
+      break;
+
+    case 'error':
+      if (!currentAgentTextEl) currentAgentTextEl = appendMessage('assistant', '');
+      currentAgentTextContent += `\n\n**Agent System Error:**\n${chunk.content}`;
+      accumulatedAgentDbText += currentAgentTextContent;
+      renderMarkdown(currentAgentTextEl, currentAgentTextContent);
+      scrollToBottom();
+      break;
+
+    case 'done':
+      // Save the total aggregated action flow into the database
+      if (accumulatedAgentDbText && currentConversationId) {
+        window.yunisa.conversations.addMessage(currentConversationId, "assistant", accumulatedAgentDbText).catch(e => console.warn(e));
+      }
+      accumulatedAgentDbText = "";
+      currentAgentTextEl = null;
+      isSending = false;
+      sendBtn().style.display = "inline-flex";
+      stopBtn().style.display = "none";
+      break;
+  }
+}
+
 
 async function loadConversationList() {
   const conversations = await window.yunisa.conversations.list();
@@ -139,10 +208,17 @@ async function startNewChat() {
   loadConversationList();
 }
 
+let isSending = false;
+
 async function sendMessage() {
+  if (isSending) return;
+  
   const input = inputEl();
   const text = input.value.trim();
   if (!text) return;
+
+  isSending = true;
+  try {
 
   // Ensure we have a conversation
   if (!currentConversationId) {
@@ -159,13 +235,33 @@ async function sendMessage() {
   await window.yunisa.conversations.addMessage(activeConversationId, "user", text);
   appendMessage("user", text);
 
-  // Get all messages for context
-  const allMessages = await window.yunisa.conversations.getMessages(activeConversationId);
-  const apiMessages = buildApiMessages(allMessages);
-
   // Show stop button, hide send button
   sendBtn().style.display = "none";
   stopBtn().style.display = "inline-flex";
+
+  const isAgentMode = document.getElementById('agent-mode-toggle')?.checked;
+
+  if (isAgentMode) {
+    if (!agentSessionId) {
+      await window.yunisa.interpreter.start();
+      agentSessionId = `agent_${Date.now()}`;
+    }
+    accumulatedAgentDbText = "";
+    currentAgentTextEl = null;
+    currentAgentTextContent = "";
+    await window.yunisa.interpreter.send(text, agentSessionId);
+    
+    // Refresh conversation list (title may have changed on first message)
+    loadConversationList();
+    
+    // Important: Do NOT set isSending to false here.
+    // The handleAgentChunk 'done' case will unlock the UI.
+    return;
+  }
+
+  // Get all messages for context (BitNet path)
+  const allMessages = await window.yunisa.conversations.getMessages(activeConversationId);
+  const apiMessages = buildApiMessages(allMessages);
 
   // Create assistant message placeholder
   const assistantEl = appendMessage("assistant", "");
@@ -295,10 +391,27 @@ async function sendMessage() {
 
   // Refresh conversation list (title may have changed on first message)
   loadConversationList();
+  } catch (outerErr) {
+    console.error("Outer sendMessage error:", outerErr);
+  } finally {
+    // We only unlock here if it's the BitNet flow.
+    // The Agent flow bypasses this block completely via an early return outside the `try` block.
+    // Wait, the early return IS inside the `try` block! So `finally` will execute anyway!
+    // We must check if we're in agent mode.
+    if (!document.getElementById('agent-mode-toggle')?.checked) {
+      isSending = false;
+    }
+  }
 }
 
 function stopGeneration() {
-  if (abortController) {
+  const isAgentMode = document.getElementById('agent-mode-toggle')?.checked;
+  if (isAgentMode && agentSessionId) {
+    window.yunisa.interpreter.abort(agentSessionId);
+    isSending = false;
+    sendBtn().style.display = "inline-flex";
+    stopBtn().style.display = "none";
+  } else if (abortController) {
     abortController.abort();
   }
 }

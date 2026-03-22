@@ -3,26 +3,19 @@ import { initChat } from './pages/chat.js';
 import { initWelcome } from './pages/welcome.js';
 import { initModels } from './pages/models.js';
 import { initSettings } from './pages/settings.js';
-import { initInterpreter } from './pages/interpreter.js';
-import { initNemoclaw } from './pages/nemoclaw.js';
 import { initVlm } from './pages/vlm.js';
 
 const screens = {
   loading: document.getElementById('loading-screen'),
   welcome: document.getElementById('welcome-screen'),
   chat: document.getElementById('chat-screen'),
-  interpreter: document.getElementById('interpreter-screen'),
   models: document.getElementById('models-screen'),
   settings: document.getElementById('settings-screen'),
-  nemoclaw: document.getElementById('nemoclaw-screen'),
   vlm: document.getElementById('vlm-screen'),
 };
 
-// Map nav button IDs to screen names
 const NAV_MAP = {
   'nav-chat': 'chat',
-  'nav-interpreter': 'interpreter',
-  'nav-nemoclaw': 'nemoclaw',
   'nav-models': 'models',
   'nav-vlm': 'vlm',
   'nav-settings': 'settings',
@@ -71,8 +64,6 @@ async function boot() {
   initModels();
   initSettings();
   initChat();
-  initInterpreter();
-  initNemoclaw();
   initVlm();
 
   // Wire icon rail navigation

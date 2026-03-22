@@ -31,8 +31,6 @@
     <div class="icon-rail">
       <img src="styles/logo.png" alt="Y" class="rail-logo">
       <button id="nav-chat" class="rail-btn active" title="Chat"><img src="assets/icons/chat.png" class="custom-icon" alt="Chat"></button>
-      <button id="nav-interpreter" class="rail-btn" title="Interpreter"><img src="assets/icons/interpreter.png" class="custom-icon" alt="Interpreter"></button>
-      <button id="nav-nemoclaw" class="rail-btn green" title="NemoClaw"><img src="assets/icons/sandbox.png" class="custom-icon" alt="NemoClaw"></button>
       <button id="nav-models" class="rail-btn" title="Models"><img src="assets/icons/models.png" class="custom-icon" alt="Models"></button>
       <button id="nav-vlm" class="rail-btn yellow hidden" title="VLM Studio"><img src="assets/icons/vlm.png" class="custom-icon" alt="VLM"></button>
       <div class="rail-spacer"></div>
@@ -60,6 +58,13 @@
             Older messages truncated to fit context window
           </div>
           <div class="input-area">
+            <div class="agent-mode-wrapper" title="Engage Autonomous Agent-S Operations">
+              <label class="agent-toggle">
+                <input type="checkbox" id="agent-mode-toggle" title="Agent Mode Toggle" aria-label="Agent Mode Toggle">
+                <span class="agent-slider"></span>
+              </label>
+              <span class="agent-label">Agent Mode</span>
+            </div>
             <textarea id="user-input" placeholder="Type a message..." rows="1"></textarea>
             <button id="send-btn" class="btn btn-primary" disabled>Send</button>
             <button id="stop-btn" class="btn btn-danger hidden">Stop</button>
@@ -68,9 +73,7 @@
       </div>
 
       <!-- Other Screens -->
-      <div id="nemoclaw-screen" class="screen full-width-screen"></div>
       <div id="vlm-screen" class="screen full-width-screen"></div>
-      <div id="interpreter-screen" class="screen full-width-screen"></div>
       <div id="models-screen" class="screen full-width-screen"></div>
       <div id="settings-screen" class="screen full-width-screen"></div>
     </div>

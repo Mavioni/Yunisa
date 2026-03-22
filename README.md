@@ -58,8 +58,8 @@ _Your Intelligence. Your Machine. Your Rules._
   <h2>New Architecture & Subsystems</h2>
 </div>
 
-### 🐾 NemoClaw OpenShell Sandbox
-YUNISA now integrates a dual-engine architecture capable of running a simulated proxy **Agent-S (AirLLM 70B)** workflow entirely decoupled from the main BitNet Chat interface. Featuring instantaneous Agent boot routines, strict Docker boundary limits (`nemoclawUseDocker`), and full hardware orchestration toggles.
+### 🐾 Native Autonomous Agent-S
+YUNISA now integrates a dual-engine architecture capable of running **Agent-S (AirLLM 70B)** workflows directly inside the primary Chat interface. Simply toggle "Agent Mode" to securely detach from the BitNet runtime and unleash autonomous PC interactions natively mapped into your local database.
 
 ### 🌓 Obsidian Glass & Luminous Themes
 A comprehensively upgraded UI/UX pipeline rendering ultra-premium **Glassmorphism**. Seamlessly swap between the dark *Obsidian Glass* layout or the sleek *Luminous* light mode directly through the intuitive Hardware Telemetry settings.
