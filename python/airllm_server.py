@@ -69,16 +69,20 @@ class AirLLMHandler(BaseHTTPRequestHandler):
             return
 
         if _model is None or _model == "STUB":
-            # Dummy response formatted in clean markdown for Agent-S exact extraction
-            agent_s_mock = {
-                "plan": "Acknowledged. I have initialized the AirLLM proxy bridge. The Interpreter system is ready to receive and execute your commands.",
-                "exec_code": "print('AirLLM / NemoClaw Sandbox Connection Established.')",
-                "reflection": "The subsystem routing works perfectly."
-            }
+            # Dummy response formatted perfectly to pass Agent-S strict action/thought parsing Regex
+            agent_s_mock_response = """<thoughts>
+I have received the instruction via the AirLLM proxy bridge. Since this is a simulated stub, I will now terminate the session gracefully.
+</thoughts>
+<answer>
+1
+</answer>
+```python
+agent.done()
+```"""
             
             self._send_json({
                 "choices": [{"message": {"role": "assistant",
-                    "content": f"```json\n{json.dumps(agent_s_mock)}\n```"}}]
+                    "content": agent_s_mock_response}}]
             })
             return
 
