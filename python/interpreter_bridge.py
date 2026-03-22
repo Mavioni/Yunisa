@@ -24,8 +24,8 @@ except ImportError:
     HAVE_AGENT_S = False
 
 # Configuration (set by 'configure' command)
-port = 8080
-model = "bitnet"
+port = 8086
+model = "airllm"
 _abort_event = threading.Event()
 max_loops = 15
 
@@ -46,7 +46,7 @@ def handle_message(instruction: str, session_id: str):
 
     emit({
         "type": "text_delta",
-        "content": "[SYSTEM] Initializing AgentS3 with local BitNet engine...\n",
+        "content": "[SYSTEM] Initializing AgentS3 with massive AirLLM inference engine...\n",
         "session_id": session_id
     })
 

@@ -54,7 +54,7 @@ export class InterpreterManager {
     }
 
     // Send configuration decoupled from Chat engine
-    this.send({ type: 'configure', port: airllmPort });
+    this.send({ type: 'configure', port: airllmPort, model: 'airllm' });
 
     // Wait for confirmation
     await new Promise<void>((resolve) => {
