@@ -4,6 +4,8 @@ import { initWelcome } from './pages/welcome.js';
 import { initModels } from './pages/models.js';
 import { initSettings } from './pages/settings.js';
 import { initVlm } from './pages/vlm.js';
+import { initNemoclaw } from './pages/nemoclaw.js';
+import { initNexus } from './pages/nexus.js';
 
 const screens = {
   loading: document.getElementById('loading-screen'),
@@ -12,12 +14,16 @@ const screens = {
   models: document.getElementById('models-screen'),
   settings: document.getElementById('settings-screen'),
   vlm: document.getElementById('vlm-screen'),
+  nemoclaw: document.getElementById('nemoclaw-screen'),
+  nexus: document.getElementById('nexus-screen'),
 };
 
 const NAV_MAP = {
   'nav-chat': 'chat',
   'nav-models': 'models',
   'nav-vlm': 'vlm',
+  'nav-nemoclaw': 'nemoclaw',
+  'nav-nexus': 'nexus',
   'nav-settings': 'settings',
 };
 
@@ -65,6 +71,8 @@ async function boot() {
   initSettings();
   initChat();
   initVlm();
+  initNemoclaw();
+  initNexus();
 
   // Wire icon rail navigation
   Object.entries(NAV_MAP).forEach(([btnId, screenName]) => {
@@ -109,7 +117,25 @@ async function boot() {
     setLoadingStatus('Failed to restart server.');
   });
 
-  // Boot sequence
+  // Seamless engine chain — log active tier, no user action required
+  if (window.yunisa.on) {
+    window.yunisa.on('server:engine-active', (engineName) => {
+      console.log(`[YUNISA] Engine online: ${engineName}`);
+      // Optionally surface in status bar later
+    });
+
+    // P3: Interpreter crash → inline banner
+    window.yunisa.on('interpreter:crashed', () => {
+      const banner = document.getElementById('interpreter-crash-banner');
+      if (banner) banner.style.display = 'flex';
+    });
+    window.yunisa.on('interpreter:restarted', () => {
+      const banner = document.getElementById('interpreter-crash-banner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
+
+
   try {
     const hasModel = await window.yunisa.models.hasAny();
     if (!hasModel) { showScreen('welcome'); return; }
@@ -122,7 +148,22 @@ async function boot() {
     if (result.status === 'ready') {
       showScreen('chat');
     } else {
-      setLoadingStatus('Failed to start server. Check model file.');
+      setLoadingStatus('All inference engines failed to start.');
+      // Give the user a clear path forward
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.insertAdjacentHTML('beforeend', `
+          <div style="margin-top:1.5rem;display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
+            <p style="color:var(--text-secondary);font-size:0.9rem;max-width:420px;text-align:center;line-height:1.6;">
+              Local engines (llama.cpp, AirLLM) could not start.<br>
+              Add an <strong>NVIDIA API Key</strong> in Settings to enable cloud inference as a fallback.
+            </p>
+            <button id="boot-settings-btn" class="btn btn-primary" style="min-width:180px;">⚙️ Open Settings</button>
+            <button id="boot-retry-btn" class="btn btn-ghost" style="min-width:180px;">🔄 Retry</button>
+          </div>`);
+        document.getElementById('boot-settings-btn')?.addEventListener('click', () => showScreen('settings'));
+        document.getElementById('boot-retry-btn')?.addEventListener('click', () => boot());
+      }
     }
   } catch (err) {
     console.error('Boot error:', err);

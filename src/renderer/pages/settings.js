@@ -18,7 +18,7 @@ export async function initSettings() {
   
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-ghost';
-  backBtn.textContent = '⟨ Initialize Chat Sequence';
+  backBtn.textContent = '⟨ Back to Chat';
   header.appendChild(backBtn);
   container.appendChild(header);
 
@@ -105,18 +105,36 @@ export async function initSettings() {
   // 1. Hardware Monitor [System 01 DTIA]
   const sysCard = createCard('System 01 [DTIA] Hardware Monitor', 'Real-time telemetry of the Dialectical Ternary Inference Architecture.');
   sysCard.style.borderLeftColor = '#4caf50';
-  sysCard.innerHTML += `
-    <div class="settings-hw-grid">
-        <div>
-            <span class="settings-hw-label">Compute Core</span>
-            <div id="rtx-status" class="settings-hw-value" style="color: #4caf50;">SECURE</div>
-        </div>
-        <div>
-            <span class="settings-hw-label">Inference Engine</span>
-            <div id="server-stats" class="settings-hw-value" style="color: #2196f3;">Checking...</div>
-        </div>
-    </div>
-  `;
+  const hwGrid = document.createElement('div');
+  hwGrid.className = 'settings-hw-grid';
+  
+  const coreDiv = document.createElement('div');
+  const coreLabel = document.createElement('span');
+  coreLabel.className = 'settings-hw-label';
+  coreLabel.textContent = 'Compute Core';
+  const coreValue = document.createElement('div');
+  coreValue.id = 'rtx-status';
+  coreValue.className = 'settings-hw-value';
+  coreValue.style.color = '#4caf50';
+  coreValue.textContent = 'SECURE';
+  coreDiv.appendChild(coreLabel);
+  coreDiv.appendChild(coreValue);
+  
+  const engineDiv = document.createElement('div');
+  const engineLabel = document.createElement('span');
+  engineLabel.className = 'settings-hw-label';
+  engineLabel.textContent = 'Inference Engine';
+  const engineValue = document.createElement('div');
+  engineValue.id = 'server-stats';
+  engineValue.className = 'settings-hw-value';
+  engineValue.style.color = '#2196f3';
+  engineValue.textContent = 'Checking...';
+  engineDiv.appendChild(engineLabel);
+  engineDiv.appendChild(engineValue);
+  
+  hwGrid.appendChild(coreDiv);
+  hwGrid.appendChild(engineDiv);
+  sysCard.appendChild(hwGrid);
   sysCard.appendChild(createToggle('Enable DTIA (Dialectical Ternary Inference Architecture Pipeline)', 'enableDtia'));
   container.appendChild(sysCard);
 
@@ -158,9 +176,16 @@ export async function initSettings() {
 
 
   // 6. External Orbits [NIM]
-  const nimCard = createCard('NVIDIA Inference Microservices [NIM]', 'Secure bridge for offloading tensor operations beyond local hardware limits.');
-  nimCard.style.borderLeftColor = '#f44336';
+  const nimCard = createCard('NVIDIA NIM Cloud Inference', 'Route inference to NVIDIA cloud when local hardware is insufficient. Leave API key empty to use local engine.');
+  nimCard.style.borderLeftColor = '#76b900';
   nimCard.appendChild(createInput('nvapi-xxxxxxxxxxxxxxxxxxxxxxxx', 'nvidiaApiKey'));
+  const nimModelInput = document.createElement('input');
+  nimModelInput.type = 'text';
+  nimModelInput.className = 'settings-input';
+  nimModelInput.placeholder = 'Model ID (default: meta/llama-3.1-70b-instruct)';
+  nimModelInput.value = config['nimModel'] || '';
+  nimModelInput.addEventListener('change', (e) => window.yunisa.config.set('nimModel', e.target.value));
+  nimCard.appendChild(nimModelInput);
   nimCard.appendChild(createToggle('Airgap Mode: Prevent all outbound NIM/Internet telemetry automatically', 'airgapMode'));
   container.appendChild(nimCard);
 

@@ -10,6 +10,8 @@ import platform
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.request
 import typing
+import collections
+from pathlib import Path
 
 
 def find_free_port(start_port: int) -> int:
@@ -44,14 +46,14 @@ class MizuServer:
     def start_llama(self) -> bool:
         # Cross-platform binary resolution
         exe_name = 'llama-server.exe' if platform.system() == 'Windows' else 'llama-server'
-        server_path = os.path.join(self.binaries_dir, exe_name)
+        server_path = Path(self.binaries_dir) / exe_name
 
-        if not os.path.isfile(server_path):
+        if not server_path.is_file():
             print(f"[MIZU] ERROR: Llama binary not found at {server_path}")
             return False
 
         cmd = [
-            server_path,
+            str(server_path),
             "--model", self.model_path,
             "--ctx-size", self.ctx_size,
             "--port", str(self.llama_port),
@@ -70,7 +72,7 @@ class MizuServer:
             cmd += ["--threads", self.cpu_threads]
 
         print(f"[MIZU] Starting Llama Server on port {self.llama_port}...")
-        log_path = os.path.join(self.binaries_dir, "llama_server.log")
+        log_path = Path(self.binaries_dir) / "llama_server.log"
         try:
             self.llama_log = open(log_path, "w", encoding="utf-8")
             self.llama_proc = subprocess.Popen(
@@ -80,7 +82,12 @@ class MizuServer:
                 cwd=self.binaries_dir,
             )
         except OSError as e:
-            print(f"[MIZU] Failed to spawn Llama server: {e}")
+            # WinError 4551 = Windows Smart App Control blocked the binary.
+            # Do NOT retry — each attempt triggers a new Security popup.
+            if platform.system() == 'Windows' and getattr(e, 'winerror', None) == 4551:
+                print("[MIZU] Windows Smart App Control blocked llama-server.exe. Skipping to next tier.")
+            else:
+                print(f"[MIZU] Failed to spawn Llama server: {e}")
             return False
 
         # Wait for health with better diagnostics
@@ -89,11 +96,16 @@ class MizuServer:
         for attempt in range(60):
             # Check if process died early
             if proc.poll() is not None:
-                print(f"[MIZU] Llama server exited prematurely (code {proc.returncode})")
+                rc = proc.returncode
+                # On Windows, exit code 1 from a fresh start = SAC block (no popup retry)
+                if platform.system() == 'Windows' and rc == 1:
+                    print("[MIZU] llama-server.exe exited immediately (code 1) — likely Windows App Control block. Skipping.")
+                    return False
+                print(f"[MIZU] Llama server exited prematurely (code {rc})")
                 try:
                     with open(log_path, "r", encoding="utf-8", errors="replace") as f:
-                        lines = f.readlines()
-                        stderr_out = "".join(lines[-20:])
+                        last_lines = collections.deque(f, maxlen=20)
+                        stderr_out = "".join(last_lines)
                         if stderr_out:
                             print(f"[MIZU] Last logs: \n{stderr_out}")
                 except Exception:

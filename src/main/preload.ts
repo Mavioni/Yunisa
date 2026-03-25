@@ -78,6 +78,15 @@ contextBridge.exposeInMainWorld('yunisa', {
     status: () => ipcRenderer.invoke('nemoclaw:status'),
   },
 
+  search: {
+    query: (query: string) => ipcRenderer.invoke('search:query', query),
+    fetch: (url: string) => ipcRenderer.invoke('search:fetch', url),
+  },
+
+  executor: {
+    run: (language: string, code: string) => ipcRenderer.invoke('executor:run', language, code),
+  },
+
   vlm: {
     train: () => ipcRenderer.invoke('vlm:train'),
     stop: () => ipcRenderer.invoke('vlm:stop'),
@@ -86,7 +95,39 @@ contextBridge.exposeInMainWorld('yunisa', {
     }
   },
 
+  memory: {
+    getContext:        (query: string, convId: string) =>
+      ipcRenderer.invoke('memory:get-context', query, convId),
+    indexConversation: (convId: string, text: string) =>
+      ipcRenderer.invoke('memory:index-conversation', convId, text),
+    summarise:         (convId: string, port: number) =>
+      ipcRenderer.invoke('memory:summarise', convId, port),
+    setWorking:        (key: string, value: string) =>
+      ipcRenderer.invoke('memory:set-working', key, value),
+    getWorking:        (key: string) =>
+      ipcRenderer.invoke('memory:get-working', key),
+    getAllWorking:      () =>
+      ipcRenderer.invoke('memory:get-all-working'),
+    getAllEpisodic:     () =>
+      ipcRenderer.invoke('memory:get-all-episodic'),
+  },
+
   onServerRestartRequested: (callback: () => void) => {
     ipcRenderer.on('server:restart-requested', () => callback());
+  },
+
+  // Generic IPC push listener for renderer-side event subscriptions (P1, P3)
+  on: (channel: string, callback: (...args: any[]) => void) => {
+    const ALLOWED_PUSH_CHANNELS = [
+      'server:engine-active',
+      'interpreter:crashed',
+      'interpreter:restarted',
+    ];
+    if (!ALLOWED_PUSH_CHANNELS.includes(channel)) return;
+    ipcRenderer.on(channel, (_, ...args) => callback(...args));
+  },
+
+  nim: {
+    testConnection: () => ipcRenderer.invoke('nim:test-connection'),
   },
 });

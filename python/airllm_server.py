@@ -8,6 +8,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 # Global model reference (set at boot)
 _model = None
 _model_name = ""
+_mock_counter = 0
+
 
 
 class AirLLMHandler(BaseHTTPRequestHandler):
@@ -69,6 +71,33 @@ class AirLLMHandler(BaseHTTPRequestHandler):
             return
 
         if _model is None or _model == "STUB":
+            import os
+            nim_key = os.environ.get("NVIDIA_API_KEY", "")
+            if nim_key and len(nim_key) > 5:
+                from nvidia_nim_bridge import NvidiaNIMBridge
+                bridge = NvidiaNIMBridge(api_key=nim_key)
+                try:
+                    lines = bridge.run_inference(
+                        invoke_url="https://integrate.api.nvidia.com/v1/chat/completions",
+                        payload={"model": "meta/llama-3.1-70b-instruct", "messages": messages, "max_tokens": 1024, "stream": True}
+                    )
+                    full_text = ""
+                    for line in lines:
+                        if line.startswith("data: "):
+                            data_str = line[6:]
+                            if data_str == "[DONE]": 
+                                break
+                            try:
+                                chunk = json.loads(data_str)
+                                full_text += chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                            except Exception: 
+                                pass
+                    self._send_json({"choices": [{"message": {"role": "assistant", "content": full_text}}]})
+                    return
+                except Exception as e:
+                    self._send_json({"choices": [{"message": {"role": "assistant", "content": f"NIM Fallback Error: {e}"}}]})
+                    return
+
             global _mock_counter
             _mock_counter = globals().get('_mock_counter', 0) + 1
             
@@ -130,18 +159,32 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AirLLM Layer-Wise Inference Server')
     parser.add_argument('--port', type=int, default=8080)
     parser.add_argument('--model', type=str, default='meta-llama/Meta-Llama-3-70B-Instruct')
+    parser.add_argument('--nim', action='store_true', help='Run as NIM Cloud proxy (Tier 3)')
     args = parser.parse_args()
 
+    import os
+    nim_mode = args.nim or os.environ.get('YUNISA_NIM_MODE') == '1'
+
     _model_name = args.model
-    
-    print(f"[AirLLM-Bridge] Initializing layer-wise proxy for {args.model} on port {args.port}...")
-    try:
-        from airllm import AutoModel  # type: ignore[import-untyped]
-        _model = AutoModel.from_pretrained(args.model)
-        print("[AirLLM-Bridge] Core VRAM tensor allocations secured.")
-    except Exception as e:
-        print("[AirLLM-Bridge] Simulated stub active (HuggingFace weights missing or no CUDA).")
-        _model = "STUB"
+
+    if nim_mode:
+        print("[AirLLM-Bridge] NIM Cloud mode active — routing inference to NVIDIA NIM API.")
+        try:
+            from nvidia_nim_bridge import NvidiaNIMBridge  # type: ignore
+            _model = NvidiaNIMBridge()
+            print("[AirLLM-Bridge] NIM bridge initialised.")
+        except Exception as e:
+            print(f"[AirLLM-Bridge] NIM bridge failed to initialise: {e}")
+            _model = 'STUB'
+    else:
+        print(f"[AirLLM-Bridge] Initializing layer-wise proxy for {args.model} on port {args.port}...")
+        try:
+            from airllm import AutoModel  # type: ignore[import-untyped]
+            _model = AutoModel.from_pretrained(args.model)
+            print("[AirLLM-Bridge] Core VRAM tensor allocations secured.")
+        except Exception as e:
+            print("[AirLLM-Bridge] Simulated stub active (HuggingFace weights missing or no CUDA).")
+            _model = "STUB"
 
     httpd = HTTPServer(('127.0.0.1', args.port), AirLLMHandler)
     print(f"[AirLLM-Bridge] Listening on http://127.0.0.1:{args.port}")

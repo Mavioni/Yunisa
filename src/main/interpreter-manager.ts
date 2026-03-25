@@ -8,6 +8,8 @@ export class InterpreterManager {
   private scriptPath: string;
   private pythonDir: string;
   private chunkCallback: ((chunk: any) => void) | null = null;
+  private crashedCallback: (() => void) | null = null;
+  private readyCallback: (() => void) | null = null;
 
   constructor(appRoot: string) {
     this.pythonDir = path.join(appRoot, 'python');
@@ -31,7 +33,13 @@ export class InterpreterManager {
     });
 
     this.process.on('exit', () => {
+      const wasRunning = this.process !== null;
       this.process = null;
+      if (wasRunning) {
+        console.warn('[interpreter] Bridge process crashed. Attempting auto-restart in 2s...');
+        this.crashedCallback?.();
+        setTimeout(() => this.start().then(() => this.readyCallback?.()), 2000);
+      }
     });
 
     this.process.stderr?.on('data', (data: Buffer) => {
@@ -74,6 +82,14 @@ export class InterpreterManager {
 
   onChunk(callback: (chunk: any) => void): void {
     this.chunkCallback = callback;
+  }
+
+  onCrashed(callback: () => void): void {
+    this.crashedCallback = callback;
+  }
+
+  onRestarted(callback: () => void): void {
+    this.readyCallback = callback;
   }
 
   sendMessage(content: string, sessionId: string): void {

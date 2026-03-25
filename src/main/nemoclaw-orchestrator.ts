@@ -5,9 +5,11 @@ export class NemoclawOrchestrator {
   private process: ChildProcess | null = null;
   private airllmProcess: ChildProcess | null = null;
   private pythonDir: string;
+  private getConfig: () => any;
 
-  constructor(pythonDir: string) {
+  constructor(pythonDir: string, getConfig: () => any) {
     this.pythonDir = pythonDir;
+    this.getConfig = getConfig;
   }
 
   async start(useDocker: boolean = false): Promise<{ status: string; port: number }> {
@@ -46,11 +48,14 @@ export class NemoclawOrchestrator {
     this.bootAirLLM(8085);
 
     console.log('[nemoclaw] Spawning isolated OpenShell Sandbox container...');
+    const cfg = this.getConfig();
     const proc = spawn('docker', [
       'run', '--rm', 
       '-p', '3000:3000', 
       '-e', 'LLM_HOST=host.docker.internal',
       '-e', 'LLM_PORT=8085',
+      '-e', `NVIDIA_API_KEY=${cfg.nvidiaApiKey || ''}`,
+      '-e', `NEMOCLAW_ONLINE=${cfg.nemoclawOnlineMode ? 'true' : 'false'}`,
       '--name', 'nemoclaw_sandbox',
       'yunisa-nemoclaw-sandbox'
     ], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -81,8 +86,15 @@ export class NemoclawOrchestrator {
     this.bootAirLLM(8085);
 
     const scriptPath = path.join(this.pythonDir, 'nemoclaw_server.py');
+    const cfg = this.getConfig();
+    const env = { 
+      ...process.env, 
+      NVIDIA_API_KEY: cfg.nvidiaApiKey || '',
+      NEMOCLAW_ONLINE: cfg.nemoclawOnlineMode ? 'true' : 'false'
+    };
     const proc = spawn('python', [scriptPath, '--port', '3000', '--llm-port', '8086'], {
       stdio: ['ignore', 'pipe', 'pipe'],
+      env
     });
     proc.on('exit', () => { this.process = null; });
     proc.on('error', (err) => { console.error('[nemoclaw] spawn error:', err.message); this.process = null; });

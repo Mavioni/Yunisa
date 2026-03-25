@@ -1,0 +1,9 @@
+﻿Usage: gitnexus serve [options]
+
+Start local HTTP server for web UI connection
+
+Options:
+  -p, --port <port>  Port number (default: "4747")
+  --host <host>      Bind address (default: 127.0.0.1, use 0.0.0.0 for remote
+                     access)
+  -h, --help         display help for command

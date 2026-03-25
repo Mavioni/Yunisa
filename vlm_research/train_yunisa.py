@@ -1,7 +1,7 @@
-import torch
-from transformers import Trainer, TrainingArguments
-from torch.utils.data import Dataset
-from yunisa_vlm import YunisaVLM, YunisaVLMConfig
+import torch # type: ignore
+from transformers import Trainer, TrainingArguments # type: ignore
+from torch.utils.data import Dataset # type: ignore
+from vlm_research.yunisa_vlm import YunisaVLM, YunisaVLMConfig # type: ignore
 
 class MassiveCloudDataset(Dataset):
     """

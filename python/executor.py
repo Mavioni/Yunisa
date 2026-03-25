@@ -5,6 +5,7 @@ import sys
 import tempfile
 import os
 import shutil
+from pathlib import Path
 
 TIMEOUT = 30  # seconds
 
@@ -13,13 +14,14 @@ def _find_bash() -> list[str]:
     """Find a working bash executable, preferring Git Bash on Windows."""
     if sys.platform == "win32":
         # Git Bash locations
-        for candidate in [
-            os.path.join(os.environ.get("ProgramFiles", ""), "Git", "bin", "bash.exe"),
-            os.path.join(os.environ.get("ProgramFiles(x86)", ""), "Git", "bin", "bash.exe"),
-            os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs", "Git", "bin", "bash.exe"),
-        ]:
-            if os.path.isfile(candidate):
-                return [candidate, "-c"]
+        candidates = [
+            Path(os.environ.get("ProgramFiles", "")) / "Git" / "bin" / "bash.exe",
+            Path(os.environ.get("ProgramFiles(x86)", "")) / "Git" / "bin" / "bash.exe",
+            Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Git" / "bin" / "bash.exe",
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return [str(candidate), "-c"]
         # Fallback to PATH
         bash = shutil.which("bash")
         if bash:
@@ -31,7 +33,7 @@ def _find_bash() -> list[str]:
 
 def execute(language: str, code: str, cwd: str | None = None) -> dict:
     """Execute a code block and return stdout, stderr, exit_code."""
-    work_dir = cwd or os.path.expanduser("~")
+    work_dir = cwd or str(Path.home())
     lang = language.lower().strip()
 
     try:

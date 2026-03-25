@@ -6,6 +6,8 @@ let serverPort = 8080;
 let activePersona = 'default';
 let configuredContextSize = 2048;
 let unlimitedContext = true;
+let nimApiKey = '';
+let nimModel = 'meta/llama-3.1-70b-instruct';
 
 const messagesEl = () => document.getElementById("messages");
 const inputEl = () => document.getElementById("user-input");
@@ -54,12 +56,12 @@ export function initChat() {
     }
   });
 
-  // Load persona, context size, and unlimited context from config
   window.yunisa.config.get().then(cfg => {
     if (cfg && cfg.psaiCore) activePersona = cfg.psaiCore;
     if (cfg && cfg.contextSize) configuredContextSize = parseInt(cfg.contextSize, 10) || 2048;
-    // Default to true if not explicitly set to false
     unlimitedContext = cfg && cfg.unlimitedContext === false ? false : true;
+    if (cfg && cfg.nvidiaApiKey) nimApiKey = cfg.nvidiaApiKey;
+    if (cfg && cfg.nimModel) nimModel = cfg.nimModel;
   });
 
   // Register the global Agent-S chunk stream handler
@@ -68,10 +70,88 @@ export function initChat() {
   loadConversationList();
 }
 
+function openRightPanel(title) {
+  const panel = document.getElementById('right-panel');
+  const content = document.getElementById('right-panel-content');
+  const header = panel.querySelector('.right-panel-header');
+  if (header && title) header.textContent = title;
+  
+  if (content) content.innerHTML = '';
+  if (panel) panel.classList.remove('hidden');
+  return content;
+}
+
+function closeRightPanel() {
+  const panel = document.getElementById('right-panel');
+  if (panel) panel.classList.add('hidden');
+}
+
 let agentSessionId = null;
 let currentAgentTextEl = null;
 let currentAgentTextContent = "";
 let accumulatedAgentDbText = "";
+let agentStepBar = null;
+let agentStepCount = 0;
+const MAX_AGENT_STEPS = 15;
+
+function createStepBar() {
+  const bar = document.createElement('div');
+  bar.className = 'agent-step-bar';
+  const label = document.createElement('span');
+  label.className = 'step-label';
+  label.textContent = 'Agent Progress';
+  bar.appendChild(label);
+  const dots = document.createElement('div');
+  dots.className = 'step-dots';
+  for (let i = 0; i < MAX_AGENT_STEPS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot';
+    dots.appendChild(dot);
+  }
+  bar.appendChild(dots);
+  return bar;
+}
+
+function updateStepBar(stepIndex, state) {
+  if (!agentStepBar) return;
+  const dots = agentStepBar.querySelectorAll('.step-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.remove('done', 'active', 'error');
+    if (i < stepIndex) dot.classList.add('done');
+    else if (i === stepIndex) dot.classList.add(state);
+  });
+  const label = agentStepBar.querySelector('.step-label');
+  if (label) label.textContent = `Step ${stepIndex + 1} of ${MAX_AGENT_STEPS}`;
+}
+
+function createActionCard(type, content, lang) {
+  const card = document.createElement('div');
+  card.className = 'agent-action-card';
+  const header = document.createElement('div');
+  header.className = 'action-header';
+  
+  if (type === 'code') {
+    header.classList.add('executing');
+    header.textContent = lang ? `Executing ${lang}` : 'Executing Code';
+  } else if (type === 'error') {
+    header.classList.add('error');
+    header.textContent = 'Execution Error';
+  } else {
+    header.classList.add('success');
+    header.textContent = 'Action Complete';
+  }
+  card.appendChild(header);
+  
+  const body = document.createElement('div');
+  body.className = 'action-body';
+  const pre = document.createElement('pre');
+  pre.textContent = content;
+  body.appendChild(pre);
+  card.appendChild(body);
+  return card;
+}
+
+let agentWorkspaceEl = null;
 
 function handleAgentChunk(chunk) {
   const messages = messagesEl();
@@ -79,53 +159,82 @@ function handleAgentChunk(chunk) {
 
   switch (chunk.type) {
     case 'text_delta':
+      if (!agentWorkspaceEl) {
+        agentWorkspaceEl = appendMessage('assistant', '');
+      }
       if (!currentAgentTextEl) {
-        currentAgentTextEl = appendMessage('assistant', '');
+        currentAgentTextEl = document.createElement('div');
+        currentAgentTextEl.className = 'agent-narrative';
+        agentWorkspaceEl.appendChild(currentAgentTextEl);
         currentAgentTextContent = "";
       }
       currentAgentTextContent += chunk.content;
       accumulatedAgentDbText += chunk.content;
-      renderMarkdown(currentAgentTextEl, currentAgentTextContent);
+      
+      // Parse step indicators from the text stream
+      const stepMatch = currentAgentTextContent.match(/Step (\d+)\/(\d+)/);
+      if (stepMatch) {
+        const stepNum = parseInt(stepMatch[1], 10) - 1;
+        if (!agentStepBar) {
+          agentStepBar = createStepBar();
+          agentWorkspaceEl.insertBefore(agentStepBar, agentWorkspaceEl.firstChild);
+        }
+        agentStepCount = stepNum;
+        updateStepBar(stepNum, 'active');
+        
+        // Clean out the raw text so it doesnt look ugly alongside the visual bar
+        currentAgentTextContent = currentAgentTextContent.replace(/--- Step \d+\/\d+ --- Capturing screen context\.\.\. Thinking\.\.\./g, '');
+        currentAgentTextContent = currentAgentTextContent.replace(/Executing action\.\.\./g, '');
+      }
+      
+      if (currentAgentTextContent.trim()) {
+        renderMarkdown(currentAgentTextEl, currentAgentTextContent);
+      }
       scrollToBottom();
       break;
 
     case 'code':
-      // Render the executed Python block natively
-      const codeBlock = document.createElement('div');
-      codeBlock.className = 'agent-thought-block';
+      if (!agentWorkspaceEl) agentWorkspaceEl = appendMessage('assistant', '');
       
-      const pre = document.createElement('pre');
-      pre.className = 'agent-code-block';
-      const code = document.createElement('code');
-      code.textContent = chunk.content;
-      pre.appendChild(code);
-      codeBlock.appendChild(pre);
-
-      messages.appendChild(codeBlock);
-      scrollToBottom();
+      // Render as a structured action card
+      const actionCard = createActionCard('code', chunk.content, chunk.language);
+      agentWorkspaceEl.appendChild(actionCard);
 
       accumulatedAgentDbText += `\n\n\`\`\`${chunk.language}\n${chunk.content}\n\`\`\`\n\n`;
 
-      // Reset text accumulator for any subsequent chat replies
+      // Mark current step as done
+      if (agentStepBar) updateStepBar(agentStepCount, 'done');
+
+      // Reset text accumulator for subsequent replies so they append AFTER the code block
       currentAgentTextEl = null;
       currentAgentTextContent = "";
+      scrollToBottom();
       break;
 
     case 'error':
-      if (!currentAgentTextEl) currentAgentTextEl = appendMessage('assistant', '');
-      currentAgentTextContent += `\n\n**Agent System Error:**\n${chunk.content}`;
-      accumulatedAgentDbText += currentAgentTextContent;
-      renderMarkdown(currentAgentTextEl, currentAgentTextContent);
+      if (!agentWorkspaceEl) agentWorkspaceEl = appendMessage('assistant', '');
+      // Render error as a distinct card
+      const errorCard = createActionCard('error', chunk.content);
+      agentWorkspaceEl.appendChild(errorCard);
+      accumulatedAgentDbText += `\n\n**Error:** ${chunk.content}\n\n`;
+      
+      if (agentStepBar) updateStepBar(agentStepCount, 'error');
       scrollToBottom();
       break;
 
     case 'done':
+      // The python backend handles terminal state messages (Abort, Error, Complete).
+
+      
       // Save the total aggregated action flow into the database
       if (accumulatedAgentDbText && currentConversationId) {
         window.yunisa.conversations.addMessage(currentConversationId, "assistant", accumulatedAgentDbText).catch(e => console.warn(e));
       }
       accumulatedAgentDbText = "";
       currentAgentTextEl = null;
+      agentWorkspaceEl = null;
+      agentStepBar = null;
+      agentStepCount = 0;
       isSending = false;
       sendBtn().style.display = "inline-flex";
       stopBtn().style.display = "none";
@@ -182,6 +291,7 @@ async function loadConversation(id) {
     chatTitle().textContent = conv.title;
   }
 
+  closeRightPanel();
   messagesEl().innerHTML = "";
   if (contextWarning()) contextWarning().style.display = "none";
 
@@ -199,6 +309,7 @@ async function startNewChat() {
   const conv = await window.yunisa.conversations.create(modelName);
 
   currentConversationId = conv.id;
+  closeRightPanel();
   messagesEl().innerHTML = "";
   if (chatTitle()) chatTitle().textContent = "New Chat";
   if (contextWarning()) contextWarning().style.display = "none";
@@ -242,6 +353,9 @@ async function sendMessage() {
   const isAgentMode = document.getElementById('agent-mode-toggle')?.checked;
 
   if (isAgentMode) {
+    closeRightPanel();
+
+
     if (!agentSessionId) {
       await window.yunisa.interpreter.start();
       agentSessionId = `agent_${Date.now()}`;
@@ -261,7 +375,88 @@ async function sendMessage() {
 
   // Get all messages for context (BitNet path)
   const allMessages = await window.yunisa.conversations.getMessages(activeConversationId);
-  const apiMessages = buildApiMessages(allMessages);
+
+  // ── MSAM: Get long-term memory context ───────────────────────────────────
+  let msamContext = null;
+  try {
+    msamContext = await window.yunisa.memory.getContext(text, activeConversationId);
+    if (msamContext?.injected) {
+      console.log(`[MSAM] Memory injected — episodic:${msamContext.episodicHits} semantic:${msamContext.semanticHits}`);
+    }
+  } catch (e) {
+    // Non-fatal — memory layer unavailable, continue without it
+    console.warn('[MSAM] getContext failed:', e);
+  }
+
+  const apiMessages = buildApiMessages(allMessages, msamContext?.injected ? msamContext.block : null);
+
+  // ── Research Mode: search web and inject context ──
+  const isResearchMode = document.getElementById('research-mode-toggle')?.checked;
+  let researchContext = '';
+  if (isResearchMode) {
+    const searchingEl = appendMessage('assistant', '');
+    renderMarkdown(searchingEl, '🔍 *Synthesizing web research...*');
+
+    const panelContent = openRightPanel("Deep Research");
+    const statusEl = document.createElement('div');
+    statusEl.className = 'interp-executing';
+    statusEl.innerHTML = '<span>🔍 Searching the web...</span>';
+    panelContent.appendChild(statusEl);
+
+    try {
+      const results = await window.yunisa.search.query(text);
+      if (results && results.length > 0) {
+        statusEl.innerHTML = `<span>📖 Reading ${results.length} sources...</span>`;
+        
+        const sourcesWrap = document.createElement('div');
+        sourcesWrap.className = 'research-sources-grid';
+
+        results.forEach(r => {
+          const card = document.createElement('div');
+          card.className = 'source-card';
+          card.innerHTML = `<div class="source-title">${escapeHtml(r.title || '')}</div><div class="source-url">${escapeHtml(r.url || '')}</div><div class="source-snippet">${escapeHtml(r.snippet || '')}</div>`;
+          card.addEventListener('click', () => { if (r.url) window.open?.(r.url); });
+          sourcesWrap.appendChild(card);
+        });
+        panelContent.appendChild(sourcesWrap);
+
+        const pageTexts = [];
+        for (const r of results.slice(0, 3)) {
+          if (r.url) {
+            try {
+              const pageText = await window.yunisa.search.fetch(r.url);
+              pageTexts.push(`Source: ${r.title}\nURL: ${r.url}\n\n${pageText}`);
+            } catch {}
+          }
+        }
+        researchContext = pageTexts.join('\n\n---\n\n');
+        
+        statusEl.className = 'interp-output success';
+        statusEl.innerHTML = `✅ Research complete. Synthesizing ${pageTexts.length} pages.`;
+        
+        // Remove the temporary "Synthesizing" chat bubble, as the real response will start
+        if (searchingEl && searchingEl.parentElement) {
+          searchingEl.parentElement.removeChild(searchingEl);
+        }
+      } else {
+        statusEl.className = 'interp-output error';
+        statusEl.innerHTML = '⚠️ No search results found.';
+        renderMarkdown(searchingEl, '⚠️ *No search results found. Answering without web context.*');
+      }
+    } catch (err) {
+      statusEl.className = 'interp-output error';
+      statusEl.innerHTML = `⚠️ Search failed: ${err.message}`;
+      renderMarkdown(searchingEl, `⚠️ *Search failed: ${err.message}. Answering without web context.*`);
+    }
+  }
+
+  // Inject research context into the api messages
+  if (researchContext) {
+    apiMessages.splice(1, 0, {
+      role: 'system',
+      content: `The following web research was gathered for the user's question. Use it to provide an informed, cited response:\n\n${researchContext}`
+    });
+  }
 
   // Create assistant message placeholder
   const assistantEl = appendMessage("assistant", "");
@@ -271,13 +466,22 @@ async function sendMessage() {
   const port = await window.yunisa.server.port();
   if (port) serverPort = port;
 
+  // Determine inference endpoint — NIM cloud vs local
+  const useNim = nimApiKey && nimApiKey.length > 10;
+  const inferenceUrl = useNim
+    ? 'https://integrate.api.nvidia.com/v1/chat/completions'
+    : `http://127.0.0.1:${serverPort}/v1/chat/completions`;
+  const inferenceHeaders = { 'Content-Type': 'application/json' };
+  if (useNim) inferenceHeaders['Authorization'] = `Bearer ${nimApiKey}`;
+
   abortController = new AbortController();
 
   try {
-    const response = await fetch(`http://127.0.0.1:${serverPort}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch(inferenceUrl, {
+      method: 'POST',
+      headers: inferenceHeaders,
       body: JSON.stringify({
+        model: useNim ? nimModel : undefined,
         messages: apiMessages,
         stream: true,
         temperature: 0.7,
@@ -387,6 +591,16 @@ async function sendMessage() {
     } catch (dbErr) {
       console.warn("Could not save assistant message: conversation was likely deleted or dropped.", dbErr);
     }
+
+    // ── MSAM: fire-and-forget memory update ──────────────────────────────────
+    // Trigger episodic summarisation and semantic re-index after each reply.
+    // These are non-blocking — the UI is already unlocked before they finish.
+    try {
+      const currentPort = serverPort;
+      window.yunisa.memory.summarise(activeConversationId, currentPort).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
   }
 
   // Refresh conversation list (title may have changed on first message)
@@ -416,7 +630,7 @@ function stopGeneration() {
   }
 }
 
-function buildApiMessages(messages) {
+function buildApiMessages(messages, memoryBlock = null) {
   const PERSONAS = {
     default: 'You are YUNISA, a helpful AI assistant running locally. Be concise and helpful.',
     sovereign: 'You are YUNISA, acting as The Sovereign Advisor — a powerful, strategic intellect. Speak with authority, precision, and foresight. Avoid hedging.',
@@ -435,6 +649,11 @@ function buildApiMessages(messages) {
   let truncated = false;
 
   result.push({ role: "system", content: systemPrompt });
+
+  // ── MSAM: inject long-term memory block right after persona system prompt ──
+  if (memoryBlock) {
+    result.push({ role: "system", content: memoryBlock });
+  }
 
   const reversed = [...messages].reverse();
   const collected = [];
@@ -534,6 +753,45 @@ function renderMarkdown(el, text) {
     html = safe;
   }
   el.innerHTML = replaceTrtTags(html);
+
+  // ── Add "Run" buttons to code blocks ──
+  el.querySelectorAll('pre > code').forEach(codeEl => {
+    const pre = codeEl.parentElement;
+    pre.style.position = 'relative';
+    const langClass = [...codeEl.classList].find(c => c.startsWith('lang-') || c.startsWith('language-'));
+    const lang = langClass ? langClass.replace(/^(lang-|language-)/, '') : '';
+    const runnable = ['python', 'py', 'javascript', 'js', 'bash', 'sh', 'powershell', 'ps1'].includes(lang.toLowerCase());
+    if (!runnable) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'code-run-btn';
+    btn.textContent = '▶ Run';
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Running...';
+      try {
+        const result = await window.yunisa.executor.run(lang, codeEl.textContent);
+        let outputEl = pre.nextElementSibling;
+        if (!outputEl || !outputEl.classList.contains('code-output')) {
+          outputEl = document.createElement('div');
+          pre.after(outputEl);
+        }
+        outputEl.className = 'code-output' + (result.exit_code !== 0 ? ' error' : '');
+        outputEl.textContent = (result.stdout || '') + (result.stderr ? '\n' + result.stderr : '') || '(no output)';
+      } catch (e) {
+        let outputEl = pre.nextElementSibling;
+        if (!outputEl || !outputEl.classList.contains('code-output')) {
+          outputEl = document.createElement('div');
+          pre.after(outputEl);
+        }
+        outputEl.className = 'code-output error';
+        outputEl.textContent = 'Execution error: ' + e.message;
+      }
+      btn.disabled = false;
+      btn.textContent = '▶ Run';
+    });
+    pre.appendChild(btn);
+  });
 }
 
 function escapeHtml(text) {

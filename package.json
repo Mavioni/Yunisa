@@ -6,6 +6,7 @@
   "scripts": {
     "build:ts": "tsc",
     "start": "npm run build:ts && electron .",
+    "dev": "npm run build:ts && npx asar pack release/win-unpacked/resources/app-extracted release/win-unpacked/resources/app.asar && start release/win-unpacked/YUNISA.exe",
     "rebuild": "npx @electron/rebuild",
     "dist": "npm run build:ts && electron-builder",
     "postinstall": "npx @electron/rebuild"
@@ -21,7 +22,15 @@
       "output": "release"
     },
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "icon": "resources/icon.ico",
       "requestedExecutionLevel": "requireAdministrator"
     },

@@ -1,9 +1,27 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **yunisa** (3738 symbols, 9405 relationships, 290 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **yunisa** (3801 symbols, 9592 relationships, 295 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
+
+## ⚡ Before Every Task
+
+**MUST run `/7p` before any significant code change in this repository.** This workflow uses YUNISA's own technology stack to self-improve before acting.
+
+The `/7p` workflow (Prior Perfect Planning Prevents Piss Poor Performance):
+
+1. Freshen the GitNexus index
+2. Query execution flows related to the task
+3. Run blast-radius impact analysis on symbols to be changed
+4. Confirm the local inference server is healthy
+5. Ask YUNISA's LLM to critique the draft plan
+6. Recall related decisions from MSAM long-term memory
+7. Formalize the plan in `implementation_plan.md` and get user approval
+
+> Skip `/7p` only for trivial one-liner or doc-only edits.
+
+---
 
 ## Always Do
 

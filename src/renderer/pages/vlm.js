@@ -4,11 +4,7 @@ export function initVlm() {
   const container = document.getElementById('vlm-screen');
   container.innerHTML = '';
   
-  container.style.flexDirection = 'column';
-  container.style.height = '100%';
-  container.style.background = 'var(--bg-void, #06080c)';
-  container.style.color = 'var(--text-primary, #c8d8f0)';
-  container.style.fontFamily = 'monospace';
+  container.classList.add('vlm-container');
 
   // ── Header ───────────────────────────────────────────────────────
   const header = document.createElement('div');

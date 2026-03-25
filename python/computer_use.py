@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import tempfile
+from pathlib import Path
 
 try:
     import pyautogui  # type: ignore[import-untyped]
@@ -71,7 +72,7 @@ def screenshot_save(path: str | None = None) -> dict:
     try:
         img = ImageGrab.grab()
         if not path:
-            path = os.path.join(tempfile.gettempdir(), "yunisa_screenshot.png")
+            path = str(Path(tempfile.gettempdir()) / "yunisa_screenshot.png")
         img.save(path)
         return {"path": path, "width": img.size[0], "height": img.size[1]}
     except Exception as e:

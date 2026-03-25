@@ -1,0 +1,32 @@
+﻿Usage: gitnexus [options] [command]
+
+GitNexus local CLI and MCP server
+
+Options:
+  -V, --version                   output the version number
+  -h, --help                      display help for command
+
+Commands:
+  setup                           One-time setup: configure MCP for Cursor,
+                                  Claude Code, OpenCode
+  analyze [options] [path]        Index a repository (full analysis)
+  serve [options]                 Start local HTTP server for web UI connection
+  mcp                             Start MCP server (stdio) ΓÇö serves all indexed
+                                  repos
+  list                            List all indexed repositories
+  status                          Show index status for current repo
+  clean [options]                 Delete GitNexus index for current repo
+  wiki [options] [path]           Generate repository wiki from knowledge graph
+  augment <pattern>               Augment a search pattern with knowledge graph
+                                  context (used by hooks)
+  query [options] <search_query>  Search the knowledge graph for execution
+                                  flows related to a concept
+  context [options] [name]        360-degree view of a code symbol: callers,
+                                  callees, processes
+  impact [options] <target>       Blast radius analysis: what breaks if you
+                                  change a symbol
+  cypher [options] <query>        Execute raw Cypher query against the
+                                  knowledge graph
+  eval-server [options]           Start lightweight HTTP server for fast tool
+                                  calls during evaluation
+  help [command]                  display help for command

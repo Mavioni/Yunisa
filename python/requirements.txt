@@ -1,6 +1,7 @@
-gui-agents
+-e ../agent-s_repo
 pyautogui
 pillow
 requests
 flask
 airllm
+pytesseract

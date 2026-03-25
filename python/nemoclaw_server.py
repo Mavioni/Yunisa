@@ -9,10 +9,11 @@ import sys
 import os
 import json
 import argparse
+from pathlib import Path
 from flask import Flask, request, jsonify, render_template_string  # type: ignore[import-untyped]
 
 # Inject agent-s_repo into Python path so gui_agents can be imported
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'agent-s_repo'))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'agent-s_repo'))
 
 # ── HTML Dashboard Template ──────────────────────────────────────────
 DASHBOARD_HTML = """
@@ -210,11 +211,14 @@ def execute_task():
         from gui_agents.s3.utils.local_env import LocalEnv  # type: ignore[import-untyped]
 
         base_url = f"http://127.0.0.1:{LLM_PORT}/v1"
+        nim_key = os.environ.get("NVIDIA_API_KEY", "")
+        use_nim = bool(nim_key and len(nim_key) > 5)
+
         engine_params = {
             "engine_type": "openai",
-            "model": "airllm",
-            "base_url": base_url,
-            "api_key": "empty",
+            "model": "meta/llama-3.1-70b-instruct" if use_nim else "airllm",
+            "base_url": "https://integrate.api.nvidia.com/v1" if use_nim else base_url,
+            "api_key": nim_key if use_nim else "empty",
         }
         engine_params_for_grounding = {
             "engine_type": "openai",
@@ -287,6 +291,6 @@ if __name__ == '__main__':
     app.config['LLM_PORT'] = LLM_PORT
     app.config['PORT'] = args.port
 
-    print(f"[NemoClaw] OpenShell Sandbox booting on http://0.0.0.0:{args.port}")
+    print(f"[NemoClaw] OpenShell Sandbox booting on http://127.0.0.1:{args.port}")
     print(f"[NemoClaw] LLM Engine bound to http://{LLM_HOST}:{LLM_PORT}/v1")
-    app.run(host='0.0.0.0', port=args.port, debug=False)
+    app.run(host='127.0.0.1', port=args.port, debug=False)

@@ -1,6 +1,6 @@
-import torch
-import torch.nn as nn
-from transformers import AutoModel, AutoModelForCausalLM, PreTrainedModel, PretrainedConfig
+import torch # type: ignore
+import torch.nn as nn # type: ignore
+from transformers import AutoModel, AutoModelForCausalLM, PreTrainedModel, PretrainedConfig # type: ignore
 
 class YunisaVLMConfig(PretrainedConfig):
     model_type = "yunisa_vlm"
@@ -27,7 +27,7 @@ class YunisaVLM(PreTrainedModel):
     config_class = YunisaVLMConfig
     
     def __init__(self, config):
-        super().__init__(config)
+        super().__init__(config)  # type: ignore[call-arg]
         
         # Auto-detect CUDA to ensure we utilize Nvidia hardware natively for vision tasks
         self.device_target = "cuda" if torch.cuda.is_available() else "cpu"
