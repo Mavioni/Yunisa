@@ -1167,7 +1167,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 #worldview-screen {
-  display: flex; height: 100%; width: 100%;
+  height: 100%; width: 100%;
   overflow: hidden; background: #000;
   isolation: isolate;
   contain: strict;
@@ -1256,7 +1256,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 #wv-panel-layers {
   position: absolute; top: var(--wv-top-h); left: 0; width: var(--wv-left-w); bottom: var(--wv-bot-h); z-index: 20;
   background: var(--wv-panel-bg); border-right: 1px solid var(--wv-panel-border);
-  backdrop-filter: blur(6px); display: flex; flex-direction: column; overflow: hidden;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; flex-direction: column; overflow: hidden;
 }
 .wv-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid var(--wv-panel-border); margin-bottom: 4px; }
 .wv-panel-title  { font-size: 9px; font-weight: bold; letter-spacing: 0.18em; color: var(--wv-text-dim); font-family: var(--wv-font); }
@@ -1281,7 +1281,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 /* â”€â”€ RIGHT PANEL â”€â”€ */
 #wv-panel-right {
   position: absolute; top: var(--wv-top-h); right: 0; width: var(--wv-right-w); bottom: var(--wv-bot-h); z-index: 20;
-  background: var(--wv-panel-bg); border-left: 1px solid var(--wv-panel-border); backdrop-filter: blur(6px);
+  background: var(--wv-panel-bg); border-left: 1px solid var(--wv-panel-border); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   display: flex; flex-direction: column; overflow: hidden; overflow-y: auto; padding-bottom: 8px;
 }
 #wv-panel-right::-webkit-scrollbar { width: 3px; }
@@ -1295,7 +1295,7 @@ button { font-family: var(--font-display); cursor: pointer; border: none; outlin
 }
 .wv-mode-btn:hover, .wv-scene-btn:hover, .wv-preset-btn:hover { border-color: var(--wv-accent-dim); color: var(--wv-text); background: var(--wv-accent-glow); }
 .wv-mode-btn.active, .wv-scene-btn.active, .wv-preset-btn.active { background: var(--wv-accent-glow); border-color: var(--wv-accent); color: var(--wv-accent); text-shadow: 0 0 6px var(--wv-accent-dim); }
-.wv-cities-grid { max-height: 112px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--wv-panel-border) transparent; }
+.wv-cities-grid { max-height: 112px; overflow-y: auto; }
 .wv-cities-grid::-webkit-scrollbar { width: 3px; }
 .wv-cities-grid::-webkit-scrollbar-thumb { background: var(--wv-panel-border); }
 .wv-cities-grid .wv-preset-btn { font-size: 8px; padding: 4px 2px; letter-spacing: 0; }
