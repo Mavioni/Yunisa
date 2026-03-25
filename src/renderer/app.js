@@ -6,6 +6,7 @@ import { initSettings } from './pages/settings.js';
 import { initVlm } from './pages/vlm.js';
 import { initNemoclaw } from './pages/nemoclaw.js';
 import { initNexus } from './pages/nexus.js';
+import { initWorldView } from './pages/worldview.js';
 
 const screens = {
   loading: document.getElementById('loading-screen'),
@@ -16,6 +17,7 @@ const screens = {
   vlm: document.getElementById('vlm-screen'),
   nemoclaw: document.getElementById('nemoclaw-screen'),
   nexus: document.getElementById('nexus-screen'),
+  worldview: document.getElementById('worldview-screen'),
 };
 
 const NAV_MAP = {
@@ -24,6 +26,7 @@ const NAV_MAP = {
   'nav-vlm': 'vlm',
   'nav-nemoclaw': 'nemoclaw',
   'nav-nexus': 'nexus',
+  'nav-worldview': 'worldview',
   'nav-settings': 'settings',
 };
 
@@ -73,6 +76,7 @@ async function boot() {
   initVlm();
   initNemoclaw();
   initNexus();
+  initWorldView();
 
   // Wire icon rail navigation
   Object.entries(NAV_MAP).forEach(([btnId, screenName]) => {

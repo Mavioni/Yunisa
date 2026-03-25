@@ -4,12 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; connect-src http://127.0.0.1:* https://huggingface.co https://*.huggingface.co https://cdn.jsdelivr.net; frame-src 'self' http://127.0.0.1:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com;">
+    content="default-src 'self'; connect-src http://127.0.0.1:* https://huggingface.co https://*.huggingface.co https://cdn.jsdelivr.net https://ion.cesium.com https://assets.cesium.com https://*.cesium.com https://api.cesium.com https://earthquake.usgs.gov https://celestrak.org https://opensky-network.org https://api.adsb.lol https://mesonet.agron.iastate.edu https://gpsjam.org wss://stream.aisstream.io https://aisstream.io https://camstreamer.com; frame-src 'self' http://127.0.0.1:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cesium.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cesium.com; img-src 'self' data: blob: https: http:; font-src 'self' https://fonts.gstatic.com https://cesium.com; worker-src blob:;">
   <title>YUNISA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+  <!-- WorldView: Cesium.js 3D globe + satellite.js TLE propagation -->
+  <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.1.4/dist/satellite.min.js"></script>
+  <!-- WorldView layer modules -->
+  <script src="pages/worldview/layers/satellites.js"></script>
+  <script src="pages/worldview/layers/flights.js"></script>
+  <script src="pages/worldview/layers/military.js"></script>
+  <script src="pages/worldview/layers/maritime.js"></script>
+  <script src="pages/worldview/layers/jamming.js"></script>
+  <script src="pages/worldview/layers/seismic.js"></script>
+  <script src="pages/worldview/layers/weather.js"></script>
+  <script src="pages/worldview/layers/traffic.js"></script>
+  <script src="pages/worldview/layers/cctv.js"></script>
+  <script src="pages/worldview/layers/sentinel.js"></script>
+  <script src="pages/worldview/layers/ports.js"></script>
+  <script src="pages/worldview/ui/presets.js"></script>
+  <script src="pages/worldview/ui/controls.js"></script>
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
@@ -37,6 +55,11 @@
       <button id="nav-nemoclaw" class="rail-btn" title="NemoClaw Sandbox"><img src="assets/icons/sandbox.png" class="custom-icon" alt="Sandbox"></button>
       <button id="nav-nexus" class="rail-btn" title="Data Nexus">
         <svg class="custom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      </button>
+      <button id="nav-worldview" class="rail-btn" title="WorldView OSINT">
+        <svg class="custom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
       </button>
       <div class="rail-spacer"></div>
       <button id="nav-settings" class="rail-btn" title="Settings"><img src="assets/icons/settings.png" class="custom-icon" alt="Settings"></button>
@@ -100,6 +123,7 @@
       <div id="models-screen" class="screen full-width-screen"></div>
       <div id="settings-screen" class="screen full-width-screen"></div>
       <div id="nexus-screen" class="screen full-width-screen"></div>
+      <div id="worldview-screen" class="screen full-width-screen"></div>
     </div>
   </div>
 
